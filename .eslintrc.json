@@ -1,0 +1,54 @@
+{
+  "extends": [
+    "@eslint/js/recommended",
+    "eslint:recommended",
+    "@typescript-eslint/recommended",
+    "@typescript-eslint/recommended-type-checked",
+    "eslint-plugin-jest/recommended",
+    "eslint-plugin-prettier/recommended"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "jest",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": ".",
+    "allowDefaultProject": true
+  },
+  "env": {
+    "node": true,
+    "jest": true,
+    "es2022": true
+  },
+  "ignorePatterns": [
+    "eslint.config.mjs",
+    "jest.config.ts",
+    "dist",
+    "node_modules"
+  ],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-floating-promises": "warn",
+    "@typescript-eslint/no-unsafe-return": "off",
+    "@typescript-eslint/no-unsafe-argument": "off",
+    "@typescript-eslint/no-unsafe-call": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/no-unsafe-member-access": "off",
+    "quotes": ["error", "double"],
+    "prettier/prettier": ["error", { "singleQuote": false }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ]
+  }
+}

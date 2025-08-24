@@ -1,0 +1,59 @@
+{
+  "name": "disparador_de_webhook_tecnospeed",
+  "version": "1.0.0",
+  "description": "Sistema disparador de webhooks para TecnSpeed",
+  "main": "src/main.ts",
+  "type": "module",
+  "scripts": {
+    "start": "ts-node src/main.ts",
+    "dev": "nodemon src/main.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "webhook",
+    "tecnospeed",
+    "typescript",
+    "node"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "joi": "^18.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
+    "redis": "^5.8.2",
+    "sequelize": "^6.37.7",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@types/express": "^4.17.23",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.19.11",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jest": "^29.0.1",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.0.5",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.40.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RenatoGarciaLopes/disparador_de_webhook_tecnospeed.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RenatoGarciaLopes/disparador_de_webhook_tecnospeed/issues"
+  },
+  "homepage": "https://github.com/RenatoGarciaLopes/disparador_de_webhook_tecnospeed#readme"
+}

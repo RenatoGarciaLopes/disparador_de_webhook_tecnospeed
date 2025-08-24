@@ -5,10 +5,14 @@
   "main": "src/main.ts",
   "type": "module",
   "scripts": {
-    "start": "ts-node src/main.ts",
-    "dev": "nodemon src/main.ts",
+    "dev": "node --experimental-transform-types --watch ./src/main.ts",
     "build": "tsc",
-    "test": "jest"
+    "start": "node ./dist/main.js",
+    "test": "jest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "webhook",

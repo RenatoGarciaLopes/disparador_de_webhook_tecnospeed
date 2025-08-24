@@ -21,6 +21,7 @@ feature/\*: Branch de funcionalidades\
 bugfix/\*: Branch de correções de bugs
 
 **Linters: [Prettier, ESLint]**\
+**Containers: [Container Tools]**\
 Colocar extensões
 
 **Testes: Jest**

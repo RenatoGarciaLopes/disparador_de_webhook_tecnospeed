@@ -57,8 +57,8 @@ project-root/
 │
 ├── test/ # Testes unitários e integração
 │
-├── docker/ # Dockerfile e docker-compose
-│
+├── docker-compose.yml
+├── Dockerfile
 ├── .eslintrc.json
 ├── .prettierrc
 ├── jest.config.js

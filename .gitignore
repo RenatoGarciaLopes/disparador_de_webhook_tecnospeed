@@ -34,7 +34,6 @@ coverage/
 *.lcov
 
 # Arquivos de IDE/Editor
-.vscode/
 .idea/
 *.swp
 *.swo

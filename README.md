@@ -86,5 +86,3 @@ npm run lint         # Verifica o código com ESLint
 npm run lint:fix     # Corrige problemas de linting
 npm run format       # Formata o código com Prettier
 ```
-
-Testando git implementando software house.

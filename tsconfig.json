@@ -33,7 +33,8 @@
     "skipLibCheck": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@sequelize": ["./sequalize/index.ts"]
     }
   },
 

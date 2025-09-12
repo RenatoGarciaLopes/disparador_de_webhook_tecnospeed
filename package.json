@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "sequelize:migrate": "sequelize-cli db:migrate",
+    "sequelize:seed": "sequelize-cli db:seed:all"
   },
   "keywords": [
     "webhook",
@@ -30,6 +32,7 @@
     "pg-hstore": "^2.3.4",
     "redis": "^5.8.2",
     "sequelize": "^6.37.7",
+    "sequelize-typescript": "^2.1.6",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -46,6 +49,7 @@
     "jest": "^30.0.5",
     "prettier": "^3.6.2",
     "sequelize-cli": "^6.6.3",
+    "ts-jest": "^29.4.1",
     "ts-node": "^10.9.1",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",

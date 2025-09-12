@@ -9,4 +9,7 @@ async function bootstrap() {
   app.start(config.PORT);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error("[error] Failed to bootstrap application:", error);
+  process.exit(1);
+});

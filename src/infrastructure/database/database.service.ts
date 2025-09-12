@@ -14,7 +14,9 @@ export class DatabaseService {
     await sequelize
       .sync()
       .then(() => {
-        console.log("[debug] Sincronização do banco de dados realizada com sucesso");
+        console.log(
+          "[debug] Sincronização do banco de dados realizada com sucesso",
+        );
       })
       .catch((error) => {
         console.error("[error] Erro ao sincronizar o banco de dados:", error);

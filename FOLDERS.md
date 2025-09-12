@@ -2,6 +2,7 @@ project-root/
 ├── sequelize/
 │ ├── config.ts
 │ ├── models/
+│ │ ├── <model-name>.model.ts
 │ ├── migrations/
 │ ├── seeders/
 │ └── index.ts
@@ -9,7 +10,6 @@ project-root/
 │ ├── modules/
 │ │ ├── software-house/
 │ │ │ ├── domain/
-│ │ │ │ ├── entities/ # Entidade SoftwareHouse
 │ │ │ │ └── repositories/ # Contratos de repositório
 │ │ │ ├── application/
 │ │ │ │ └── use-cases/ # Regras de negócio (ex: validar SH)
@@ -60,8 +60,6 @@ project-root/
 │ │ └── config/ # dotenv e variáveis de ambiente
 │ │
 │ └── main.ts # Entry point Express
-│
-├── test/ # Testes unitários e integração
 │
 ├── docker-compose.yml
 ├── Dockerfile

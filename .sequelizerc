@@ -3,8 +3,8 @@ require("ts-node/register");
 require("dotenv").config();
 
 module.exports = {
-  config: path.resolve("sequalize", "config.ts"),
-  "models-path": path.resolve("sequalize", "models"),
-  "seeders-path": path.resolve("sequalize", "seeders"),
-  "migrations-path": path.resolve("sequalize", "migrations"),
+  config: path.resolve("sequelize", "config.ts"),
+  "models-path": path.resolve("sequelize", "models"),
+  "seeders-path": path.resolve("sequelize", "seeders"),
+  "migrations-path": path.resolve("sequelize", "migrations"),
 };

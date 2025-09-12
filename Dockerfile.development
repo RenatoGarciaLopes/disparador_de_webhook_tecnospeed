@@ -8,5 +8,4 @@ RUN npm install
 COPY . .
 
 EXPOSE ${PORT}
-CMD ["npm", "run", "dev"]
-
+CMD ["sh", "-c", "npm run sequelize:migrate && npm run sequelize:seed && npm run dev"]

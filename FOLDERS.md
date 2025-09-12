@@ -1,4 +1,10 @@
 project-root/
+├── sequelize/
+│ ├── config.ts
+│ ├── models/
+│ ├── migrations/
+│ ├── seeders/
+│ └── index.ts
 │── src/
 │ ├── modules/
 │ │ ├── software-house/

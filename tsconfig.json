@@ -13,7 +13,7 @@
     "paths": {
       "@/*": ["./src*"],
       "@/sequelize/*": ["./sequelize/*"],
-      "@/sequelize": ["./sequelize/index.ts"],
+      "@/sequelize": ["./sequelize/index.ts"]
     }
   }
 }

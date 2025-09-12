@@ -19,4 +19,4 @@ COPY --from=builder /app/.env ./.env
 RUN npm install --only=production
 
 EXPOSE ${PORT}
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run sequelize:migrate && npm run start"]

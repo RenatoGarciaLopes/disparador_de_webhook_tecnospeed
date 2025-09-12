@@ -2,12 +2,10 @@
   "name": "disparador_de_webhook_tecnospeed",
   "version": "1.0.0",
   "description": "Sistema disparador de webhooks para TecnSpeed",
-  "main": "src/main.ts",
-  "type": "module",
   "scripts": {
-    "dev": "node --experimental-transform-types --watch ./src/main.ts",
+    "dev": "tsx watch --env-file=.env ./src/server.ts",
     "build": "tsc",
-    "start": "node ./dist/main.js",
+    "start": "node ./dist/server.js",
     "test": "jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -46,6 +44,7 @@
     "jest": "^30.0.5",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.1",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.40.0"
   },

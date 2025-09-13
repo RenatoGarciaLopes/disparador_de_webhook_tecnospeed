@@ -34,7 +34,7 @@ export class SoftwareHouse extends Model<
   @Column({ type: DataType.INTEGER })
   declare id: number;
 
-  @CreatedAt
+  @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   data_criacao!: Date;
 
   @Unique

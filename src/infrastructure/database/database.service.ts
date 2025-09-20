@@ -1,6 +1,5 @@
 import { sequelize } from "@/sequelize";
 
-
 export class DatabaseService {
   async connect(): Promise<boolean> {
     const cantAuthenticate = await sequelize

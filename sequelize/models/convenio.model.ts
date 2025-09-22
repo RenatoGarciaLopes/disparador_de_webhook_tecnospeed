@@ -23,7 +23,7 @@ interface ConvenioCreationAttributes
   tableName: "Convenio",
   timestamps: false,
 })
-export class SoftwareHouse extends Model<
+export class Convenio extends Model<
   ConvenioAttributes,
   ConvenioCreationAttributes
 > {

@@ -2,13 +2,14 @@ import { Optional } from "sequelize";
 import {
   AutoIncrement,
   Column,
-  CreatedAt,
   DataType,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
   Unique,
 } from "sequelize-typescript";
+import { Cedente } from "./cedente.model";
 
 interface SoftwareHouseAttributes {
   id: number;
@@ -46,4 +47,7 @@ export class SoftwareHouse extends Model<
 
   @Column({ type: DataType.STRING })
   status!: string;
+
+  @HasMany(() => Cedente)
+  declare cedente: Cedente[];
 }

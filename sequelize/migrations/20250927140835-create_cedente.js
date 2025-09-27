@@ -3,11 +3,15 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Convenio", {
+    await queryInterface.createTable("Cedente", {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+      },
+      data_criacao: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
       },
       cnpj: {
         type: Sequelize.STRING,
@@ -16,6 +20,10 @@ module.exports = {
       },
       token: {
         type: Sequelize.STRING,
+        allowNull: false,
+      },
+      softwarehouse_id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       status: {
@@ -30,6 +38,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable("SoftwareHouse");
+    await queryInterface.dropTable("Cedente");
   },
 };

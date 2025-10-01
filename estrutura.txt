@@ -1,0 +1,59 @@
+Listagem de caminhos de pasta para o volume Windows-SSD
+O número de série do volume é 00AD-49F7
+C:.
+|   .env.example
+|   .gitignore
+|   .prettierrc
+|   .sequelizerc
+|   DEFINITIONS.md
+|   docker-compose.yml
+|   Dockerfile.development
+|   Dockerfile.production
+|   eslint.config.mjs
+|   estrutura.txt
+|   FOLDERS.md
+|   jest.config.ts
+|   package-lock.json
+|   package.json
+|   README.md
+|   tsconfig.json
+|   
++---.vscode
+|       settings.json
+|       
++---sequelize
+|   |   config.ts
+|   |   index.ts
+|   |   
+|   +---migrations
+|   |       20250912232309-create_software_house.js
+|   |       20250919223827-create_conta.js
+|   |       20250920223104-create_convenio.js
+|   |       
+|   +---models
+|   |       conta.model.ts
+|   |       convenio.model.ts
+|   |       software-house.model.ts
+|   |       
+|   \---seeders
+|           20250912232541-demo_software_house.js
+|           20250919224640-demo_conta.js
+|           20250920223857-demo_convenio.js
+|           
+\---src
+    |   app.ts
+    |   server.ts
+    |   
+    +---infrastructure
+    |   +---config
+    |   |       index.ts
+    |   |       
+    |   \---database
+    |           database.service.test.ts
+    |           database.service.ts
+    |           
+    \---modules
+        \---conta
+            \---interfaces
+                    IConfiguracaoNotificacao.ts
+                    

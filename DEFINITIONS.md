@@ -22,6 +22,7 @@ bugfix/\*: Branch de correções de bugs
 
 **Linters: [Prettier, ESLint]**\
 **Containers: [Container Tools]**\
+**Documentação: [Mermaid Chart]**\
 Colocar extensões
 
 **Testes: Jest**

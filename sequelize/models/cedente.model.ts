@@ -10,7 +10,9 @@ import {
   Table,
   ForeignKey,
   Unique,
+  HasMany,
 } from "sequelize-typescript";
+import { Conta } from "./conta.model";
 
 interface CedenteAtributes {
   id: number;
@@ -57,4 +59,7 @@ export class Cedente extends Model<
 
   @Column({ type: DataType.JSONB })
   declare configuracao_notificacao: IConfiguracaoNotificacao | null;
+
+  @HasMany(() => Conta)
+  declare conta: Conta[];
 }

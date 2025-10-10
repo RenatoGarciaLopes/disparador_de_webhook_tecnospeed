@@ -42,6 +42,7 @@ export class Conta extends Model<ContaAttributes, ContaCreationAttributes> {
   @Column({ type: DataType.STRING })
   banco_codigo!: string;
 
+  @ForeignKey(() => require("./cedente.model").default)
   @Column({ type: DataType.INTEGER })
   cedente_id!: number;
 

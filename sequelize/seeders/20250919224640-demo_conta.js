@@ -5,17 +5,18 @@ module.exports = {
   async up(queryInterface) {
     await queryInterface.bulkInsert("Conta", [
       {
-        data_criacao: new Date(),
-        produto: "boleto",
+        id: 1,
+        data_criacao: new Date("2025-09-10"),
+        produto: "pix",
         banco_codigo: "001",
         cedente_id: 1,
-        status: "active",
+        status: "inactive",
         configuracao_notificacao: JSON.stringify({
           url: "https://webhook.site/8d0dbbe2-f74e-4271-91c0-765868dd27c9", //https://webhook.site/#!/view/8d0dbbe2-f74e-4271-91c0-765868dd27c9
           email: null,
           tipos: {},
-          cancelado: true,
-          pago: true,
+          cancelado: false,
+          pago: false,
           disponivel: true,
           header: false,
           ativado: true,
@@ -23,69 +24,60 @@ module.exports = {
           header_valor: "",
           headers_adicionais: [
             {
-              "x-empresa": "empresa1",
               "content-type": "application/json",
             },
           ],
         }),
       },
       {
-        data_criacao: new Date(),
+        id: 2,
+        data_criacao: new Date("2025-09-09"),
         produto: "boleto",
-        banco_codigo: "237",
-        cedente_id: 1,
+        banco_codigo: "341",
+        cedente_id: 2,
         status: "active",
         configuracao_notificacao: JSON.stringify({
           url: "https://webhook.site/6d1a99ca-0768-4a04-9c44-b1ef2c570378", //https://webhook.site/#!/view/6d1a99ca-0768-4a04-9c44-b1ef2c570378
           email: null,
           tipos: {},
-          cancelado: true,
+          cancelado: false,
           pago: true,
-          disponivel: true,
+          disponivel: false,
           header: false,
           ativado: true,
           header_campo: "",
           header_valor: "",
           headers_adicionais: [
             {
-              "x-empresa": "empresa2",
               "content-type": "application/json",
             },
           ],
         }),
       },
       {
-        data_criacao: new Date(),
+        id: 3,
+        data_criacao: new Date("2025-09-08"),
         produto: "pagamento",
         banco_codigo: "001",
-        cedente_id: 1,
+        cedente_id: 3,
         status: "inactive",
         configuracao_notificacao: JSON.stringify({
           url: "https://webhook.site/365f8f0f-bd65-4e4c-a5c5-6c62c7c0a082", //https://webhook.site/#!/view/365f8f0f-bd65-4e4c-a5c5-6c62c7c0a082
           email: null,
           tipos: {},
           cancelado: true,
-          pago: true,
-          disponivel: true,
+          pago: false,
+          disponivel: false,
           header: false,
           ativado: true,
           header_campo: "",
           header_valor: "",
           headers_adicionais: [
             {
-              "x-empresa": "empresa3",
               "content-type": "application/json",
             },
           ],
         }),
-      },
-      {
-        data_criacao: new Date(),
-        produto: "pix",
-        banco_codigo: "341",
-        cedente_id: 1,
-        status: "inactive",
-        configuracao_notificacao: null,
       },
     ]);
   },

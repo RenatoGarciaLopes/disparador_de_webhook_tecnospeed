@@ -4,25 +4,33 @@
 module.exports = {
   async up(queryInterface) {
     await queryInterface.bulkInsert("Convenio", [
+      // Convenio para BOLETO (conta_id: 1)
       {
-        numero_convenio: "CONV001",
+        id: 1,
+        numero_convenio: "102938", // 6-7 digits, numeric only
         data_criacao: new Date(),
         conta_id: 1,
       },
+      // Convenio para PIX (conta_id: 2)
       {
-        numero_convenio: "CONV002",
-        data_criacao: new Date(),
-        conta_id: 1,
-      },
-      {
-        numero_convenio: "CONV003",
+        id: 2,
+        numero_convenio: "564738",
         data_criacao: new Date(),
         conta_id: 2,
       },
+      // Convenio para PAGAMENTOS (conta_id: 3)
       {
-        numero_convenio: "CONV004",
+        id: 3,
+        numero_convenio: "918273",
         data_criacao: new Date(),
-        conta_id: 2,
+        conta_id: 3,
+      },
+      // Convenio extra para BOLETO (conta_id: 4)
+      {
+        id: 4,
+        numero_convenio: "4455667",
+        data_criacao: new Date(),
+        conta_id: 4,
       },
     ]);
   },

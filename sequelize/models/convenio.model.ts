@@ -8,6 +8,7 @@ import {
   PrimaryKey,
   Table,
 } from "sequelize-typescript";
+import { Conta } from "./conta.model";
 
 interface ConvenioAttributes {
   id: number;
@@ -38,7 +39,7 @@ export class Convenio extends Model<
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   data_criacao!: Date;
 
-  @ForeignKey(() => require("./conta.model").default)
+  @ForeignKey(() => Conta)
   @Column({ type: DataType.INTEGER })
   declare conta_id: number;
 }

@@ -8,7 +8,9 @@ import {
   PrimaryKey,
   Table,
   ForeignKey,
+  HasMany,
 } from "sequelize-typescript";
+import { Convenio } from "./convenio.model";
 
 interface ContaAttributes {
   id: number;
@@ -51,4 +53,7 @@ export class Conta extends Model<ContaAttributes, ContaCreationAttributes> {
 
   @Column({ type: DataType.JSONB })
   declare configuracao_notificacao: IConfiguracaoNotificacao | null;
+
+  @HasMany(() => Convenio)
+  declare convenio: Convenio[];
 }

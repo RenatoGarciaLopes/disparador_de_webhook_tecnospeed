@@ -66,6 +66,7 @@ erDiagram
     string produto
     date data_criacao
     string status
+    string situacao
     int convenio_id
   }
 
@@ -89,3 +90,29 @@ erDiagram
 - `Convenio`: Convenio é a carteira da conta do Cedente
 - `Servico`: Servico é o serviço que vai ser executado pelo Plug Boleto (Ele representa o produto: Boletos, Pagamentos, Pix, etc.)
 - `WebhookReprocessado`: Webhook Reprocessado é o webhook que foi reprocessado e salvo no banco de dados junto ao protocolo de retorno.
+
+## Seeds: De/Para de IDs por Fluxo
+
+### Fluxo BOLETO (ids = 1)
+
+- Entidade: SoftwareHouse → ID: 1
+- Entidade: Cedente → ID: 1
+- Entidade: Conta → ID: 1
+- Entidade: Convenio → ID: 1
+- Entidade: Servico → ID: 1 (produto: BOLETO, status: inativo)
+
+### Fluxo PIX (ids = 2)
+
+- Entidade: SoftwareHouse → ID: 2
+- Entidade: Cedente → ID: 2
+- Entidade: Conta → ID: 2
+- Entidade: Convenio → ID: 2
+- Entidade: Servico → ID: 2 (produto: PIX, status: ativo)
+
+### Fluxo PAGAMENTO (ids = 3)
+
+- Entidade: SoftwareHouse → ID: 3
+- Entidade: Cedente → ID: 3
+- Entidade: Conta → ID: 3
+- Entidade: Convenio → ID: 3
+- Entidade: Servico → ID: 3 (produto: PAGAMENTO, status: inativo)

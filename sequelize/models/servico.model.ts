@@ -13,9 +13,11 @@ import { Convenio } from "./convenio.model";
 
 interface ServicoAttributes {
   id: number;
+  produto: "BOLETO" | "PAGAMENTO" | "PIX";
   data_criacao: Date;
   convenio_id: number;
   status: string;
+  situacao: "disponivel" | "cancelado" | "pago";
 }
 
 interface ServicoCreationAttributes
@@ -41,8 +43,20 @@ export class Servico extends Model<
   @Column({ type: DataType.INTEGER })
   declare convenio_id: number;
 
+  @Column({
+    type: DataType.ENUM("BOLETO", "PAGAMENTO", "PIX"),
+    allowNull: false,
+  })
+  declare produto: "BOLETO" | "PAGAMENTO" | "PIX";
+
   @Column({ type: DataType.STRING, allowNull: false })
   declare status: string;
+
+  @Column({
+    type: DataType.ENUM("disponivel", "cancelado", "pago"),
+    allowNull: false,
+  })
+  declare situacao: "disponivel" | "cancelado" | "pago";
 
   @BelongsTo(() => Convenio)
   declare convenio: Convenio;

@@ -7,17 +7,17 @@ module.exports = {
       {
         id: 1,
         data_criacao: new Date("2025-09-10"),
-        produto: "pix",
-        banco_codigo: "001",
+        produto: "boleto",
+        banco_codigo: "341",
         cedente_id: 1,
-        status: "inactive",
+        status: "active",
         configuracao_notificacao: JSON.stringify({
-          url: "https://webhook.site/8d0dbbe2-f74e-4271-91c0-765868dd27c9", //https://webhook.site/#!/view/8d0dbbe2-f74e-4271-91c0-765868dd27c9
+          url: "https://webhook.site/6d1a99ca-0768-4a04-9c44-b1ef2c570378", //https://webhook.site/#!/view/6d1a99ca-0768-4a04-9c44-b1ef2c570378
           email: null,
           tipos: {},
           cancelado: false,
-          pago: false,
-          disponivel: true,
+          pago: true,
+          disponivel: false,
           header: false,
           ativado: true,
           header_campo: "",
@@ -32,17 +32,17 @@ module.exports = {
       {
         id: 2,
         data_criacao: new Date("2025-09-09"),
-        produto: "boleto",
-        banco_codigo: "341",
+        produto: "pix",
+        banco_codigo: "001",
         cedente_id: 2,
-        status: "active",
+        status: "inactive",
         configuracao_notificacao: JSON.stringify({
-          url: "https://webhook.site/6d1a99ca-0768-4a04-9c44-b1ef2c570378", //https://webhook.site/#!/view/6d1a99ca-0768-4a04-9c44-b1ef2c570378
+          url: "https://webhook.site/8d0dbbe2-f74e-4271-91c0-765868dd27c9", //https://webhook.site/#!/view/8d0dbbe2-f74e-4271-91c0-765868dd27c9
           email: null,
           tipos: {},
           cancelado: false,
-          pago: true,
-          disponivel: false,
+          pago: false,
+          disponivel: true,
           header: false,
           ativado: true,
           header_campo: "",
@@ -68,6 +68,31 @@ module.exports = {
           cancelado: true,
           pago: false,
           disponivel: false,
+          header: false,
+          ativado: true,
+          header_campo: "",
+          header_valor: "",
+          headers_adicionais: [
+            {
+              "content-type": "application/json",
+            },
+          ],
+        }),
+      },
+      {
+        id: 4,
+        data_criacao: new Date("2025-09-07"),
+        produto: "boleto",
+        banco_codigo: "237",
+        cedente_id: 1,
+        status: "active",
+        configuracao_notificacao: JSON.stringify({
+          url: "https://webhook.site/2c8eebbd-0d8a-44d7-9d47-4a4e7f7b1a22", //https://webhook.site/#!/view/2c8eebbd-0d8a-44d7-9d47-4a4e7f7b1a22
+          email: null,
+          tipos: {},
+          cancelado: false,
+          pago: true,
+          disponivel: true,
           header: false,
           ativado: true,
           header_campo: "",

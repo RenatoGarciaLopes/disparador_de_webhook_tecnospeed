@@ -39,17 +39,6 @@ module.exports = {
       servico_id: {
         type: Sequelize.TEXT,
         allowNull: false,
-        get() {
-          const value = this.getDataValue("servico_id");
-          try {
-            return JSON.parse(value);
-          } catch {
-            return [];
-          }
-        },
-        set(value) {
-          this.setDataValue("servico_id", JSON.stringify(value));
-        },
       },
     });
   },

@@ -9,8 +9,10 @@ import {
   Table,
   ForeignKey,
   HasMany,
+  BelongsTo,
 } from "sequelize-typescript";
 import { Convenio } from "./convenio.model";
+import { Cedente } from "./cedente.model";
 
 interface ContaAttributes {
   id: number;
@@ -44,7 +46,7 @@ export class Conta extends Model<ContaAttributes, ContaCreationAttributes> {
   @Column({ type: DataType.STRING })
   banco_codigo!: string;
 
-  @ForeignKey(() => require("./cedente.model").default)
+  @ForeignKey(() => Cedente)
   @Column({ type: DataType.INTEGER })
   cedente_id!: number;
 
@@ -55,5 +57,8 @@ export class Conta extends Model<ContaAttributes, ContaCreationAttributes> {
   declare configuracao_notificacao: IConfiguracaoNotificacao | null;
 
   @HasMany(() => Convenio)
-  declare convenio: Convenio[];
+  declare convenios: Convenio[];
+
+  @BelongsTo(() => Cedente)
+  declare cedente: Cedente;
 }

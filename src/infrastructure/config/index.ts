@@ -1,26 +1,23 @@
-import Joi from "joi";
+import { z } from "zod";
 
-interface EnvSchema {
-  NODE_ENV: string;
-  PORT: number;
-  DB_USERNAME: string;
-  DB_PASSWORD: string;
-  DB_DATABASE: string;
-  DB_HOST: string;
-  DB_PORT: number;
-}
+z.config(z.locales.pt());
 
-const envSchema = Joi.object<EnvSchema>({
-  NODE_ENV: Joi.string().valid("development", "production").required(),
-  PORT: Joi.number().required(),
+const envSchema = z.object({
+  NODE_ENV: z.string(),
+  PORT: z.string().transform(Number),
 
-  DB_USERNAME: Joi.string().required(),
-  DB_PASSWORD: Joi.string().required(),
-  DB_DATABASE: Joi.string().required(),
-  DB_HOST: Joi.string().required(),
-  DB_PORT: Joi.number().required(),
+  DB_USERNAME: z.string(),
+  DB_PASSWORD: z.string(),
+  DB_DATABASE: z.string(),
+  DB_HOST: z.string(),
+  DB_PORT: z.string().transform(Number),
 });
 
-const { value } = envSchema.validate(process.env);
+const { success, data, error } = envSchema.safeParse(process.env);
 
-export const config: EnvSchema = value;
+if (!success) {
+  console.error("Variáveis de ambiente inválidas:", z.prettifyError(error));
+  process.exit(1);
+}
+
+export const config = data;

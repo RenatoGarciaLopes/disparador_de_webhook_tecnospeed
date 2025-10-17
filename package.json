@@ -26,7 +26,6 @@
     "axios": "^1.11.0",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
-    "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
@@ -34,7 +33,8 @@
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.3.0",
     "sequelize-typescript": "^2.1.6",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

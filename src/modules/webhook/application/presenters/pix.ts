@@ -1,6 +1,8 @@
 import { Servico } from "@/sequelize/models/servico.model";
 import { z } from "zod";
 import { ReenviarSchemaDTO } from "../../interfaces/http/validators/ReenviarSchema";
+import { ConfiguracaoNotificacaoService } from "../../domain/services/ConfiguracaoNotificacaoService";
+import { IConfiguracaoNotificacao } from "@/shared/interfaces/IConfiguracaoNotificacao";
 
 const PixPresenterSchema = z.object({
   kind: z.any(),
@@ -26,7 +28,7 @@ export class PixPresenter {
     private readonly data: ReenviarSchemaDTO,
   ) {}
 
-  toPayload(): IPixPresenter {
+  toPayload(configuracaoNotificacao: IConfiguracaoNotificacao): IPixPresenter {
     return {
       kind: "webhook",
       method: "POST",

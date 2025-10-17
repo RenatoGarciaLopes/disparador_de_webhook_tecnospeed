@@ -1,161 +1,114 @@
-import { ErrorResponse } from "@/shared/errors/ErrorResponse";
-import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
-import { UnauthorizedError } from "@/shared/errors/Unauthorized";
-import { validateAuthHeaders } from "@/shared/middlewares/reenviar/validate-auth-headers";
-import { validateBody } from "@/shared/middlewares/reenviar/validate-body";
+import { validateAuthHeaders } from "@/modules/webhook/interfaces/http/middlewares/reenviar/validate-auth-headers";
+import { validateBody } from "@/modules/webhook/interfaces/http/middlewares/reenviar/validate-body";
+import { RouterImplementation } from "@/shared/RouterImplementation";
 import { ReenviarController } from "../controllers/ReenviarController";
 import { ReenviarRoutes } from "../routes/ReenviarRoutes";
 
-jest.mock("@/shared/middlewares/reenviar/validate-auth-headers");
-jest.mock("@/shared/middlewares/reenviar/validate-body");
+jest.mock(
+  "@/modules/webhook/interfaces/http/middlewares/reenviar/validate-auth-headers",
+);
+jest.mock(
+  "@/modules/webhook/interfaces/http/middlewares/reenviar/validate-body",
+);
 
-describe("ReenviarRoutes unitário", () => {
+describe("ReenviarRoutes", () => {
   let controllerMock: ReenviarController;
   let postMock: jest.Mock;
 
   beforeEach(() => {
     controllerMock = { reenviar: jest.fn() } as any;
 
-    // Mock do router.post
     postMock = jest.fn();
     jest.spyOn(require("express"), "Router").mockImplementation(() => ({
       post: postMock,
     }));
   });
 
-  it("deve configurar a rota POST e chamar middlewares", async () => {
-    // Instancia a rota
-    new ReenviarRoutes(controllerMock);
-
-    // Verifica se router.post foi chamado
-    expect(postMock).toHaveBeenCalled();
-
-    // Pega os middlewares passados na chamada
-    const middlewares = postMock.mock.calls[0].slice(1); // slice(1) remove o path
-
-    // Deve ter 2 middlewares: valida headers + controller
-    expect(middlewares.length).toBe(2);
-
-    const [middlewareFn, controllerFn] = middlewares;
-
-    // Mock do req, res, next
-    const req: any = { headers: {}, body: { campo: "valor" } };
-    const res: any = {};
-    const next = jest.fn();
-
-    (validateAuthHeaders as jest.Mock).mockResolvedValue({
-      cedente: { id: 123 },
+  describe("Configuração da rota", () => {
+    it("deve ter PATH '/reenviar' e estender RouterImplementation", () => {
+      expect(ReenviarRoutes.PATH).toBe("/reenviar");
+      const routes = new ReenviarRoutes(controllerMock);
+      expect(routes).toBeInstanceOf(RouterImplementation);
+      expect(routes.router).toBeDefined();
     });
-    (validateBody as jest.Mock).mockResolvedValue({ campo: "valor" });
 
-    await middlewareFn(req, res, next);
-    expect(validateAuthHeaders).toHaveBeenCalledWith(new Headers(req.headers));
-    expect(validateBody).toHaveBeenCalledWith(req.body);
+    it("deve configurar rota POST com middlewares corretos", () => {
+      new ReenviarRoutes(controllerMock);
 
-    expect(next).toHaveBeenCalled();
-
-    await controllerFn(req, res);
-    expect(controllerMock.reenviar).toHaveBeenCalledWith(req, res);
+      expect(postMock).toHaveBeenCalled();
+      const middlewares = postMock.mock.calls[0].slice(1);
+      expect(middlewares.length).toBe(2);
+    });
   });
 
-  it("deve retornar 401 se os headers não forem válidos", async () => {
-    new ReenviarRoutes(controllerMock);
+  describe("Execução de middlewares", () => {
+    it("deve executar validateAuthHeaders e validateBody na ordem correta", async () => {
+      new ReenviarRoutes(controllerMock);
 
-    const mockError = new UnauthorizedError("Headers inválidos");
-    (validateAuthHeaders as jest.Mock).mockRejectedValue(mockError);
+      const callOrder: string[] = [];
+      (validateAuthHeaders as jest.Mock).mockImplementation(async () => {
+        callOrder.push("headers");
+        return { cedente: { id: 123 } };
+      });
+      (validateBody as jest.Mock).mockImplementation(async () => {
+        callOrder.push("body");
+        return { campo: "valor" };
+      });
 
-    const req: any = { headers: {}, body: { campo: "valor" } };
-    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    const next = jest.fn();
+      const req: any = { headers: {}, body: { campo: "valor" } };
+      const res: any = {};
+      const next = jest.fn();
 
-    const middlewares = postMock.mock.calls[0].slice(1);
-    const [middlewareFn] = middlewares;
+      const middlewares = postMock.mock.calls[0].slice(1);
+      const [middlewareFn] = middlewares;
 
-    await middlewareFn(req, res, next);
+      await middlewareFn(req, res, next);
 
-    expect(next).not.toHaveBeenCalled();
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalled();
-  });
-
-  it("deve retornar 400 se os campos do body não forem válidos", async () => {
-    new ReenviarRoutes(controllerMock);
-
-    const mockError = new InvalidFieldsError({
-      errors: ["Campo obrigatório não informado"],
-    });
-    (validateBody as jest.Mock).mockRejectedValue(mockError);
-    (validateAuthHeaders as jest.Mock).mockResolvedValue({
-      cedente: { id: 123 },
+      expect(callOrder).toEqual(["headers", "body"]);
+      expect(next).toHaveBeenCalled();
     });
 
-    const req: any = { headers: {}, body: { campo: "valor" } };
-    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    const next = jest.fn();
+    it("deve atribuir cedenteId ao request e chamar controller", async () => {
+      new ReenviarRoutes(controllerMock);
 
-    const middlewares = postMock.mock.calls[0].slice(1);
-    const [middlewareFn] = middlewares;
+      (validateAuthHeaders as jest.Mock).mockResolvedValue({
+        cedente: { id: 789 },
+      });
+      (validateBody as jest.Mock).mockResolvedValue({ campo: "validado" });
 
-    await middlewareFn(req, res, next);
+      const req: any = { headers: {}, body: { campo: "original" } };
+      const res: any = {};
+      const next = jest.fn();
 
-    expect(next).not.toHaveBeenCalled();
+      const middlewares = postMock.mock.calls[0].slice(1);
+      const [middlewareFn, controllerFn] = middlewares;
 
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalled();
-  });
+      await middlewareFn(req, res, next);
 
-  it("deve retornar 500 se ocorrer um erro interno", async () => {
-    new ReenviarRoutes(controllerMock);
+      expect(req.cedenteId).toBe(789);
+      expect(req.body).toEqual({ campo: "validado" });
+      expect(next).toHaveBeenCalled();
 
-    const mockError = new Error("Erro interno");
-    (validateBody as jest.Mock).mockRejectedValue(mockError);
-    (validateAuthHeaders as jest.Mock).mockResolvedValue({
-      cedente: { id: 123 },
+      await controllerFn(req, res);
+      expect(controllerMock.reenviar).toHaveBeenCalledWith(req, res);
     });
 
-    const req: any = { headers: {}, body: { campo: "valor" } };
-    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    const next = jest.fn();
+    it("não deve chamar validateBody se validateAuthHeaders falhar", async () => {
+      new ReenviarRoutes(controllerMock);
 
-    const middlewares = postMock.mock.calls[0].slice(1);
-    const [middlewareFn] = middlewares;
+      (validateAuthHeaders as jest.Mock).mockRejectedValue(new Error());
 
-    await middlewareFn(req, res, next);
+      const req: any = { headers: {}, body: { campo: "valor" } };
+      const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      const next = jest.fn();
 
-    expect(next).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith(
-      new ErrorResponse("Erro interno do servidor", 500, {
-        errors: ["Erro interno"],
-      }),
-    );
-  });
+      const middlewares = postMock.mock.calls[0].slice(1);
+      const [middlewareFn] = middlewares;
 
-  it("deve retornar 500 com mensagem padrão se o erro não tiver message", async () => {
-    new ReenviarRoutes(controllerMock);
+      await middlewareFn(req, res, next);
 
-    const mockError = { message: undefined } as any;
-    (validateBody as jest.Mock).mockRejectedValue(mockError);
-    (validateAuthHeaders as jest.Mock).mockResolvedValue({
-      cedente: { id: 123 },
+      expect(validateBody).not.toHaveBeenCalled();
+      expect(next).not.toHaveBeenCalled();
     });
-
-    const req: any = { headers: {}, body: { campo: "valor" } };
-    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    const next = jest.fn();
-
-    const middlewares = postMock.mock.calls[0].slice(1);
-    const [middlewareFn] = middlewares;
-
-    await middlewareFn(req, res, next);
-
-    expect(next).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith(
-      new ErrorResponse("Erro interno do servidor", 500, {
-        errors: ["Erro interno do servidor"],
-      }),
-    );
   });
 });

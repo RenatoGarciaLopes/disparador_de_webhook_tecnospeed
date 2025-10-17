@@ -1,4 +1,5 @@
 import { Servico } from "@/sequelize/models/servico.model";
+import { IConfiguracaoNotificacao } from "@/shared/interfaces/IConfiguracaoNotificacao";
 import { z } from "zod";
 import { ReenviarSchemaDTO } from "../../interfaces/http/validators/ReenviarSchema";
 
@@ -29,7 +30,9 @@ export class BoletoPresenter {
     private readonly data: ReenviarSchemaDTO,
   ) {}
 
-  toPayload(): IBoletoPresenter {
+  toPayload(
+    configuracaoNotificacao: IConfiguracaoNotificacao,
+  ): IBoletoPresenter {
     return {
       kind: "webhook",
       method: "POST",

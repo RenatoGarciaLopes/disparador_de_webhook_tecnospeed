@@ -12,4 +12,10 @@ export class ErrorResponse {
       error: this.error,
     };
   }
+
+  static internalServerErrorFromError(error: Error) {
+    return new ErrorResponse("INTERNAL_SERVER_ERROR", 500, {
+      errors: [(error as Error).message ?? "Erro interno do servidor"],
+    });
+  }
 }

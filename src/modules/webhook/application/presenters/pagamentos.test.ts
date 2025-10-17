@@ -47,7 +47,9 @@ describe("PagamentosPresenter", () => {
       );
       const toPayloadSpy = jest.spyOn(presenter, "toPayload");
 
-      presenter.toPayload();
+      presenter.toPayload(
+        mockServico.convenio.conta.cedente.dataValues.configuracao_notificacao!,
+      );
 
       expect(toPayloadSpy).toHaveBeenCalledTimes(1);
       toPayloadSpy.mockRestore();
@@ -60,7 +62,9 @@ describe("PagamentosPresenter", () => {
         mockServico,
         mockData,
       );
-      const payload = presenter.toPayload();
+      const payload = presenter.toPayload(
+        mockServico.convenio.conta.cedente.dataValues.configuracao_notificacao!,
+      );
 
       expect(payload).toEqual({
         kind: "webhook",

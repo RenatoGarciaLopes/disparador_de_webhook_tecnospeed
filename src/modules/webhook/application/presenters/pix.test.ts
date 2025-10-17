@@ -40,18 +40,32 @@ describe("PixPresenter", () => {
 
   describe("toPayload", () => {
     it("deve chamar o método toPayload corretamente", () => {
-      const presenter = new PixPresenter("fake-transaction-id", mockServico, mockData);
+      const presenter = new PixPresenter(
+        "fake-transaction-id",
+        mockServico,
+        mockData,
+      );
       const toPayloadSpy = jest.spyOn(presenter, "toPayload");
 
-      presenter.toPayload();
+      presenter.toPayload(
+        mockServico.convenio.conta.cedente.dataValues
+          .configuracao_notificacao!,
+      );
 
       expect(toPayloadSpy).toHaveBeenCalledTimes(1);
       toPayloadSpy.mockRestore();
     });
 
     it("deve retornar a estrutura correta do payload", () => {
-      const presenter = new PixPresenter("fake-transaction-id",mockServico, mockData);
-      const payload = presenter.toPayload();
+      const presenter = new PixPresenter(
+        "fake-transaction-id",
+        mockServico,
+        mockData,
+      );
+      const payload = presenter.toPayload(
+        mockServico.convenio.conta.cedente.dataValues
+          .configuracao_notificacao!,
+      );
 
       expect(payload).toEqual({
         kind: "webhook",
@@ -74,7 +88,11 @@ describe("PixPresenter", () => {
 
   describe("constructor", () => {
     it("deve criar uma instância de PixPresenter com os dados fornecidos", () => {
-      const presenter = new PixPresenter("fake-transaction-id", mockServico, mockData);
+      const presenter = new PixPresenter(
+        "fake-transaction-id",
+        mockServico,
+        mockData,
+      );
 
       expect(presenter).toBeInstanceOf(PixPresenter);
       expect(presenter).toHaveProperty("toPayload");

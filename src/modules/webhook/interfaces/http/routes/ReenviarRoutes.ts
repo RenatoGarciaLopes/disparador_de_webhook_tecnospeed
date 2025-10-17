@@ -1,10 +1,10 @@
+import { validateAuthHeaders } from "@/modules/webhook/interfaces/http/middlewares/reenviar/validate-auth-headers";
+import { validateBody } from "@/modules/webhook/interfaces/http/middlewares/reenviar/validate-body";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { UnauthorizedError } from "@/shared/errors/Unauthorized";
 import { RouterImplementation } from "@/shared/RouterImplementation";
 import { Request, Router } from "express";
-import { validateAuthHeaders } from "@/shared/middlewares/reenviar/validate-auth-headers";
-import { validateBody } from "@/shared/middlewares/reenviar/validate-body";
 import { ReenviarController } from "../controllers/ReenviarController";
 
 export class ReenviarRoutes extends RouterImplementation {
@@ -37,14 +37,12 @@ export class ReenviarRoutes extends RouterImplementation {
           if (error instanceof InvalidFieldsError) {
             return res.status(400).json(error.json());
           }
-          return res.status(500).json(
-            new ErrorResponse("Erro interno do servidor", 500, {
-              errors: [(error as Error).message ?? "Erro interno do servidor"],
-            }),
-          );
+          return res
+            .status(500)
+            .json(ErrorResponse.internalServerErrorFromError(error as Error));
         }
       },
-      (req, res) => this.controller.reenviar(req, res),
+      (req, res) => this.controller.reenviar(req as any, res),
     );
   }
 }

@@ -285,7 +285,7 @@ Para SH com ID 1 e Cedente com ID 1 e Conta com ID 1 possui os seguintes `Servic
 Para SH com ID 1 e Cedente com ID 1 e Conta com ID 2 possui os seguintes `Servico`s:
 
 - Servico com ID 3
-- Servico com ID 4
+- Servico com ID 4~~
 
 Se for feito uma requisição para o endpoint com os seguintes parâmetros:
 

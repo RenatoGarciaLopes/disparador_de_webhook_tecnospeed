@@ -1,6 +1,8 @@
 import { Servico } from "@/sequelize/models/servico.model";
 import { z } from "zod";
 import { ReenviarSchemaDTO } from "../../interfaces/http/validators/ReenviarSchema";
+import { ConfiguracaoNotificacaoService } from "../../domain/services/ConfiguracaoNotificacaoService";
+import { IConfiguracaoNotificacao } from "@/shared/interfaces/IConfiguracaoNotificacao";
 
 const PagamentosPresenterSchema = z.object({
   kind: z.any(),
@@ -26,7 +28,7 @@ export class PagamentosPresenter {
     private readonly data: ReenviarSchemaDTO,
   ) {}
 
-  toPayload(): IPagamentosPresenter {
+  toPayload(configuracaoNotificacao: IConfiguracaoNotificacao): IPagamentosPresenter {
     return {
       kind: "webhook",
       method: "POST",

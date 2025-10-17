@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ReenviarSchemaDTO } from "../validators/ReenviarSchema";
+import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 
 export class ReenviarController {
   public async reenviar(
@@ -29,9 +30,9 @@ export class ReenviarController {
     try {
       res.status(200).json({});
     } catch (error) {
-      res.status(500).json({
-        message: "Erro interno do servidor",
-      });
+      res.status(500).json(
+        ErrorResponse.internalServerErrorFromError(error as Error),
+      );
     }
   }
 }

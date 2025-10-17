@@ -1,14 +1,17 @@
 import { Optional } from "sequelize";
 import {
+  BelongsTo,
   AutoIncrement,
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
 } from "sequelize-typescript";
 import { Conta } from "./conta.model";
+import { Servico } from "./servico.model";
 
 interface ConvenioAttributes {
   id: number;
@@ -42,4 +45,10 @@ export class Convenio extends Model<
   @ForeignKey(() => Conta)
   @Column({ type: DataType.INTEGER })
   declare conta_id: number;
+
+  @HasMany(() => Servico)
+  declare servicos: Servico[];
+
+  @BelongsTo(() => Conta)
+  declare conta: Conta;
 }

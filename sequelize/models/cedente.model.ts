@@ -2,6 +2,7 @@ import { IConfiguracaoNotificacao } from "@/modules/cedente/interfaces/IConfigur
 import { Optional } from "sequelize";
 import { SoftwareHouse } from "./software-house.model";
 import {
+  BelongsTo,
   AutoIncrement,
   Column,
   DataType,
@@ -51,7 +52,7 @@ export class Cedente extends Model<
   token!: string;
 
   @ForeignKey(() => SoftwareHouse)
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER })
   softwarehouse_id!: number;
 
   @Column({ type: DataType.STRING })
@@ -61,5 +62,8 @@ export class Cedente extends Model<
   declare configuracao_notificacao: IConfiguracaoNotificacao | null;
 
   @HasMany(() => Conta)
-  declare conta: Conta[];
+  declare contas: Conta[];
+
+  @BelongsTo(() => SoftwareHouse)
+  declare softwarehouse: SoftwareHouse;
 }

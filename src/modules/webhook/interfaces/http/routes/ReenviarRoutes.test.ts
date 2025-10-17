@@ -1,13 +1,13 @@
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { UnauthorizedError } from "@/shared/errors/Unauthorized";
+import { validateAuthHeaders } from "@/shared/middlewares/reenviar/validate-auth-headers";
+import { validateBody } from "@/shared/middlewares/reenviar/validate-body";
 import { ReenviarController } from "../controllers/ReenviarController";
-import { validateAuthHeaders } from "../middlewares/reenviar/validate-auth-headers";
-import { validateBody } from "../middlewares/reenviar/validate-body";
 import { ReenviarRoutes } from "../routes/ReenviarRoutes";
 
-jest.mock("../middlewares/reenviar/validate-auth-headers");
-jest.mock("../middlewares/reenviar/validate-body");
+jest.mock("@/shared/middlewares/reenviar/validate-auth-headers");
+jest.mock("@/shared/middlewares/reenviar/validate-body");
 
 describe("ReenviarRoutes unitário", () => {
   let controllerMock: ReenviarController;

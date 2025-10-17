@@ -3,9 +3,9 @@ import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { UnauthorizedError } from "@/shared/errors/Unauthorized";
 import { RouterImplementation } from "@/shared/RouterImplementation";
 import { Request, Router } from "express";
+import { validateAuthHeaders } from "@/shared/middlewares/reenviar/validate-auth-headers";
+import { validateBody } from "@/shared/middlewares/reenviar/validate-body";
 import { ReenviarController } from "../controllers/ReenviarController";
-import { validateAuthHeaders } from "../middlewares/reenviar/validate-auth-headers";
-import { validateBody } from "../middlewares/reenviar/validate-body";
 
 export class ReenviarRoutes extends RouterImplementation {
   public static readonly PATH = "/reenviar";

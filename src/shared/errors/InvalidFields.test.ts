@@ -25,6 +25,7 @@ describe("InvalidFieldsError", () => {
 
     expect(z.treeifyError).toHaveBeenCalled();
     expect(error).toBeInstanceOf(InvalidFieldsError);
+    expect(error.code).toEqual("INVALID_FIELDS");
     expect(error.error).toEqual({
       errors: [],
       properties: {

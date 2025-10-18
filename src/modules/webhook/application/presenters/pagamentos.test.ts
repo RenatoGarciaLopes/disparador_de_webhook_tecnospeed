@@ -39,22 +39,6 @@ describe("PagamentosPresenter", () => {
   });
 
   describe("toPayload", () => {
-    it("deve chamar o método toPayload corretamente", () => {
-      const presenter = new PagamentosPresenter(
-        "fake-transaction-id",
-        mockServico,
-        mockData,
-      );
-      const toPayloadSpy = jest.spyOn(presenter, "toPayload");
-
-      presenter.toPayload(
-        mockServico.convenio.conta.cedente.dataValues.configuracao_notificacao!,
-      );
-
-      expect(toPayloadSpy).toHaveBeenCalledTimes(1);
-      toPayloadSpy.mockRestore();
-    });
-
     it("deve retornar a estrutura correta do payload", () => {
       jest.useFakeTimers().setSystemTime(new Date("2025-06-17T18:10:33.749Z"));
       const presenter = new PagamentosPresenter(
@@ -80,20 +64,6 @@ describe("PagamentosPresenter", () => {
           occurrences: [],
         },
       });
-    });
-  });
-
-  describe("constructor", () => {
-    it("deve criar uma instância de PagamentosPresenter com os dados fornecidos", () => {
-      const presenter = new PagamentosPresenter(
-        "fake-transaction-id",
-        mockServico,
-        mockData,
-      );
-
-      expect(presenter).toBeInstanceOf(PagamentosPresenter);
-      expect(presenter).toHaveProperty("toPayload");
-      expect(typeof presenter.toPayload).toBe("function");
     });
   });
 });

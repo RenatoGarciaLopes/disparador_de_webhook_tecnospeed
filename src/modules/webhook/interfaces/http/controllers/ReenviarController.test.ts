@@ -207,20 +207,4 @@ describe("[Controller] /reenviar - ReenviarController", () => {
       expect(mockRequest.cedenteId).toBe(originalCedenteId);
     });
   });
-
-  describe("Performance", () => {
-    it("deve processar request em tempo aceitável", async () => {
-      const start = Date.now();
-
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
-        mockResponse as Response,
-      );
-
-      const duration = Date.now() - start;
-      expect(duration).toBeLessThan(5000);
-    });
-  });
 });

@@ -184,4 +184,171 @@ describe("[Use Case] /reenviar - ValidarServicosUseCase", () => {
       }),
     );
   });
+
+  it("deve retornar array de serviços quando todas as validações passarem", async () => {
+    const mockServicos = [
+      {
+        dataValues: {
+          id: 1,
+          status: "ativo",
+          produto: "BOLETO",
+          situacao: "disponivel",
+        },
+        convenio: {
+          conta: {
+            cedente: {
+              dataValues: {
+                id: 1,
+              },
+            },
+          },
+        },
+      },
+      {
+        dataValues: {
+          id: 2,
+          status: "ativo",
+          produto: "BOLETO",
+          situacao: "disponivel",
+        },
+        convenio: {
+          conta: {
+            cedente: {
+              dataValues: {
+                id: 1,
+              },
+            },
+          },
+        },
+      },
+    ] as unknown as Servico[];
+
+    jest
+      .spyOn(ServicoRepository.prototype, "findAllByIds")
+      .mockResolvedValue(mockServicos);
+
+    const data = {
+      product: "boleto",
+      id: [1, 2],
+      kind: "webhook",
+      type: "disponivel",
+    };
+
+    const result = await validarServicosUseCase.execute(data, 1);
+
+    expect(result).toEqual(mockServicos);
+    expect(result).toHaveLength(2);
+  });
+
+  it("deve agrupar múltiplos erros para múltiplos IDs", async () => {
+    jest
+      .spyOn(ServicoRepository.prototype, "findAllByIds")
+      .mockResolvedValue([
+        { dataValues: { id: 1, status: "inativo", produto: "BOLETO" } },
+        { dataValues: { id: 2, status: "inativo", produto: "BOLETO" } },
+      ] as unknown as Servico[]);
+
+    const data = {
+      product: "boleto",
+      id: [1, 2],
+      kind: "webhook",
+      type: "disponivel",
+    };
+
+    await expect(validarServicosUseCase.execute(data, 1)).rejects.toEqual(
+      expect.objectContaining({
+        code: "INVALID_FIELDS",
+        error: expect.objectContaining({
+          properties: expect.objectContaining({
+            id: expect.objectContaining({
+              errors: expect.arrayContaining([
+                "O serviço com o ID 1 não está ativo.",
+                "O serviço com o ID 2 não está ativo.",
+              ]),
+            }),
+          }),
+        }),
+      }),
+    );
+  });
+
+  it("deve validar todos os serviços mesmo quando encontrar erro no primeiro", async () => {
+    jest.spyOn(ServicoRepository.prototype, "findAllByIds").mockResolvedValue([
+      { dataValues: { id: 1, status: "inativo", produto: "BOLETO" } },
+      { dataValues: { id: 2 } }, // ID 3 não encontrado
+    ] as Servico[]);
+
+    const data = {
+      product: "boleto",
+      id: [1, 2, 3],
+      kind: "webhook",
+      type: "disponivel",
+    };
+
+    await expect(validarServicosUseCase.execute(data, 1)).rejects.toEqual(
+      expect.objectContaining({
+        code: "INVALID_FIELDS",
+        error: expect.objectContaining({
+          properties: expect.objectContaining({
+            id: expect.objectContaining({
+              errors: expect.any(Array),
+            }),
+          }),
+        }),
+      }),
+    );
+  });
+
+  describe("Edge cases", () => {
+    it("deve lidar com array de IDs vazio", async () => {
+      jest
+        .spyOn(ServicoRepository.prototype, "findAllByIds")
+        .mockResolvedValue([]);
+
+      const data = {
+        product: "boleto",
+        id: [],
+        kind: "webhook",
+        type: "disponivel",
+      };
+
+      const result = await validarServicosUseCase.execute(data, 1);
+      expect(result).toEqual([]);
+    });
+
+    it("deve validar corretamente com 30 IDs (máximo)", async () => {
+      const thirtyIds = Array.from({ length: 30 }, (_, i) => i + 1);
+      const mockServicos = thirtyIds.map((id) => ({
+        dataValues: {
+          id,
+          status: "ativo",
+          produto: "BOLETO",
+          situacao: "disponivel",
+        },
+        convenio: {
+          conta: {
+            cedente: {
+              dataValues: {
+                id: 1,
+              },
+            },
+          },
+        },
+      })) as unknown as Servico[];
+
+      jest
+        .spyOn(ServicoRepository.prototype, "findAllByIds")
+        .mockResolvedValue(mockServicos);
+
+      const data = {
+        product: "boleto",
+        id: thirtyIds,
+        kind: "webhook",
+        type: "disponivel",
+      };
+
+      const result = await validarServicosUseCase.execute(data, 1);
+      expect(result).toHaveLength(30);
+    });
+  });
 });

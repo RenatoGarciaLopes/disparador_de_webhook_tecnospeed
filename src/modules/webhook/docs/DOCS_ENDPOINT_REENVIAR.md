@@ -285,7 +285,7 @@ Para SH com ID 1 e Cedente com ID 1 e Conta com ID 1 possui os seguintes `Servic
 Para SH com ID 1 e Cedente com ID 1 e Conta com ID 2 possui os seguintes `Servico`s:
 
 - Servico com ID 3
-- Servico com ID 4~~
+- Servico com ID 4
 
 Se for feito uma requisição para o endpoint com os seguintes parâmetros:
 
@@ -294,11 +294,11 @@ Se for feito uma requisição para o endpoint com os seguintes parâmetros:
 - kind: webhook
 - type: disponível
 
-então deve ser montado dois `WebhookReprocessado`s com dois UUIDs diferentes.
+Então deve ser montado apenas um `WebhookReprocessado` com um único UUID.
 
 ---
 
-Os payloads acima devem ser enviados para a API da Technopeed para processamento. Como retorno, a API enviará um UUID de protocolo. Esse UUID deve ser salvo na tabela `WebhookReprocessado` na coluna `protocolo`. Caso existam múltiplos grupos (por Conta/Cedente), serão enviados múltiplos payloads e recebidos múltiplos protocolos.
+Os payloads acima devem ser enviados para a API da Technopeed para processamento. Como retorno, a API enviará um UUID de protocolo. Esse UUID deve ser salvo na tabela `WebhookReprocessado` na coluna `protocolo`.
 
 Então deve ser salvo o objeto no banco de dados na tabela `WebhookReprocessado` como JSON através da coluna `data`. Junto ao dados da requisição e o protocolo.
 

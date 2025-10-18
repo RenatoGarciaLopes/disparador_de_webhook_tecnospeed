@@ -1,7 +1,7 @@
 import { Express } from "express";
 import request from "supertest";
-import { AppHelper } from "../../helpers/app.helper";
-import { DatabaseHelper } from "../../helpers/database.helper";
+import { AppHelper } from "../../../../helpers/app.helper";
+import { DatabaseHelper } from "../../../../helpers/database.helper";
 
 describe("[Integration] Error Handlers - Express", () => {
   let app: Express;

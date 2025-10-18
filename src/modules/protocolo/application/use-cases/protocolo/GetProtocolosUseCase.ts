@@ -17,7 +17,7 @@ export class GetProtocolosUseCase {
         data.start_date,
         data.end_date,
         data.product,
-        data.servico_ids,
+        data.id,
         data.kind,
         data.type,
       );

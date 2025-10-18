@@ -400,10 +400,10 @@ describe("[HTTP Middleware] /reenviar - validateAuthHeaders", () => {
 
       const result = await validateAuthHeaders(headers);
 
-      expect(result.softwarehouse.dataValues.id).toBe(5);
-      expect(result.softwarehouse.dataValues.status).toBe("ativo");
-      expect(result.cedente.dataValues.id).toBe(50);
-      expect(result.cedente.dataValues.status).toBe("ativo");
+      expect(result.softwarehouse?.id).toBe(5);
+      expect(result.softwarehouse?.status).toBe("ativo");
+      expect(result.cedente?.id).toBe(50);
+      expect(result.cedente?.status).toBe("ativo");
     });
 
     it("deve validar fluxo completo com credenciais válidas", async () => {

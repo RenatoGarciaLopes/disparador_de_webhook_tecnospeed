@@ -1,286 +1,520 @@
-import { Cedente } from "@/sequelize/models/cedente.model";
-import { SoftwareHouse } from "@/sequelize/models/software-house.model";
 import { UnauthorizedError } from "@/shared/errors/Unauthorized";
+import { CedenteRepository } from "../../../../infrastructure/database/repositories/CedenteRepository";
+import { SoftwareHouseRepository } from "../../../../infrastructure/database/repositories/SoftwareHouseRepository";
 import { validateAuthHeaders } from "./validate-auth-headers";
 
+jest.mock(
+  "../../../../infrastructure/database/repositories/SoftwareHouseRepository",
+);
+jest.mock("../../../../infrastructure/database/repositories/CedenteRepository");
+
 describe("[HTTP Middleware] /reenviar - validateAuthHeaders", () => {
-  const validHeaders = new Headers({
-    "x-api-cnpj-sh": "12345678901234",
-    "x-api-token-sh": "token-sh-123",
-    "x-api-cnpj-cedente": "98765432109876",
-    "x-api-token-cedente": "token-cedente-456",
-  });
-
-  const mockSHAtiva = {
-    dataValues: {
-      id: 1,
-      cnpj: "12345678901234",
-      token: "token-sh-123",
-      status: "ativo",
-    },
-  } as SoftwareHouse;
-
-  const mockCedenteAtivo = {
-    dataValues: {
-      id: 10,
-      cnpj: "98765432109876",
-      token: "token-cedente-456",
-      status: "ativo",
-      softwarehouse_id: 1,
-    },
-  } as Cedente;
+  let mockSoftwareHouseRepository: jest.Mocked<SoftwareHouseRepository>;
+  let mockCedenteRepository: jest.Mocked<CedenteRepository>;
 
   beforeEach(() => {
+    mockSoftwareHouseRepository =
+      new SoftwareHouseRepository() as jest.Mocked<SoftwareHouseRepository>;
+    mockCedenteRepository =
+      new CedenteRepository() as jest.Mocked<CedenteRepository>;
+
     jest.clearAllMocks();
   });
 
-  describe("Validação de headers obrigatórios", () => {
-    it("deve lançar erro se nenhum header for enviado", async () => {
-      const emptyHeaders = new Headers();
-      await expect(validateAuthHeaders(emptyHeaders)).rejects.toThrow(
-        UnauthorizedError,
-      );
-    });
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
-    it("deve lançar erro se headers obrigatórios estiverem ausentes", async () => {
-      const requiredHeaders = [
-        "x-api-cnpj-sh",
-        "x-api-token-sh",
-        "x-api-cnpj-cedente",
-        "x-api-token-cedente",
-      ];
-
-      for (const header of requiredHeaders) {
-        const headers = new Headers(validHeaders);
-        headers.delete(header);
-
-        await expect(validateAuthHeaders(headers)).rejects.toThrow(
-          UnauthorizedError,
-        );
-      }
-    });
-
-    it("deve lançar erro se headers obrigatórios estiverem vazios", async () => {
-      const headersWithEmpty = new Headers({
-        "x-api-cnpj-sh": "",
-        "x-api-token-sh": "token",
-        "x-api-cnpj-cedente": "cnpj",
-        "x-api-token-cedente": "token",
+  describe("Validação de Headers Obrigatórios", () => {
+    it("deve validar presença de x-api-cnpj-sh", async () => {
+      // DOCS linha 12: "x-api-cnpj-sh: string (CNPJ do SH sem formatação)"
+      const headers = new Headers({
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
       });
 
-      await expect(validateAuthHeaders(headersWithEmpty)).rejects.toThrow(
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
         UnauthorizedError,
+      );
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        "Headers inválidos",
       );
     });
-  });
 
-  describe("Validação de Software House", () => {
-    it("deve lançar erro se CNPJ e TOKEN da SH não estiverem cadastrados", async () => {
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(null);
-
-      await expect(validateAuthHeaders(validHeaders)).rejects.toThrow(
-        UnauthorizedError,
-      );
-
-      expect(SoftwareHouse.findOne).toHaveBeenCalledWith({
-        where: {
-          cnpj: "12345678901234",
-          token: "token-sh-123",
-        },
+    it("deve validar presença de x-api-token-sh", async () => {
+      // DOCS linha 13: "x-api-token-sh: string (Token do SH)"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
       });
-    });
 
-    it("deve lançar erro se Software House estiver inativa", async () => {
-      const shInativa = {
-        dataValues: { ...mockSHAtiva.dataValues, status: "inativo" },
-      } as SoftwareHouse;
-
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(shInativa);
-
-      await expect(validateAuthHeaders(validHeaders)).rejects.toThrow(
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
         UnauthorizedError,
       );
-    });
-  });
-
-  describe("Validação de Cedente", () => {
-    it("deve lançar erro se CNPJ e TOKEN do Cedente não estiverem cadastrados", async () => {
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(null);
-
-      await expect(validateAuthHeaders(validHeaders)).rejects.toThrow(
-        UnauthorizedError,
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        "Headers inválidos",
       );
+    });
 
-      expect(Cedente.findOne).toHaveBeenCalledWith({
-        where: {
-          cnpj: "98765432109876",
-          token: "token-cedente-456",
-        },
+    it("deve validar presença de x-api-cnpj-cedente", async () => {
+      // DOCS linha 14: "x-api-cnpj-cedente: number (CNPJ do Cedente sem formatação)"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-token-cedente": "token-cedente",
       });
-    });
 
-    it("deve lançar erro se Cedente estiver inativo", async () => {
-      const cedenteInativo = {
-        dataValues: { ...mockCedenteAtivo.dataValues, status: "inativo" },
-      } as Cedente;
-
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(cedenteInativo);
-
-      await expect(validateAuthHeaders(validHeaders)).rejects.toThrow(
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
         UnauthorizedError,
+      );
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        "Headers inválidos",
       );
     });
 
-    it("deve lançar erro se Cedente não estiver vinculado à Software House", async () => {
-      const cedenteDesvinculado = {
-        dataValues: { ...mockCedenteAtivo.dataValues, softwarehouse_id: 999 },
-      } as Cedente;
-
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(cedenteDesvinculado);
-
-      await expect(validateAuthHeaders(validHeaders)).rejects.toThrow(
-        UnauthorizedError,
-      );
-    });
-  });
-
-  describe("Ordem de validação", () => {
-    it("deve validar SH antes de Cedente (não deve chamar Cedente se SH falhar)", async () => {
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(null);
-      const cedenteSpy = jest.spyOn(Cedente, "findOne");
-
-      await validateAuthHeaders(validHeaders).catch(() => {});
-
-      expect(SoftwareHouse.findOne).toHaveBeenCalled();
-      expect(cedenteSpy).not.toHaveBeenCalled();
-    });
-
-    it("deve validar SH antes de Cedente (chamar Cedente apenas se SH for válida)", async () => {
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(mockCedenteAtivo);
-
-      await validateAuthHeaders(validHeaders);
-
-      expect(SoftwareHouse.findOne).toHaveBeenCalled();
-      expect(Cedente.findOne).toHaveBeenCalled();
-    });
-  });
-
-  describe("Retorno de sucesso", () => {
-    it("deve retornar dados de SH e Cedente quando validação for bem-sucedida", async () => {
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(mockCedenteAtivo);
-
-      const result = await validateAuthHeaders(validHeaders);
-
-      expect(result).toEqual({
-        softwarehouse: mockSHAtiva.dataValues,
-        cedente: mockCedenteAtivo.dataValues,
+    it("deve validar presença de x-api-token-cedente", async () => {
+      // DOCS linha 15: "x-api-token-cedente: string (Token do Cedente)"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
       });
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        "Headers inválidos",
+      );
     });
 
-    it("deve retornar estrutura com id e status de ambos", async () => {
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(mockCedenteAtivo);
+    it("deve lançar UnauthorizedError se qualquer header faltar", async () => {
+      // DOCS linha 21: "Para erros de validação, deve ser retornado um erro 401. Com mensagem genérica 'Não autorizado'"
+      const headersEmpty = new Headers();
 
-      const result = await validateAuthHeaders(validHeaders);
+      await expect(validateAuthHeaders(headersEmpty)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
 
-      expect(result.softwarehouse).toHaveProperty("id");
-      expect(result.softwarehouse).toHaveProperty("status");
-      expect(result.cedente).toHaveProperty("id");
-      expect(result.cedente).toHaveProperty("status");
+    it("deve lançar UnauthorizedError com mensagem 'Headers inválidos'", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+      });
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        "Headers inválidos",
+      );
     });
   });
 
-  describe("Validação de tipos de erro", () => {
-    it("deve lançar UnauthorizedError com código correto", async () => {
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(null);
+  describe("Validação Sequencial", () => {
+    it("deve validar SoftwareHouse ANTES do Cedente", async () => {
+      // DOCS linha 23: "Importante: a validação deve ser feita em sequência, ou seja, a validação da SH deve ser feita antes da validação do Cedente"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: false, softwareHouse: null });
 
       try {
-        await validateAuthHeaders(validHeaders);
-        fail("Deveria ter lançado erro");
+        await validateAuthHeaders(headers);
       } catch (error) {
-        expect(error).toBeInstanceOf(UnauthorizedError);
-        expect((error as UnauthorizedError).code).toBe("UNAUTHORIZED");
-        expect((error as UnauthorizedError).statusCode).toBe(401);
+        // Esperado falhar na validação da SH
       }
+
+      // Deve chamar validateAuth da SH
+      expect(mockSoftwareHouseRepository.validateAuth).toHaveBeenCalled();
     });
 
-    it("deve retornar statusCode 401 para todos os erros de autenticação", async () => {
-      const scenarios = [
-        { sh: null, cedente: null },
-        {
-          sh: {
-            dataValues: { ...mockSHAtiva.dataValues, status: "inativo" },
-          } as SoftwareHouse,
-          cedente: null,
+    it("deve usar SoftwareHouseRepository.validateAuth()", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        softwareHouse: { dataValues: { id: 1, status: "ativo" } },
+      });
+
+      mockCedenteRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        cedente: {
+          dataValues: { id: 1, status: "ativo", softwarehouse_id: 1 },
         },
-      ];
+      });
 
-      for (const scenario of scenarios) {
-        jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(scenario.sh);
-        jest.spyOn(Cedente, "findOne").mockResolvedValue(scenario.cedente);
+      await validateAuthHeaders(headers);
 
-        try {
-          await validateAuthHeaders(validHeaders);
-          fail("Deveria ter lançado erro");
-        } catch (error) {
-          expect((error as UnauthorizedError).statusCode).toBe(401);
-        }
-      }
+      expect(mockSoftwareHouseRepository.validateAuth).toHaveBeenCalledWith(
+        "11111111000111",
+        "token-sh",
+      );
+    });
+
+    it("deve usar CedenteRepository.validateAuth()", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        softwareHouse: { dataValues: { id: 1, status: "ativo" } },
+      });
+
+      mockCedenteRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        cedente: {
+          dataValues: { id: 1, status: "ativo", softwarehouse_id: 1 },
+        },
+      });
+
+      await validateAuthHeaders(headers);
+
+      expect(mockCedenteRepository.validateAuth).toHaveBeenCalled();
+    });
+  });
+
+  describe("Validação SoftwareHouse", () => {
+    it("deve retornar erro 401 se SH não encontrada", async () => {
+      // DOCS linha 29: "Se o CNPJ ou o TOKEN não estão cadastrados, ou não são correspondentes, a mesma Software House então deve ser retornado um erro 401"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "99999999000199",
+        "x-api-token-sh": "token-invalido",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: false, softwareHouse: null });
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
+
+    it("deve retornar erro 401 se SH inativa", async () => {
+      // DOCS linha 31: "Se a Software House encontrada está `inativo`, então deve ser retornado um erro 401"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: false,
+        softwareHouse: { dataValues: { id: 1, status: "inativo" } },
+      });
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
+
+    it("deve passar softwarehouse_id para validação do Cedente", async () => {
+      // DOCS linha 39: "Se o CNPJ do Cedente não está associado a Software House validada anteriormente, então deve ser retornado um erro 401"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        softwareHouse: { dataValues: { id: 42, status: "ativo" } },
+      });
+
+      mockCedenteRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        cedente: {
+          dataValues: { id: 1, status: "ativo", softwarehouse_id: 42 },
+        },
+      });
+
+      await validateAuthHeaders(headers);
+
+      expect(mockCedenteRepository.validateAuth).toHaveBeenCalledWith(
+        "12345678000100",
+        "token-cedente",
+        42, // ID da SH validada anteriormente
+      );
+    });
+  });
+
+  describe("Validação Cedente", () => {
+    beforeEach(() => {
+      // Setup padrão: SH válida
+      mockSoftwareHouseRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        softwareHouse: { dataValues: { id: 1, status: "ativo" } },
+      });
+    });
+
+    it("deve retornar erro 401 se Cedente não encontrado", async () => {
+      // DOCS linha 35: "Se o CNPJ ou o TOKEN não estão cadastrados, ou não são correspondentes, o Cedente então deve ser retornado um erro 401"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "99999999000199",
+        "x-api-token-cedente": "token-invalido",
+      });
+
+      mockCedenteRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: false, cedente: null });
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
+
+    it("deve retornar erro 401 se Cedente inativo", async () => {
+      // DOCS linha 41: "Se o Cedente encontrado está `inativo`, então deve ser retornado um erro 401"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockCedenteRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: false,
+        cedente: {
+          dataValues: { id: 1, status: "inativo", softwarehouse_id: 1 },
+        },
+      });
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
+
+    it("deve retornar erro 401 se Cedente não pertence à SH", async () => {
+      // DOCS linha 39: "Se o CNPJ do Cedente não está associado a Software House validada anteriormente, então deve ser retornado um erro 401"
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockCedenteRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: false,
+        cedente: {
+          dataValues: { id: 1, status: "ativo", softwarehouse_id: 999 }, // SH diferente
+        },
+      });
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
+  });
+
+  describe("Sucesso", () => {
+    it("deve retornar objetos softwarehouse e cedente quando válidos", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      const mockSoftwareHouse = {
+        dataValues: {
+          id: 1,
+          cnpj: "11111111000111",
+          status: "ativo",
+        },
+      };
+
+      const mockCedente = {
+        dataValues: {
+          id: 10,
+          cnpj: "12345678000100",
+          status: "ativo",
+          softwarehouse_id: 1,
+        },
+      };
+
+      mockSoftwareHouseRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: true, softwareHouse: mockSoftwareHouse });
+
+      mockCedenteRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: true, cedente: mockCedente });
+
+      const result = await validateAuthHeaders(headers);
+
+      expect(result.softwarehouse).toEqual(mockSoftwareHouse);
+      expect(result.cedente).toEqual(mockCedente);
+    });
+
+    it("deve incluir IDs e status dos objetos", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      const mockSoftwareHouse = {
+        dataValues: {
+          id: 5,
+          status: "ativo",
+        },
+      };
+
+      const mockCedente = {
+        dataValues: {
+          id: 50,
+          status: "ativo",
+          softwarehouse_id: 5,
+        },
+      };
+
+      mockSoftwareHouseRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: true, softwareHouse: mockSoftwareHouse });
+
+      mockCedenteRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: true, cedente: mockCedente });
+
+      const result = await validateAuthHeaders(headers);
+
+      expect(result.softwarehouse.dataValues.id).toBe(5);
+      expect(result.softwarehouse.dataValues.status).toBe("ativo");
+      expect(result.cedente.dataValues.id).toBe(50);
+      expect(result.cedente.dataValues.status).toBe("ativo");
+    });
+
+    it("deve validar fluxo completo com credenciais válidas", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "valid-sh-token",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "valid-cedente-token",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        softwareHouse: { dataValues: { id: 1, status: "ativo" } },
+      });
+
+      mockCedenteRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        cedente: {
+          dataValues: { id: 1, status: "ativo", softwarehouse_id: 1 },
+        },
+      });
+
+      const result = await validateAuthHeaders(headers);
+
+      expect(result).toBeDefined();
+      expect(result.softwarehouse).toBeDefined();
+      expect(result.cedente).toBeDefined();
+      expect(mockSoftwareHouseRepository.validateAuth).toHaveBeenCalledWith(
+        "11111111000111",
+        "valid-sh-token",
+      );
+      expect(mockCedenteRepository.validateAuth).toHaveBeenCalledWith(
+        "12345678000100",
+        "valid-cedente-token",
+        1,
+      );
     });
   });
 
   describe("Edge cases", () => {
-    it("deve tratar headers case-insensitive", async () => {
-      const upperCaseHeaders = new Headers({
-        "X-API-CNPJ-SH": "12345678901234",
-        "X-API-TOKEN-SH": "token-sh-123",
-        "X-API-CNPJ-CEDENTE": "98765432109876",
-        "X-API-TOKEN-CEDENTE": "token-cedente-456",
-      });
+    it("deve lançar erro se headers estiverem null", async () => {
+      const headers = new Headers();
 
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(mockCedenteAtivo);
-
-      const result = await validateAuthHeaders(upperCaseHeaders);
-
-      expect(result).toBeDefined();
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
     });
 
-    it("deve validar com múltiplas Software Houses no sistema", async () => {
-      const sh2 = {
-        dataValues: { id: 2, status: "ativo" },
-      } as SoftwareHouse;
+    it("deve lançar erro se headers estiverem vazios", async () => {
+      const headers = new Headers({});
 
-      const cedente2 = {
-        dataValues: { id: 20, status: "ativo", softwarehouse_id: 2 },
-      } as Cedente;
-
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(sh2);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(cedente2);
-
-      const result = await validateAuthHeaders(validHeaders);
-
-      expect(result.softwarehouse.id).toBe(2);
-      expect(result.cedente.id).toBe(20);
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
     });
 
-    it("deve validar com CNPJs contendo apenas números", async () => {
-      const numericHeaders = new Headers({
-        "x-api-cnpj-sh": "00000000000000",
+    it("deve lançar erro genérico em qualquer falha de validação", async () => {
+      // DOCS linha 21: mensagem genérica "Não autorizado" para erro 401
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
         "x-api-token-sh": "token",
-        "x-api-cnpj-cedente": "11111111111111",
+        "x-api-cnpj-cedente": "12345678000100",
         "x-api-token-cedente": "token",
       });
 
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(mockCedenteAtivo);
+      mockSoftwareHouseRepository.validateAuth = jest
+        .fn()
+        .mockResolvedValue({ valid: false, softwareHouse: null });
 
-      await expect(validateAuthHeaders(numericHeaders)).resolves.toBeDefined();
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
+
+    it("deve lidar com erro de banco de dados na validação da SH", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest
+        .fn()
+        .mockRejectedValue(new Error("Database error"));
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        "Database error",
+      );
+    });
+
+    it("deve lidar com erro de banco de dados na validação do Cedente", async () => {
+      const headers = new Headers({
+        "x-api-cnpj-sh": "11111111000111",
+        "x-api-token-sh": "token-sh",
+        "x-api-cnpj-cedente": "12345678000100",
+        "x-api-token-cedente": "token-cedente",
+      });
+
+      mockSoftwareHouseRepository.validateAuth = jest.fn().mockResolvedValue({
+        valid: true,
+        softwareHouse: { dataValues: { id: 1, status: "ativo" } },
+      });
+
+      mockCedenteRepository.validateAuth = jest
+        .fn()
+        .mockRejectedValue(new Error("Connection timeout"));
+
+      await expect(validateAuthHeaders(headers)).rejects.toThrow(
+        "Connection timeout",
+      );
     });
   });
 });

@@ -83,7 +83,7 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
   // findById
   it("deve retornar protocolo se encontrado", async () => {
     jest.spyOn(WebhookReprocessado, "findOne").mockResolvedValue({
-      dataValues: { id: "uuid-123", status: "sent" },
+      dataValues: { id: "uuid-123" },
     } as any);
 
     const result = await repository.findById("uuid-123", 1);

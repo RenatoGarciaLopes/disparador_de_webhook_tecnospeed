@@ -7,7 +7,7 @@ import { ProtocolosController } from "../controllers/ProtocolosController";
 import { validateAuthHeaders } from "../middlewares/protocolo/validate-auth-headers";
 import { validateBody } from "../middlewares/protocolo/validate-body";
 
-export class ProtocoloRoutes extends RouterImplementation {
+export class ProtocolosRoutes extends RouterImplementation {
   public static readonly PATH = "/protocolo";
   public readonly router = Router();
 
@@ -18,7 +18,7 @@ export class ProtocoloRoutes extends RouterImplementation {
 
   protected configure(): void {
     this.router.get(
-      ProtocoloRoutes.PATH,
+      ProtocolosRoutes.PATH,
       async (req: Request & { cedenteId?: number }, res, next) => {
         try {
           const headersValidated = await validateAuthHeaders(
@@ -44,11 +44,15 @@ export class ProtocoloRoutes extends RouterImplementation {
           );
         }
       },
-      (req, res) => this.controller.getProtocolos(req, res),
+      (req, res) =>
+        this.controller.getProtocolos(
+          req as Request & { cedenteId: number },
+          res,
+        ),
     );
 
     this.router.get(
-      ProtocoloRoutes.PATH + "/:id",
+      ProtocolosRoutes.PATH + "/:id",
       async (req: Request & { cedenteId?: number }, res, next) => {
         try {
           const headersValidated = await validateAuthHeaders(
@@ -69,7 +73,11 @@ export class ProtocoloRoutes extends RouterImplementation {
           );
         }
       },
-      (req, res) => this.controller.getProtolocoById(req, res),
+      (req, res) =>
+        this.controller.getProtolocoById(
+          req as Request & { cedenteId: number },
+          res,
+        ),
     );
   }
 }

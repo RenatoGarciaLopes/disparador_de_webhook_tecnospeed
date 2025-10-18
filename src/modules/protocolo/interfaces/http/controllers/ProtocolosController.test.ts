@@ -30,7 +30,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
       mockRequest.body = {};
       mockRequest.cedenteId = 1;
       await protocolosController.getProtocolos(
-        mockRequest as Request & { cedenteId: number },
+        mockRequest as unknown as Request & { cedenteId: number },
         mockResponse as Response,
       );
       expect(statusMock).toHaveBeenCalledWith(400);
@@ -40,7 +40,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
       mockRequest.body = { start_date: "2025-10-01", end_date: "2025-09-01" };
       mockRequest.cedenteId = 1;
       await protocolosController.getProtocolos(
-        mockRequest as Request & { cedenteId: number },
+        mockRequest as unknown as Request & { cedenteId: number },
         mockResponse as Response,
       );
       expect(statusMock).toHaveBeenCalledWith(400);
@@ -57,7 +57,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
       };
       mockRequest.cedenteId = 1;
       await protocolosController.getProtocolos(
-        mockRequest as Request & { cedenteId: number },
+        mockRequest as unknown as Request & { cedenteId: number },
         mockResponse as Response,
       );
       expect(statusMock).toHaveBeenCalledWith(400);
@@ -74,7 +74,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
       };
       mockRequest.cedenteId = 1;
       await protocolosController.getProtocolos(
-        mockRequest as Request & { cedenteId: number },
+        mockRequest as unknown as Request & { cedenteId: number },
         mockResponse as Response,
       );
       expect(statusMock).toHaveBeenCalledWith(200);
@@ -85,7 +85,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
         mockRequest.params = {};
         mockRequest.cedenteId = 1;
         await protocolosController.getProtolocoById(
-          mockRequest as Request & { cedenteId: number },
+          mockRequest as unknown as Request & { cedenteId: number },
           mockResponse as Response,
         );
         expect(statusMock).toHaveBeenCalledWith(400);
@@ -95,7 +95,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
         mockRequest.params = { uuid: "uuid-invalido" };
         mockRequest.cedenteId = 1;
         await protocolosController.getProtolocoById(
-          mockRequest as Request & { cedenteId: number },
+          mockRequest as unknown as Request & { cedenteId: number },
           mockResponse as Response,
         );
         expect(statusMock).toHaveBeenCalledWith(400);
@@ -104,7 +104,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
         });
       });
 
-      it("deve retornar sucesso (200) se uuid existir e status for 'sent'", async () => {
+      it("deve retornar sucesso (200) se uuid existir", async () => {
         mockRequest.params = { uuid: "uuid-teste" };
         mockRequest.cedenteId = 1;
         await protocolosController.getProtolocoById(

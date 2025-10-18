@@ -4,7 +4,7 @@ import { UnauthorizedError } from "@/shared/errors/Unauthorized";
 import { validateAuthHeaders } from "../middlewares/protocolo/validate-auth-headers";
 import { validateBody } from "../middlewares/protocolo/validate-body";
 import { ProtocolosController } from "../controllers/ProtocolosController";
-import { ProtocoloRoutes } from "./ProtocolosRoutes";
+import { ProtocolosRoutes } from "./ProtocolosRoutes";
 
 jest.mock("@/shared/middlewares/reenviar/validate-auth-headers");
 jest.mock("@/shared/middlewares/reenviar/validate-body");
@@ -25,7 +25,7 @@ describe("ProtocoloRoutes unitário", () => {
 
   it("deve configurar a rota POST e chamar middlewares", async () => {
     // Instancia a rota
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     // Verifica se router.post foi chamado
     expect(getMock).toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe("ProtocoloRoutes unitário", () => {
   });
 
   it("deve retornar 401 se os headers não forem válidos", async () => {
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     const mockError = new UnauthorizedError("Headers inválidos");
     (validateAuthHeaders as jest.Mock).mockRejectedValue(mockError);
@@ -80,7 +80,7 @@ describe("ProtocoloRoutes unitário", () => {
   });
 
   it("deve retornar 400 se os campos do body não forem válidos", async () => {
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     const mockError = new InvalidFieldsError({
       errors: ["Campo obrigatório não informado"],
@@ -106,7 +106,7 @@ describe("ProtocoloRoutes unitário", () => {
   });
 
   it("deve retornar 500 se ocorrer um erro interno", async () => {
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     const mockError = new Error("Erro interno");
     (validateBody as jest.Mock).mockRejectedValue(mockError);
@@ -133,7 +133,7 @@ describe("ProtocoloRoutes unitário", () => {
   });
 
   it("deve retornar 500 com mensagem padrão se o erro não tiver message", async () => {
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     const mockError = { message: undefined } as any;
     (validateBody as jest.Mock).mockRejectedValue(mockError);

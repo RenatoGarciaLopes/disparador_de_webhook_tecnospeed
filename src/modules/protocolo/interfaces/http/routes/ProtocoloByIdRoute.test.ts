@@ -4,7 +4,7 @@ import { UnauthorizedError } from "@/shared/errors/Unauthorized";
 import { validateAuthHeaders } from "../middlewares/protocolo/validate-auth-headers";
 import { validateBody } from "../middlewares/protocolo/validate-body";
 import { ProtocolosController } from "../controllers/ProtocolosController";
-import { ProtocoloRoutes } from "./ProtocolosRoutes";
+import { ProtocolosRoutes } from "./ProtocolosRoutes";
 
 jest.mock("@/shared/middlewares/reenviar/validate-auth-headers");
 jest.mock("@/shared/middlewares/reenviar/validate-body");
@@ -16,7 +16,6 @@ describe("ProtocoloRoutes unitário", () => {
   beforeEach(() => {
     controllerMock = { protocolo: jest.fn() } as any;
 
-    // Mock do router.get
     getMock = jest.fn();
     jest.spyOn(require("express"), "Router").mockImplementation(() => ({
       get: getMock,
@@ -24,21 +23,16 @@ describe("ProtocoloRoutes unitário", () => {
   });
 
   it("deve configurar a rota GET e chamar middlewares", async () => {
-    // Instancia a rota
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
-    // Verifica se router.post foi chamado
     expect(getMock).toHaveBeenCalled();
 
-    // Pega os middlewares passados na chamada
-    const middlewares = getMock.mock.calls[0].slice(1); // slice(1) remove o path
+    const middlewares = getMock.mock.calls[0].slice(1);
 
-    // Deve ter 2 middlewares: valida headers + controller
     expect(middlewares.length).toBe(2);
 
     const [middlewareFn, controllerFn] = middlewares;
 
-    // Mock do req, res, next
     const req: any = { headers: {}, body: { campo: "valor" } };
     const res: any = {};
     const next = jest.fn();
@@ -55,11 +49,11 @@ describe("ProtocoloRoutes unitário", () => {
     expect(next).toHaveBeenCalled();
 
     await controllerFn(req, res);
-    expect(controllerMock.getProtoloco).toHaveBeenCalledWith(req, res);
+    expect(controllerMock.getProtolocoById).toHaveBeenCalledWith(req, res);
   });
 
   it("deve retornar 401 se os headers não forem válidos", async () => {
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     const mockError = new UnauthorizedError("Headers inválidos");
     (validateAuthHeaders as jest.Mock).mockRejectedValue(mockError);
@@ -80,7 +74,7 @@ describe("ProtocoloRoutes unitário", () => {
   });
 
   it("deve retornar 500 se ocorrer um erro interno", async () => {
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     const mockError = new Error("Erro interno");
     (validateBody as jest.Mock).mockRejectedValue(mockError);
@@ -107,7 +101,7 @@ describe("ProtocoloRoutes unitário", () => {
   });
 
   it("deve retornar 500 com mensagem padrão se o erro não tiver message", async () => {
-    new ProtocoloRoutes(controllerMock);
+    new ProtocolosRoutes(controllerMock);
 
     const mockError = { message: undefined } as any;
     (validateBody as jest.Mock).mockRejectedValue(mockError);

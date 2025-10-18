@@ -18,7 +18,7 @@ describe("[UseCase] GetProtocoloByIdUseCase - Bandeira RED", () => {
     const dto: ProtocoloParamSchemaDTO = { id: "uuid-123" };
 
     repository.findById.mockResolvedValue({
-      dataValues: { id: "uuid-123", status: "sent" },
+      dataValues: { id: "uuid-123" },
     } as any);
 
     const result = await useCase.execute(dto, 1);

@@ -207,7 +207,7 @@ describe("ErrorResponse", () => {
     });
 
     it("deve usar mensagem padrão se erro não tiver message", () => {
-      const errorWithoutMessage = { message: undefined } as Error;
+      const errorWithoutMessage = { message: undefined } as unknown as Error;
       const errorResponse =
         ErrorResponse.internalServerErrorFromError(errorWithoutMessage);
 
@@ -494,7 +494,7 @@ describe("ErrorResponse", () => {
     });
 
     it("deve usar operador nullish coalescing (??) corretamente", () => {
-      const errorWithUndefinedMessage = { message: undefined } as Error;
+      const errorWithUndefinedMessage = { message: undefined } as unknown as Error;
       const errorResponse = ErrorResponse.internalServerErrorFromError(
         errorWithUndefinedMessage,
       );

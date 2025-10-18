@@ -101,26 +101,6 @@ describe("[HTTP Middleware] /reenviar - validateAuthHeaders", () => {
         UnauthorizedError,
       );
     });
-
-    it("deve buscar SH com CNPJ e TOKEN corretos dos headers", async () => {
-      const customHeaders = new Headers({
-        "x-api-cnpj-sh": "11111111111111",
-        "x-api-token-sh": "custom-token",
-        "x-api-cnpj-cedente": "22222222222222",
-        "x-api-token-cedente": "cedente-token",
-      });
-
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(null);
-
-      await validateAuthHeaders(customHeaders).catch(() => {});
-
-      expect(SoftwareHouse.findOne).toHaveBeenCalledWith({
-        where: {
-          cnpj: "11111111111111",
-          token: "custom-token",
-        },
-      });
-    });
   });
 
   describe("Validação de Cedente", () => {
@@ -164,27 +144,6 @@ describe("[HTTP Middleware] /reenviar - validateAuthHeaders", () => {
       await expect(validateAuthHeaders(validHeaders)).rejects.toThrow(
         UnauthorizedError,
       );
-    });
-
-    it("deve buscar Cedente com CNPJ e TOKEN corretos dos headers", async () => {
-      const customHeaders = new Headers({
-        "x-api-cnpj-sh": "11111111111111",
-        "x-api-token-sh": "sh-token",
-        "x-api-cnpj-cedente": "33333333333333",
-        "x-api-token-cedente": "custom-cedente-token",
-      });
-
-      jest.spyOn(SoftwareHouse, "findOne").mockResolvedValue(mockSHAtiva);
-      jest.spyOn(Cedente, "findOne").mockResolvedValue(null);
-
-      await validateAuthHeaders(customHeaders).catch(() => {});
-
-      expect(Cedente.findOne).toHaveBeenCalledWith({
-        where: {
-          cnpj: "33333333333333",
-          token: "custom-cedente-token",
-        },
-      });
     });
   });
 

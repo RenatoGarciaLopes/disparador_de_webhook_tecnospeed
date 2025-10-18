@@ -143,6 +143,40 @@ describe("[Controller] /reenviar - ReenviarController", () => {
 
       expect(statusMock).toHaveBeenCalled();
     });
+
+    it("deve capturar exceções e retornar status 500 com ErrorResponse", async () => {
+      const errorMessage = "Erro interno do servidor";
+      const error = new Error(errorMessage);
+
+      // Força o método status a lançar um erro na primeira chamada (200)
+      // e ter sucesso na segunda chamada (500 do catch)
+      const statusMockWithError = jest
+        .fn()
+        .mockImplementationOnce(() => {
+          throw error;
+        })
+        .mockReturnValueOnce({
+          json: jsonMock,
+        });
+
+      mockResponse.status = statusMockWithError;
+
+      await reenviarController.reenviar(
+        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
+          cedenteId: number;
+        },
+        mockResponse as Response,
+      );
+
+      expect(statusMockWithError).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({
+        code: "INTERNAL_SERVER_ERROR",
+        statusCode: 500,
+        error: {
+          errors: [errorMessage],
+        },
+      });
+    });
   });
 
   describe("Chamadas aos métodos do response", () => {

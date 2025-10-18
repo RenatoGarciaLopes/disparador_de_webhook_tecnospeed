@@ -16,14 +16,14 @@ describe("ProtocoloRoutes unitário", () => {
   beforeEach(() => {
     controllerMock = { protocolo: jest.fn() } as any;
 
-    // Mock do router.post
+    // Mock do router.get
     getMock = jest.fn();
     jest.spyOn(require("express"), "Router").mockImplementation(() => ({
       get: getMock,
     }));
   });
 
-  it("deve configurar a rota POST e chamar middlewares", async () => {
+  it("deve configurar a rota GET e chamar middlewares", async () => {
     // Instancia a rota
     new ProtocoloRoutes(controllerMock);
 
@@ -31,7 +31,7 @@ describe("ProtocoloRoutes unitário", () => {
     expect(getMock).toHaveBeenCalled();
 
     // Pega os middlewares passados na chamada
-    const middlewares = getMock.mock.calls[1].slice(1); // slice(1) remove o path
+    const middlewares = getMock.mock.calls[0].slice(1); // slice(1) remove o path
 
     // Deve ter 2 middlewares: valida headers + controller
     expect(middlewares.length).toBe(2);
@@ -55,7 +55,7 @@ describe("ProtocoloRoutes unitário", () => {
     expect(next).toHaveBeenCalled();
 
     await controllerFn(req, res);
-    expect(controllerMock.getProtolocoById).toHaveBeenCalledWith(req, res);
+    expect(controllerMock.getProtoloco).toHaveBeenCalledWith(req, res);
   });
 
   it("deve retornar 401 se os headers não forem válidos", async () => {
@@ -76,32 +76,6 @@ describe("ProtocoloRoutes unitário", () => {
     expect(next).not.toHaveBeenCalled();
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalled();
-  });
-
-  it("deve retornar 400 se os campos do body não forem válidos", async () => {
-    new ProtocoloRoutes(controllerMock);
-
-    const mockError = new InvalidFieldsError({
-      errors: ["Campo obrigatório não informado"],
-    });
-    (validateBody as jest.Mock).mockRejectedValue(mockError);
-    (validateAuthHeaders as jest.Mock).mockResolvedValue({
-      cedente: { id: 123 },
-    });
-
-    const req: any = { headers: {}, body: { campo: "valor" } };
-    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    const next = jest.fn();
-
-    const middlewares = getMock.mock.calls[0].slice(1);
-    const [middlewareFn] = middlewares;
-
-    await middlewareFn(req, res, next);
-
-    expect(next).not.toHaveBeenCalled();
-
-    expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalled();
   });
 

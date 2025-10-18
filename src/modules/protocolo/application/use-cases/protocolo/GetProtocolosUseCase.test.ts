@@ -20,7 +20,7 @@ describe("[UseCase] GetProtocoloUseCase", () => {
       start_date: new Date("2025-01-01"),
       end_date: new Date("2025-01-31"),
       product: "BOLETO",
-      servico_ids: ["1", "2"],
+      id: ["1", "2"],
       kind: "webhook",
       type: "pago",
     };
@@ -35,7 +35,7 @@ describe("[UseCase] GetProtocoloUseCase", () => {
       dto.start_date,
       dto.end_date,
       dto.product,
-      dto.servico_ids,
+      dto.id,
       dto.kind,
       dto.type,
     );
@@ -48,7 +48,7 @@ describe("[UseCase] GetProtocoloUseCase", () => {
       start_date: new Date(),
       end_date: new Date(),
       product: "PIX",
-      servico_ids: ["10"],
+      id: ["10"],
       kind: "webhook",
       type: "pendente",
     };
@@ -67,7 +67,7 @@ describe("[UseCase] GetProtocoloUseCase", () => {
       dto.start_date,
       dto.end_date,
       dto.product,
-      dto.servico_ids,
+      dto.id,
       dto.kind,
       dto.type,
     );
@@ -79,7 +79,7 @@ describe("[UseCase] GetProtocoloUseCase", () => {
       start_date: new Date(),
       end_date: new Date(),
       product: "BOLETO",
-      servico_ids: [],
+      id: [],
       kind: "webhook",
       type: "cancelado",
     };

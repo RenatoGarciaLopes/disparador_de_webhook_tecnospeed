@@ -24,6 +24,7 @@ export class ProtocolosRoutes extends RouterImplementation {
           const headersValidated = await validateAuthHeaders(
             new Headers(req.headers as Record<string, string>),
           );
+
           const bodyValidated = await validateBody(req.body);
 
           req.body = bodyValidated;

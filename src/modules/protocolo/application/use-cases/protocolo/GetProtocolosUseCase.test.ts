@@ -2,6 +2,7 @@ import { WebhookReprocessadoRepository } from "../../../infrastructure/database/
 import { WebhookReprocessado } from "@/sequelize/models/webhookreprocessado.model";
 import { ProtocolosSchemaDTO } from "@/modules/protocolo/interfaces/http/validators/ProtocolosSchema";
 import { GetProtocolosUseCase } from "./GetProtocolosUseCase";
+import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 
 describe("[UseCase] GetProtocoloUseCase", () => {
   let repository: jest.Mocked<WebhookReprocessadoRepository>;
@@ -74,18 +75,52 @@ describe("[UseCase] GetProtocoloUseCase", () => {
     expect(result).toEqual(mockData);
   });
 
-  it("deve propagar erros do repositório", async () => {
+  it("deve retornar um array vazio quando não houver registros", async () => {
     const dto: ProtocolosSchemaDTO = {
       start_date: new Date(),
       end_date: new Date(),
-      product: "BOLETO",
+      product: "PIX",
       id: [],
       kind: "webhook",
-      type: "cancelado",
+      type: "pendente",
     };
 
-    repository.findAll.mockRejectedValue(new Error("Erro no banco"));
+    repository.findAll.mockResolvedValue([]);
 
-    await expect(useCase.execute(dto, 1)).rejects.toThrow("Erro no banco");
+    const result = await useCase.execute(dto, 1);
+
+    expect(repository.findAll).toHaveBeenCalledTimes(1);
+    expect(result).toEqual([]);
+  });
+
+  it("deve lançar erro se start_date e end_date não forem informados", async () => {
+    const data = {} as any;
+
+    await expect(useCase.execute(data, 1)).rejects.toThrow(
+      "Start date e end date são obrigatórios",
+    );
+
+    expect(repository.findAll).not.toHaveBeenCalled();
+  });
+
+  it("deve lançar erro interno do servidor se o repositório falhar", async () => {
+    const data = {
+      start_date: new Date("2025-01-01"),
+      end_date: new Date("2025-01-02"),
+      product: "BOLETO",
+      id: ["1", "2"],
+      kind: "webhook",
+      type: "pago",
+    };
+
+    const mockError = new Error("Erro no banco");
+
+    repository.findAll.mockRejectedValue(mockError);
+
+    await expect(useCase.execute(data, 1)).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      statusCode: 500,
+      error: { errors: ["Erro no banco"] },
+    });
   });
 });

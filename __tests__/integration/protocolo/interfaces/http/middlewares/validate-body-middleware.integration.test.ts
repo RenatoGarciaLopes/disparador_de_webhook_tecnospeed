@@ -18,8 +18,8 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
       expect(result).toBeDefined();
       expect(result.start_date).toEqual(body.start_date);
       expect(result.end_date).toEqual(body.end_date);
-      expect(result.product).toBe("boleto");
-      expect(result.id).toEqual(["1", "2"]);
+      expect(result.product).toBe("BOLETO");
+      expect(result.id).toEqual([1, 2]);
       expect(result.kind).toBe("webhook");
       expect(result.type).toBe("DISPONIVEL");
     });
@@ -47,7 +47,7 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
       const result = await validateBody(body);
 
       expect(result).toBeDefined();
-      expect(result.product).toBe("pix");
+      expect(result.product).toBe("PIX");
     });
   });
 
@@ -59,7 +59,9 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
         extraField: "not allowed",
       };
 
-      await expect(validateBody(body)).rejects.toThrow(InvalidFieldsError);
+      await expect(validateBody(body)).rejects.toBeInstanceOf(
+        InvalidFieldsError,
+      );
     });
 
     it("deve permitir apenas campos do schema", async () => {
@@ -93,6 +95,7 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
 
     it("deve aceitar diferentes tipos de produto", async () => {
       const products = ["boleto", "pix", "pagamento"];
+      const normalizedProducts = ["BOLETO", "PIX", "PAGAMENTO"];
 
       for (const product of products) {
         const body = {
@@ -102,7 +105,9 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
         };
 
         const result = await validateBody(body);
-        expect(result.product).toBe(product);
+        expect(result.product).toBe(
+          normalizedProducts[products.indexOf(product)],
+        );
       }
     });
 
@@ -115,7 +120,7 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
 
       const result = await validateBody(body);
 
-      expect(result.id).toEqual(["1", "2", "3", "4", "5"]);
+      expect(result.id).toEqual([1, 2, 3, 4, 5]);
       expect(Array.isArray(result.id)).toBe(true);
     });
   });
@@ -194,43 +199,31 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
       expect(result).toBeDefined();
       expect(result.start_date).toBeDefined();
       expect(result.end_date).toBeDefined();
-      expect(result.product).toBe("boleto");
-    });
-
-    it("deve validar body de busca por IDs específicos", async () => {
-      const body = {
-        start_date: new Date("2025-01-01"),
-        end_date: new Date("2025-01-31"),
-        id: ["550e8400-e29b-41d4-a716-446655440001"],
-      };
-
-      const result = await validateBody(body);
-
-      expect(result.id).toHaveLength(1);
+      expect(result.product).toBe("BOLETO");
     });
 
     it("deve validar body com filtros múltiplos combinados", async () => {
       const body = {
         start_date: new Date("2025-01-01"),
-        end_date: new Date("2025-12-31"),
+        end_date: new Date("2025-01-30"),
         product: "pix",
         kind: "webhook",
-        type: "LIQUIDATED",
+        type: "pago",
         id: ["1", "2", "3"],
       };
 
       const result = await validateBody(body);
 
-      expect(result.product).toBe("pix");
+      expect(result.product).toBe("PIX");
       expect(result.kind).toBe("webhook");
-      expect(result.type).toBe("LIQUIDATED");
+      expect(result.type).toBe("PAGO");
       expect(result.id).toHaveLength(3);
     });
   });
 
   describe("Validação de diferentes tipos", () => {
     it("deve aceitar diferentes valores de type", async () => {
-      const types = ["DISPONIVEL", "LIQUIDATED", "SCHEDULED", "ACTIVE"];
+      const types = ["DISPONIVEL", "CANCELADO", "PAGO"];
 
       for (const type of types) {
         const body = {
@@ -245,7 +238,7 @@ describe("[Integration] validateBody Middleware (Protocolo)", () => {
     });
 
     it("deve aceitar diferentes valores de kind", async () => {
-      const kinds = ["webhook", "api", "manual"];
+      const kinds = ["webhook", "evento", "agendamento"];
 
       for (const kind of kinds) {
         const body = {

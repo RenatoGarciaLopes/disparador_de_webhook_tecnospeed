@@ -1,8 +1,8 @@
 import { WebhookReprocessado } from "@/sequelize/models/webhookreprocessado.model";
 import { GetProtocolosUseCase } from "../../application/use-cases/protocolo/GetProtocolosUseCase";
-import { ProtocoloParamSchemaDTO } from "../../interfaces/http/validators/ProtocoloParamSchema";
-import { ProtocolosSchemaDTO } from "../../interfaces/http/validators/ProtocolosSchema";
 import { GetProtocoloByIdUseCase } from "../../application/use-cases/protocolo/GetProtocoloByIdUseCase";
+import { ProtocolosSchemaDTO } from "../../interfaces/http/validators/ProtocolosSchema";
+import { ProtocoloParamSchemaDTO } from "../../interfaces/http/validators/ProtocoloParamSchema";
 
 export class GetProtocolosService {
   constructor(

@@ -7,8 +7,17 @@ export class GetProtocoloByIdUseCase {
   ) {}
 
   async execute(data: ProtocoloParamSchemaDTO, cedenteId: number) {
+    if (!data.id) {
+      throw new Error("ID do protocolo é obrigatório");
+    }
+
     const webhookReprocessado =
       await this.webhookReprocessadoRepository.findById(data.id, cedenteId);
+
+    if (!webhookReprocessado) {
+      throw new Error("Protocolo não encontrado.");
+    }
+
     return webhookReprocessado;
   }
 }

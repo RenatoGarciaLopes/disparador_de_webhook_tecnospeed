@@ -11,26 +11,21 @@ export class WebhookReprocessadoRepository {
     kind?: string,
     type?: string,
   ) {
-    return await WebhookReprocessado.findAll({
-      where: {
-        cedente_id,
-        data_criacao: {
-          [Op.between]: [start_date, end_date],
-        },
-        product: product ? product : undefined,
-        servico_id: servico_ids ? { [Op.contains]: servico_ids } : undefined,
-        kind: kind ? kind : undefined,
-        type: type ? type : undefined,
-      },
-    });
+    const where: any = {
+      cedente_id,
+      data_criacao: { [Op.between]: [start_date, end_date] },
+      ...(product && { product }),
+      ...(servico_ids && { servico_id: { [Op.contains]: servico_ids } }),
+      ...(kind && { kind }),
+      ...(type && { type }),
+    };
+
+    return await WebhookReprocessado.findAll({ where });
   }
 
   async findById(id: string, cedente_id: number) {
     return await WebhookReprocessado.findOne({
-      where: {
-        id,
-        cedente_id,
-      },
+      where: { id, cedente_id },
     });
   }
 }

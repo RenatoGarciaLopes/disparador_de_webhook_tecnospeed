@@ -6,17 +6,18 @@ import { validateBody } from "../middlewares/protocolo/validate-body";
 import { ProtocolosController } from "../controllers/ProtocolosController";
 import { ProtocolosRoutes } from "./ProtocolosRoutes";
 
-jest.mock("@/shared/middlewares/reenviar/validate-auth-headers");
-jest.mock("@/shared/middlewares/reenviar/validate-body");
+jest.mock("../middlewares/protocolo/validate-auth-headers");
+jest.mock("../middlewares/protocolo/validate-body");
 
 describe("ProtocoloRoutes unitário", () => {
   let controllerMock: ProtocolosController;
   let getMock: jest.Mock;
 
   beforeEach(() => {
-    controllerMock = { protocolo: jest.fn() } as any;
+    controllerMock = {
+      getProtocolos: jest.fn(),
+    } as unknown as ProtocolosController;
 
-    // Mock do router.post
     getMock = jest.fn();
     jest.spyOn(require("express"), "Router").mockImplementation(() => ({
       get: getMock,
@@ -28,7 +29,7 @@ describe("ProtocoloRoutes unitário", () => {
 
     expect(getMock).toHaveBeenCalled();
 
-    const middlewares = getMock.mock.calls[1].slice(1);
+    const middlewares = getMock.mock.calls[0].slice(1);
 
     expect(middlewares.length).toBe(2);
 
@@ -50,7 +51,7 @@ describe("ProtocoloRoutes unitário", () => {
     expect(next).toHaveBeenCalled();
 
     await controllerFn(req, res);
-    expect(controllerMock.getProtolocoById).toHaveBeenCalledWith(req, res);
+    expect(controllerMock.getProtocolos).toHaveBeenCalledWith(req, res);
   });
 
   it("deve retornar 401 se os headers não forem válidos", async () => {

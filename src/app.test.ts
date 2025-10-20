@@ -1,63 +1,93 @@
-import express from "express";
-import { App } from "./app";
-import { ReenviarController } from "./modules/webhook/interfaces/http/controllers/ReenviarController";
-import { ReenviarRoutes } from "./modules/webhook/interfaces/http/routes/ReenviarRoutes";
-
-// --- Mocks ---
-jest.mock("express");
-jest.mock("./modules/webhook/interfaces/http/routes/ReenviarRoutes");
-jest.mock("./modules/webhook/interfaces/http/controllers/ReenviarController");
 jest.mock("./infrastructure/config", () => ({
   config: { NODE_ENV: "test" },
 }));
 
-describe("App", () => {
-  const mockUse = jest.fn();
-  const mockListen = jest.fn().mockReturnThis();
-  const mockOn = jest.fn();
+const useMock = jest.fn();
+const listenMock = jest.fn();
+const onMock = jest.fn();
 
+jest.mock("express", () => {
+  const expressMock = () => ({
+    use: useMock,
+    listen: listenMock.mockReturnValue({ on: onMock }),
+  });
+  (expressMock as any).json = jest.fn(() => "json-mw");
+  return expressMock;
+});
+
+const routerMock = { router: Symbol("router") };
+jest.mock("./modules/webhook/interfaces/http/routes/ReenviarRouter", () => ({
+  ReenviarRouter: jest.fn().mockImplementation(() => routerMock),
+}));
+
+import express from "express";
+import { App } from "./app";
+import { config } from "./infrastructure/config";
+
+describe("[CORE] App", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
 
-    // express() mock returns an object with use, listen, etc.
-    (express as unknown as jest.Mock).mockReturnValue({
-      use: mockUse,
-      listen: mockListen.mockImplementation((_port, cb) => {
-        cb?.(); // call the callback immediately
-        return { on: mockOn };
-      }),
-      json: jest.fn(),
+  describe("constructor", () => {
+    it("deve registrar express.json e o ReenviarRouter", () => {
+      const jsonSpy = jest.spyOn(express as any, "json");
+      const app = new App();
+      expect(jsonSpy).toHaveBeenCalled();
+      expect(useMock).toHaveBeenCalledTimes(2);
+      expect(useMock).toHaveBeenCalledWith("json-mw");
+      expect(useMock).toHaveBeenCalledWith(routerMock.router);
+      expect(app.server).toBeDefined();
     });
   });
 
-  it("should configure express, middlewares, and routes", () => {
-    const app = new App();
+  describe("start", () => {
+    let consoleLogSpy: jest.SpyInstance;
+    let consoleErrorSpy: jest.SpyInstance;
+    beforeEach(() => {
+      consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+      consoleErrorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+    });
+    afterEach(() => {
+      consoleLogSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
 
-    // ReenviarRoutes must be instantiated with a ReenviarController
-    expect(ReenviarRoutes).toHaveBeenCalledTimes(1);
-    expect(ReenviarController).toHaveBeenCalledTimes(1);
+    it("deve ligar na porta e logar informações", () => {
+      const app = new App();
+      app.start(1234);
 
-    // Middleware and routes applied to express app
-    expect(mockUse).toHaveBeenCalled();
-  });
+      expect(listenMock).toHaveBeenCalledWith(1234, expect.any(Function));
 
-  it("should start the server and log environment info", () => {
-    const app = new App();
+      const listenCb = listenMock.mock.calls[0][1] as () => void;
+      listenCb();
 
-    const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
-    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "--------------------------------",
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "TecnoSpeed - Webhook Dispatcher",
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "--------------------------------",
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        `🌐 Environment: ${config.NODE_ENV}`,
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "🚀 Server is running on port: 1234",
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "🔗 Access: http://localhost:1234/docs",
+      );
+    });
 
-    app.start(4000);
-
-    expect(mockListen).toHaveBeenCalledWith(4000, expect.any(Function));
-    expect(logSpy).toHaveBeenCalledWith("--------------------------------");
-    expect(logSpy).toHaveBeenCalledWith("TecnoSpeed - Webhook Dispatcher");
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("🌐 Environment: test"),
-    );
-    expect(mockOn).toHaveBeenCalledWith("error", console.error);
-
-    logSpy.mockRestore();
-    errorSpy.mockRestore();
+    it("deve encadear on('error', console.error)", () => {
+      const app = new App();
+      app.start(3000);
+      expect(onMock).toHaveBeenCalledWith("error", console.error);
+    });
   });
 });

@@ -61,7 +61,7 @@ project-root/
 │ │
 │ └── main.ts # Entry point Express
 │
-├── docker-compose.yml
+├── docker compose.yml
 ├── Dockerfile
 ├── .eslintrc.json
 ├── .prettierrc

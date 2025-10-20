@@ -1,38 +1,26 @@
-import { Request, Response } from "express";
-import { ReenviarSchemaDTO } from "../validators/ReenviarSchema";
+import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
+import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
+import { KINDS_REENVIOS } from "@/shared/kind-reenvios";
+import { Request, Response } from "express";
+import { ReenviarDTO } from "../dtos/ReenviarDTO";
 
 export class ReenviarController {
+  constructor(private readonly reenviarService: ReenviarService) {}
+
   public async reenviar(
-    req: Request<{}, {}, ReenviarSchemaDTO> & { cedenteId: number },
+    req: Request<{}, {}, ReenviarDTO> & {
+      softwareHouseId: number;
+      cedenteId: number;
+    },
     res: Response,
   ) {
-    // TODO: Implementar lógica completa do controller
-    // 1. Extrair dados do request (body e cedenteId)
-    // 2. Instanciar use cases e services
-    // 3. Executar ValidarServicosUseCase
-    // 4. Executar ConfigurarNotificacaoUseCase
-    // 5. Executar ReenviarService para gerar payloads
-    // 6. Enviar payloads para TechnoSpeed
-    // 7. Salvar protocolos no banco (WebhookReprocessado)
-    // 8. Retornar resposta de sucesso com:
-    //    - message: "Notificação gerada com sucesso"
-    //    - protocolos: array de UUIDs
-    //    - total: quantidade processada
-    //    - timestamp: data/hora
-    //    - product: produto processado
-    // 9. Try/catch para tratar erros:
-    //    - InvalidFieldsError → 400
-    //    - Erros genéricos → 500
-
-    // RED: Implementação vazia para os testes falharem
-    // Retorna resposta vazia sem processar nada
-    try {
-      res.status(200).json({});
-    } catch (error) {
-      res.status(500).json(
-        ErrorResponse.internalServerErrorFromError(error as Error),
-      );
-    }
+    // 1. TODO: Extrair o kind do body da requisição
+    // 2. TODO: Verificar se o kind está incluso nos tipos KINDS_REENVIOS suportados
+    // 3. TODO: Se não estiver suportado, retornar erro 501 com mensagem apropriada
+    // 4. TODO: Chamar o método correspondente do reenviarService passando o body e os dados do cedente
+    // 5. TODO: Retornar resposta 200 com o resultado
+    // 6. TODO: Tratar erros de InvalidFieldsError retornando status e payload apropriados
+    // 7. TODO: Tratar demais erros retornando erro interno padrão
   }
 }

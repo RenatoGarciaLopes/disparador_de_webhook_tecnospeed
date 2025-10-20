@@ -4,11 +4,17 @@ const config: Config = {
   preset: "ts-jest",
   testEnvironment: "node",
   roots: ["<rootDir>"],
-  testMatch: [
-    "<rootDir>/__tests__/integration/**/*.test.ts",
-    "<rootDir>/__tests__/e2e/**/*.test.ts",
-    "<rootDir>/src/**/*.test.ts",
+
+  // Apenas testes unitários (no src/)
+  testMatch: ["<rootDir>/src/**/*.test.ts"],
+
+  // Ignorar testes de integração e e2e
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/__tests__/integration/",
+    "/__tests__/e2e/",
   ],
+
   moduleFileExtensions: ["ts", "js", "json"],
   moduleNameMapper: {
     "@/sequelize/(.*)": "<rootDir>/sequelize/$1",

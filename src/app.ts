@@ -1,16 +1,14 @@
 import express, { type Express } from "express";
 import { config } from "./infrastructure/config";
-import { ReenviarController } from "./modules/webhook/interfaces/http/controllers/ReenviarController";
-import { ReenviarRoutes } from "./modules/webhook/interfaces/http/routes/ReenviarRoutes";
+import { ReenviarRouter } from "./modules/webhook/interfaces/http/routes/ReenviarRouter";
 
 export class App {
-  private server: Express;
+  public server: Express;
   constructor() {
     this.server = express();
     this.server.use(express.json());
 
-    const reenviarRoutes = new ReenviarRoutes(new ReenviarController());
-    this.server.use(reenviarRoutes.router);
+    this.server.use(new ReenviarRouter().router);
   }
 
   public start(port: number) {

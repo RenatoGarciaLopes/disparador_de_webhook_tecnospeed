@@ -1,47 +1,28 @@
-import { Servico } from "@/sequelize/models/servico.model";
-import { z } from "zod";
-import { ReenviarSchemaDTO } from "../../interfaces/http/validators/ReenviarSchema";
-import { ConfiguracaoNotificacaoService } from "../../domain/services/ConfiguracaoNotificacaoService";
-import { IConfiguracaoNotificacao } from "@/shared/interfaces/IConfiguracaoNotificacao";
-
-const PixPresenterSchema = z.object({
-  kind: z.any(),
-  method: z.any(),
-  url: z.any(),
-  headers: z.record(z.any(), z.any()),
-  body: z.object({
-    type: z.any(),
-    companyId: z.any(),
-    event: z.any(),
-    transactionId: z.any(),
-    tags: z.array(z.any()),
-    id: z.object({ pixId: z.any() }),
-  }),
-});
-
-type IPixPresenter = z.infer<typeof PixPresenterSchema>;
-
 export class PixPresenter {
-  constructor(
-    private readonly webhookReprocessadoId: string,
-    private readonly servico: Servico,
-    private readonly data: ReenviarSchemaDTO,
-  ) {}
-
-  toPayload(configuracaoNotificacao: IConfiguracaoNotificacao): IPixPresenter {
+  static toPayload(
+    url: string,
+    headers: Record<string, string>,
+    metadata: {
+      webhookReprocessadoId: string;
+      situacao: string;
+      cedenteId: number;
+      contaId: number;
+      servicoId: number;
+    },
+  ) {
     return {
-      kind: "webhook",
+      kind: "invalid",
       method: "POST",
-      url: "https://webhook.site/fake-url",
-      headers: { "content-type": "application/json" },
+      url: "invalid",
+      headers: "invalid",
       body: {
-        type: "",
-        companyId: 1,
-        event: "ACTIVE",
-        transactionId: this.webhookReprocessadoId,
-        tags: ["2", "pix", new Date().getFullYear().toString()],
+        type: "invalid",
+        companyId: "invalid",
+        event: "invalid",
+        transactionId: "invalid",
+        tags: ["invalid", "pix", "invalid"],
         id: {
-          pixId: "1",
+          pixId: "invalid",
         },
       },
     };

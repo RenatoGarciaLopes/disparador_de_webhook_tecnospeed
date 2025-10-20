@@ -11,8 +11,9 @@ export class InvalidFieldsError extends ErrorResponse {
   constructor(
     public error: IFError,
     public code: string = "INVALID_FIELDS",
+    public status: number = 400,
   ) {
-    super(code, 400, error);
+    super(code, status, error);
   }
 
   static fromZodError(error: z.ZodError) {

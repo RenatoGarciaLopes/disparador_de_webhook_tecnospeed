@@ -1,217 +1,98 @@
-// --- Mocks ---
-// IMPORTANTE: Mocks precisam ser definidos ANTES de importar qualquer módulo
-const mockConnect = jest.fn();
-const mockStart = jest.fn();
-
-jest.mock("./app", () => ({
-  App: jest.fn().mockImplementation(function (this: any) {
-    this.start = mockStart;
-    return this;
-  }),
-}));
-
-jest.mock("./infrastructure/database/database.service", () => ({
-  DatabaseService: jest.fn().mockImplementation(function (this: any) {
-    this.connect = mockConnect;
-    return this;
-  }),
-}));
-
-jest.mock("./infrastructure/config", () => ({
-  config: { PORT: 3000, NODE_ENV: "test" },
-}));
-
 import { App } from "./app";
 import { config } from "./infrastructure/config";
-import { DatabaseService } from "./infrastructure/database/database.service";
 
-describe("Server Bootstrap", () => {
-  let consoleErrorSpy: jest.SpyInstance;
-  let consoleLogSpy: jest.SpyInstance;
-  let processExitSpy: jest.SpyInstance;
+jest.mock("./infrastructure/config", () => ({
+  config: {
+    NODE_ENV: "test",
+    PORT: 3000,
+    DB_USERNAME: "user",
+    DB_PASSWORD: "password",
+    DB_DATABASE: "database",
+    DB_HOST: "localhost",
+    DB_PORT: 5432,
+    REDIS_PASSWORD: "redis_password",
+    REDIS_PORT: 6379,
+    REDIS_HOST: "localhost",
+  },
+}));
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+const mockCacheConnect = jest.fn().mockResolvedValue(undefined);
+jest.mock("./infrastructure/cache/cache.service", () => {
+  const instance = { connect: mockCacheConnect };
+  return { CacheService: { getInstance: () => instance } };
+});
 
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
-    processExitSpy = jest
-      .spyOn(process, "exit")
-      .mockImplementation((() => {}) as any);
+const mockDbConnect = jest.fn().mockResolvedValue(true);
+jest.mock("./infrastructure/database/database.service", () => {
+  return {
+    DatabaseService: jest
+      .fn()
+      .mockImplementation(() => ({ connect: mockDbConnect })),
+  };
+});
 
-    // Reset para comportamento padrão bem-sucedido
-    mockConnect.mockResolvedValue(true);
-    mockStart.mockReturnValue(undefined);
-  });
+const mockAppStart = jest.fn();
+jest.mock("./app", () => {
+  return { App: jest.fn().mockImplementation(() => ({ start: mockAppStart })) };
+});
 
-  afterEach(() => {
-    consoleErrorSpy.mockRestore();
-    consoleLogSpy.mockRestore();
-    processExitSpy.mockRestore();
-    jest.resetModules();
-  });
+describe("[CHORE] server.ts", () => {
+  describe("[FUNCTION] bootstrap", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.isolateModules(() => {
+        require("./server");
+      });
+    });
 
-  describe("Inicialização bem-sucedida", () => {
-    it("deve conectar ao banco de dados e iniciar o servidor na porta configurada", async () => {
-      mockConnect.mockResolvedValue(true);
+    it("deve estabelecer uma conexão com o banco de dados", async () => {
+      expect(mockDbConnect).toHaveBeenCalledTimes(1);
+    });
 
-      // Importa e executa o server.ts
-      require("./server");
+    it("deve estabelecer uma conexão com o cache", async () => {
+      expect(mockCacheConnect).toHaveBeenCalledTimes(1);
+    });
 
-      // Aguarda um tick para garantir que a promise do bootstrap foi resolvida
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(DatabaseService).toHaveBeenCalledTimes(1);
-      expect(mockConnect).toHaveBeenCalledTimes(1);
+    it("deve iniciar o App na porta do config", async () => {
       expect(App).toHaveBeenCalledTimes(1);
-      expect(mockStart).toHaveBeenCalledWith(config.PORT);
-      expect(mockStart).toHaveBeenCalledWith(3000);
-    });
-
-    it("deve executar DatabaseService.connect antes de App.start", async () => {
-      const callOrder: string[] = [];
-
-      mockConnect.mockImplementation(async () => {
-        callOrder.push("connect");
-        return true;
-      });
-
-      mockStart.mockImplementation(() => {
-        callOrder.push("start");
-      });
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(callOrder).toEqual(["connect", "start"]);
-    });
-
-    it("deve chamar connect após instanciar DatabaseService", async () => {
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(mockConnect).toHaveBeenCalledTimes(1);
-      expect(mockStart).toHaveBeenCalledTimes(1);
+      expect(mockAppStart).toHaveBeenCalledWith(config.PORT);
     });
   });
 
-  describe("Tratamento de erros", () => {
-    it("deve capturar erro na conexão com banco e chamar process.exit(1)", async () => {
-      const dbError = new Error("Falha na conexão com o banco");
-      mockConnect.mockRejectedValue(dbError);
+  describe("[FUNCTION] bootstrap.catch", () => {
+    let originalExit: typeof process.exit;
+    let consoleErrorSpy: jest.SpyInstance;
 
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
+    beforeEach(() => {
+      originalExit = process.exit;
+      // @ts-expect-error override for test
+      process.exit = jest.fn();
+      consoleErrorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      process.exit = originalExit;
+      consoleErrorSpy.mockRestore();
+      jest.resetModules();
+    });
+
+    it("deve chamar process.exit(1) quando o bootstrap falhar", async () => {
+      mockDbConnect.mockRejectedValueOnce(new Error("db down"));
+
+      await new Promise<void>((resolve) => {
+        jest.isolateModules(() => {
+          require("./server");
+        });
+        setImmediate(() => resolve());
+      });
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         "[error] Failed to bootstrap application:",
-        dbError,
+        expect.any(Error),
       );
-      expect(processExitSpy).toHaveBeenCalledWith(1);
-    });
-
-    it("deve executar o bloco catch quando ocorrer qualquer erro", async () => {
-      const error = new Error("Qualquer erro durante bootstrap");
-      mockConnect.mockRejectedValue(error);
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalledWith(1);
-    });
-
-    it("deve capturar erro ao iniciar servidor e chamar process.exit(1)", async () => {
-      const startError = new Error("Falha ao iniciar servidor");
-      mockStart.mockImplementationOnce(() => {
-        throw startError;
-      });
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[error] Failed to bootstrap application:",
-        startError,
-      );
-      expect(processExitSpy).toHaveBeenCalledWith(1);
-    });
-
-    it("deve chamar process.exit(1) quando connect falhar", async () => {
-      mockConnect.mockRejectedValue(new Error("DB connection failed"));
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(mockConnect).toHaveBeenCalledTimes(1);
-      expect(processExitSpy).toHaveBeenCalledWith(1);
-    });
-
-    it("deve logar a mensagem de erro completa com erro específico", async () => {
-      const specificError = new Error("Erro específico de teste");
-      mockConnect.mockRejectedValue(specificError);
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[error] Failed to bootstrap application:",
-        specificError,
-      );
-    });
-  });
-
-  describe("Ordem de execução", () => {
-    it("deve chamar connect e start na ordem correta", async () => {
-      const callOrder: string[] = [];
-
-      mockConnect.mockImplementation(async () => {
-        callOrder.push("connect");
-        return true;
-      });
-
-      mockStart.mockImplementation(() => {
-        callOrder.push("start");
-      });
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(callOrder).toEqual(["connect", "start"]);
-    });
-  });
-
-  describe("Configuração", () => {
-    it("deve usar config.PORT ao iniciar o servidor", async () => {
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(mockStart).toHaveBeenCalledWith(config.PORT);
-      expect(mockStart).toHaveBeenCalledWith(3000);
-    });
-  });
-
-  describe("Cobertura completa do bloco catch", () => {
-    it("deve tratar erro genérico e chamar process.exit com código 1", async () => {
-      const genericError = new Error("Erro genérico");
-      mockConnect.mockRejectedValue(genericError);
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(processExitSpy).toHaveBeenCalledTimes(1);
-      expect(processExitSpy).toHaveBeenCalledWith(1);
-    });
-
-    it("deve logar erro e process.exit quando bootstrap falhar", async () => {
-      const error = new Error("Teste de log");
-      mockConnect.mockRejectedValue(error);
-
-      require("./server");
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalled();
+      expect(process.exit).toHaveBeenCalledWith(1);
     });
   });
 });

@@ -1,210 +1,376 @@
+import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
+import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { Request, Response } from "express";
-import { ReenviarSchemaDTO } from "../validators/ReenviarSchema";
 import { ReenviarController } from "./ReenviarController";
 
-describe("[Controller] /reenviar - ReenviarController", () => {
-  let reenviarController: ReenviarController;
+jest.mock("@/modules/webhook/domain/services/ReenviarService");
+
+describe("[WEBHOOK] ReenviarController", () => {
+  let controller: ReenviarController;
+  let mockService: jest.Mocked<ReenviarService>;
   let mockRequest: Partial<
-    Request<{}, {}, ReenviarSchemaDTO> & { cedenteId: number }
+    Request & { softwareHouseId: number; cedenteId: number }
   >;
   let mockResponse: Partial<Response>;
-  let statusMock: jest.Mock;
   let jsonMock: jest.Mock;
+  let statusMock: jest.Mock;
 
   beforeEach(() => {
-    reenviarController = new ReenviarController();
-
     jsonMock = jest.fn();
-    statusMock = jest.fn().mockReturnValue({
-      json: jsonMock,
-    });
+    statusMock = jest.fn().mockReturnValue({ json: jsonMock });
 
-    mockResponse = {
-      status: statusMock,
-      json: jsonMock,
-    };
+    mockService = {
+      webhook: jest.fn(),
+    } as any;
+
+    controller = new ReenviarController(mockService);
 
     mockRequest = {
       body: {
         product: "BOLETO",
         id: [1, 2, 3],
         kind: "webhook",
-        type: "DISPONIVEL",
+        type: "pago",
       },
-      cedenteId: 1,
+      softwareHouseId: 1,
+      cedenteId: 2,
+      headers: {
+        "x-api-cnpj-cedente": "98.765.432/0001-10",
+      },
     };
-  });
 
-  afterEach(() => {
+    mockResponse = {
+      status: statusMock,
+      json: jsonMock,
+    };
+
     jest.clearAllMocks();
   });
 
-  describe("Integração com Use Cases", () => {
-    it("deve orquestrar ValidarServicosUseCase, ConfigurarNotificacaoUseCase e ReenviarService", async () => {
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
-        mockResponse as Response,
-      );
+  describe("Casos de sucesso", () => {
+    it("deve processar requisição válida e retornar 200", async () => {
+      const mockResponseData = { success: true, message: "Processado" };
+      mockService.webhook.mockResolvedValue(mockResponseData);
 
-      expect(statusMock).toHaveBeenCalled();
-    });
-
-    it("deve processar body e cedenteId do request", async () => {
-      mockRequest.cedenteId = 999;
-      mockRequest.body = {
-        product: "PIX",
-        id: [10, 20, 30],
-        kind: "webhook",
-        type: "PAGO",
-      };
-
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
-        mockResponse as Response,
-      );
-
-      expect(statusMock).toHaveBeenCalled();
-    });
-  });
-
-  describe("Resposta de sucesso", () => {
-    it("deve retornar status 200 com estrutura completa de resposta", async () => {
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
         mockResponse as Response,
       );
 
       expect(statusMock).toHaveBeenCalledWith(200);
-      expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: expect.any(String),
-          protocolos: expect.any(Array),
-          total: expect.any(Number),
-          timestamp: expect.any(String),
-          product: expect.any(String),
-        }),
+      expect(jsonMock).toHaveBeenCalledWith(mockResponseData);
+    });
+
+    it("deve chamar o serviço com os parâmetros corretos", async () => {
+      const mockResponseData = { success: true };
+      mockService.webhook.mockResolvedValue(mockResponseData);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(mockService.webhook).toHaveBeenCalledWith(
+        {
+          product: "BOLETO",
+          id: [1, 2, 3],
+          kind: "webhook",
+          type: "pago",
+        },
+        {
+          id: 2,
+          cnpj: "98.765.432/0001-10",
+        },
       );
     });
 
-    it("deve processar múltiplos IDs e retornar total correto", async () => {
+    it("deve usar cedenteId do request", async () => {
+      mockRequest.cedenteId = 99;
+      const mockResponseData = { success: true };
+      mockService.webhook.mockResolvedValue(mockResponseData);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(mockService.webhook).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ id: 99 }),
+      );
+    });
+
+    it("deve usar CNPJ do header x-api-cnpj-cedente", async () => {
+      mockRequest.headers = {
+        "x-api-cnpj-cedente": "11.111.111/0001-11",
+      };
+      const mockResponseData = { success: true };
+      mockService.webhook.mockResolvedValue(mockResponseData);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(mockService.webhook).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ cnpj: "11.111.111/0001-11" }),
+      );
+    });
+
+    it("deve processar diferentes tipos de product", async () => {
+      const products = ["BOLETO", "PAGAMENTO", "PIX"];
+
+      for (const product of products) {
+        jest.clearAllMocks();
+        mockRequest.body = {
+          product: product as any,
+          id: [1],
+          kind: "webhook",
+          type: "pago",
+        };
+        mockService.webhook.mockResolvedValue({ success: true });
+
+        await controller.reenviar(
+          mockRequest as Request & {
+            softwareHouseId: number;
+            cedenteId: number;
+          },
+          mockResponse as Response,
+        );
+
+        expect(statusMock).toHaveBeenCalledWith(200);
+      }
+    });
+
+    it("deve processar diferentes tipos de status", async () => {
+      const types = ["pago", "cancelado", "disponivel"];
+
+      for (const type of types) {
+        jest.clearAllMocks();
+        mockRequest.body = {
+          product: "BOLETO",
+          id: [1],
+          kind: "webhook",
+          type: type as any,
+        };
+        mockService.webhook.mockResolvedValue({ success: true });
+
+        await controller.reenviar(
+          mockRequest as Request & {
+            softwareHouseId: number;
+            cedenteId: number;
+          },
+          mockResponse as Response,
+        );
+
+        expect(statusMock).toHaveBeenCalledWith(200);
+      }
+    });
+  });
+
+  describe("Validação de kind", () => {
+    it("deve retornar 501 quando kind não é suportado", async () => {
       mockRequest.body = {
         product: "BOLETO",
-        id: [1, 2, 3, 4, 5],
-        kind: "webhook",
-        type: "DISPONIVEL",
+        id: [1],
+        kind: "email" as any,
+        type: "pago",
       };
 
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(501);
+      expect(jsonMock).toHaveBeenCalled();
+      expect(mockService.webhook).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar mensagem informando kinds suportados", async () => {
+      mockRequest.body = {
+        product: "BOLETO",
+        id: [1],
+        kind: "sms" as any,
+        type: "pago",
+      };
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(jsonMock).toHaveBeenCalled();
+      const errorResponse = jsonMock.mock.calls[0][0];
+      expect(errorResponse.code).toBe("NOT_IMPLEMENTED");
+      expect(errorResponse.statusCode).toBe(501);
+      expect(errorResponse.error.errors[0]).toContain("webhook");
+    });
+
+    it("deve aceitar kind 'webhook'", async () => {
+      mockRequest.body = {
+        product: "BOLETO",
+        id: [1],
+        kind: "webhook",
+        type: "pago",
+      };
+      mockService.webhook.mockResolvedValue({ success: true });
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
         mockResponse as Response,
       );
 
       expect(statusMock).toHaveBeenCalledWith(200);
-      expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          total: expect.any(Number),
-        }),
-      );
+      expect(mockService.webhook).toHaveBeenCalled();
     });
   });
 
-  describe("Tratamento de erros", () => {
-    it("deve capturar e tratar erros de validação (InvalidFieldsError)", async () => {
-      // Nota: validação real é feita nos middlewares
-      // Controller deve apenas propagar erros se use cases falharem
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
+  describe("Tratamento de InvalidFieldsError", () => {
+    it("deve retornar 400 quando service lança InvalidFieldsError", async () => {
+      const invalidFieldsError = new InvalidFieldsError(
+        { errors: ["Campo inválido"] },
+        "INVALID_FIELDS",
+        400,
+      );
+      mockService.webhook.mockRejectedValue(invalidFieldsError);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
         mockResponse as Response,
       );
 
-      // Se houver erro, deve ser tratado
-      expect(statusMock).toHaveBeenCalled();
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalled();
     });
 
-    it("deve retornar status 500 para erros inesperados", async () => {
-      mockRequest.body = undefined as any;
+    it("deve retornar o JSON do InvalidFieldsError", async () => {
+      const invalidFieldsError = new InvalidFieldsError(
+        { errors: ["Dados inválidos"] },
+        "INVALID_FIELDS",
+        400,
+      );
+      mockService.webhook.mockRejectedValue(invalidFieldsError);
 
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
         mockResponse as Response,
       );
 
-      expect(statusMock).toHaveBeenCalled();
+      expect(jsonMock).toHaveBeenCalled();
+      const errorResponse = jsonMock.mock.calls[0][0];
+      expect(errorResponse).toHaveProperty("code");
+      expect(errorResponse).toHaveProperty("statusCode");
+      expect(errorResponse).toHaveProperty("error");
+    });
+  });
+
+  describe("Tratamento de erros genéricos", () => {
+    it("deve retornar 500 para erros não tratados", async () => {
+      const genericError = new Error("Database error");
+      mockService.webhook.mockRejectedValue(genericError);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalled();
     });
 
-    it("deve capturar exceções e retornar status 500 com ErrorResponse", async () => {
-      const errorMessage = "Erro interno do servidor";
-      const error = new Error(errorMessage);
+    it("deve usar ErrorResponse.internalServerErrorFromError para erros genéricos", async () => {
+      const genericError = new Error("Unexpected error");
+      mockService.webhook.mockRejectedValue(genericError);
 
-      // Força o método status a lançar um erro na primeira chamada (200)
-      // e ter sucesso na segunda chamada (500 do catch)
-      const statusMockWithError = jest
-        .fn()
-        .mockImplementationOnce(() => {
-          throw error;
-        })
-        .mockReturnValueOnce({
-          json: jsonMock,
-        });
-
-      mockResponse.status = statusMockWithError;
-
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
         mockResponse as Response,
       );
 
-      expect(statusMockWithError).toHaveBeenCalledWith(500);
-      expect(jsonMock).toHaveBeenCalledWith({
-        code: "INTERNAL_SERVER_ERROR",
-        statusCode: 500,
-        error: {
-          errors: [errorMessage],
-        },
+      expect(jsonMock).toHaveBeenCalled();
+      const errorResponse = jsonMock.mock.calls[0][0];
+      expect(errorResponse.code).toBe("INTERNAL_SERVER_ERROR");
+      expect(errorResponse.statusCode).toBe(500);
+      expect(errorResponse.error.errors).toContain("Unexpected error");
+    });
+  });
+
+  describe("Integração com ReenviarService", () => {
+    it("deve chamar o método correto do service baseado no kind", async () => {
+      mockRequest.body = {
+        product: "PIX",
+        id: [5, 10],
+        kind: "webhook",
+        type: "disponivel",
+      };
+      mockService.webhook.mockResolvedValue({ success: true });
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(mockService.webhook).toHaveBeenCalledTimes(1);
+    });
+
+    it("deve passar o body completo para o service", async () => {
+      const bodyData = {
+        product: "BOLETO" as const,
+        id: [1, 2, 3, 4, 5],
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+      mockRequest.body = bodyData;
+      mockService.webhook.mockResolvedValue({ success: true });
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(mockService.webhook).toHaveBeenCalledWith(
+        bodyData,
+        expect.any(Object),
+      );
+    });
+
+    it("deve passar os dados do cedente para o service", async () => {
+      mockRequest.cedenteId = 123;
+      mockRequest.headers = {
+        "x-api-cnpj-cedente": "99.999.999/0001-99",
+      };
+      mockService.webhook.mockResolvedValue({ success: true });
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(mockService.webhook).toHaveBeenCalledWith(expect.any(Object), {
+        id: 123,
+        cnpj: "99.999.999/0001-99",
       });
     });
   });
 
-  describe("Chamadas aos métodos do response", () => {
-    it("deve chamar response.status e json em sequência", async () => {
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
+  describe("Fluxo completo", () => {
+    it("deve executar todo o fluxo com sucesso", async () => {
+      const mockResponseData = {
+        message: "Webhooks reenviados com sucesso",
+        total: 3,
+      };
+      mockService.webhook.mockResolvedValue(mockResponseData);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
         mockResponse as Response,
       );
 
-      expect(statusMock).toHaveBeenCalledTimes(1);
-      expect(jsonMock).toHaveBeenCalledTimes(1);
-    });
-
-    it("deve processar sem modificar o request original", async () => {
-      const originalBody = { ...mockRequest.body };
-      const originalCedenteId = mockRequest.cedenteId;
-
-      await reenviarController.reenviar(
-        mockRequest as Request<{}, {}, ReenviarSchemaDTO> & {
-          cedenteId: number;
-        },
-        mockResponse as Response,
-      );
-
-      expect(mockRequest.body).toEqual(originalBody);
-      expect(mockRequest.cedenteId).toBe(originalCedenteId);
+      expect(mockService.webhook).toHaveBeenCalled();
+      expect(statusMock).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith(mockResponseData);
     });
   });
 });

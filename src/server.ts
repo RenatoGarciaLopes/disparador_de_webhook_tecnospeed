@@ -1,9 +1,11 @@
 import { App } from "./app";
+import { CacheService } from "./infrastructure/cache/cache.service";
 import { config } from "./infrastructure/config";
 import { DatabaseService } from "./infrastructure/database/database.service";
 
-async function bootstrap() {
+export async function bootstrap() {
   await new DatabaseService().connect();
+  await CacheService.getInstance().connect();
 
   const app = new App();
   app.start(config.PORT);

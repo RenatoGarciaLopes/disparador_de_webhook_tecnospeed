@@ -1,74 +1,134 @@
-import { Servico } from "@/sequelize/models/servico.model";
-import { ReenviarSchemaDTO } from "../../interfaces/http/validators/ReenviarSchema";
 import { BoletoPresenter } from "./boleto";
 
-describe("BoletoPresenter", () => {
-  let mockServico: Servico;
-  let mockData: ReenviarSchemaDTO;
-
-  beforeEach(() => {
-    mockServico = {
-      dataValues: {
-        id: 1,
-      },
-      convenio: {
-        conta: {
-          dataValues: {
-            id: 2,
-          },
-          cedente: {
-            dataValues: {
-              id: 1,
-              cnpj: "fake-cnpj",
-              configuracao_notificacao: {
-                url: "https://webhook.site/fake-url",
-                headers_adicionais: [{ "content-type": "application/json" }],
-              },
-            },
-          },
+describe("[WEBHOOK] BoletoPresenter", () => {
+  describe("toPayload()", () => {
+    it("deve retornar payload com estrutura correta", () => {
+      const result = BoletoPresenter.toPayload(
+        "http://webhook.com",
+        { Authorization: "Bearer token" },
+        {
+          webhookReprocessadoId: "uuid-123",
+          situacao: "LIQUIDADO",
+          cnpjCedente: "12.345.678/0001-90",
         },
-      },
-    } as unknown as Servico;
+      );
 
-    mockData = {
-      product: "boleto",
-      id: [1, 2, 3],
-      kind: "webhook",
-      type: "disponivel",
-    } as ReenviarSchemaDTO;
+      expect(result).toHaveProperty("kind", "webhook");
+      expect(result).toHaveProperty("method", "POST");
+      expect(result).toHaveProperty("url", "http://webhook.com");
+      expect(result).toHaveProperty("headers");
+      expect(result).toHaveProperty("body");
+    });
+
+    it("deve incluir URL fornecida", () => {
+      const result = BoletoPresenter.toPayload(
+        "http://custom-webhook.com/endpoint",
+        {},
+        {
+          webhookReprocessadoId: "uuid-123",
+          situacao: "LIQUIDADO",
+          cnpjCedente: "12.345.678/0001-90",
+        },
+      );
+
+      expect(result.url).toBe("http://custom-webhook.com/endpoint");
+    });
+
+    it("deve incluir headers fornecidos", () => {
+      const headers = {
+        Authorization: "Bearer token123",
+        "X-Custom-Header": "value",
+      };
+
+      const result = BoletoPresenter.toPayload("http://webhook.com", headers, {
+        webhookReprocessadoId: "uuid-123",
+        situacao: "LIQUIDADO",
+        cnpjCedente: "12.345.678/0001-90",
+      });
+
+      expect(result.headers).toEqual(headers);
+    });
+
+    it("deve incluir CNPJ do cedente no body", () => {
+      const result = BoletoPresenter.toPayload(
+        "http://webhook.com",
+        {},
+        {
+          webhookReprocessadoId: "uuid-123",
+          situacao: "LIQUIDADO",
+          cnpjCedente: "98.765.432/0001-10",
+        },
+      );
+
+      expect(result.body.CpfCnpjCedente).toBe("98.765.432/0001-10");
+    });
+
+    it("deve incluir situacao no titulo", () => {
+      const result = BoletoPresenter.toPayload(
+        "http://webhook.com",
+        {},
+        {
+          webhookReprocessadoId: "uuid-123",
+          situacao: "REGISTRADO",
+          cnpjCedente: "12.345.678/0001-90",
+        },
+      );
+
+      expect(result.body.titulo.situacao).toBe("REGISTRADO");
+    });
+
+    it("deve incluir webhookReprocessadoId como idintegracao", () => {
+      const result = BoletoPresenter.toPayload(
+        "http://webhook.com",
+        {},
+        {
+          webhookReprocessadoId: "uuid-456",
+          situacao: "BAIXADO",
+          cnpjCedente: "12.345.678/0001-90",
+        },
+      );
+
+      expect(result.body.titulo.idintegracao).toBe("uuid-456");
+    });
+
+    it("deve gerar dataHoraEnvio no formato pt-BR", () => {
+      const result = BoletoPresenter.toPayload(
+        "http://webhook.com",
+        {},
+        {
+          webhookReprocessadoId: "uuid-123",
+          situacao: "LIQUIDADO",
+          cnpjCedente: "12.345.678/0001-90",
+        },
+      );
+
+      expect(result.body.dataHoraEnvio).toBeDefined();
+      expect(typeof result.body.dataHoraEnvio).toBe("string");
+      expect(result.body.dataHoraEnvio).not.toContain(",");
+    });
+
+    it("deve aceitar diferentes situações", () => {
+      const situacoes = ["REGISTRADO", "LIQUIDADO", "BAIXADO"];
+
+      situacoes.forEach((situacao) => {
+        const result = BoletoPresenter.toPayload(
+          "http://webhook.com",
+          {},
+          {
+            webhookReprocessadoId: "uuid-123",
+            situacao,
+            cnpjCedente: "12.345.678/0001-90",
+          },
+        );
+
+        expect(result.body.titulo.situacao).toBe(situacao);
+      });
+    });
   });
 
-  describe("toPayload", () => {
-    it("deve retornar a estrutura correta do payload", () => {
-      jest
-        .useFakeTimers()
-        .setSystemTime(new Date("2025-06-17T18:10:33.749-03:00"));
-      const presenter = new BoletoPresenter(
-        "fake-transaction-id",
-        mockServico,
-        mockData,
-      );
-      const payload = presenter.toPayload(
-        mockServico.convenio.conta.cedente.dataValues.configuracao_notificacao!,
-      );
-
-      expect(payload).toEqual({
-        kind: "webhook",
-        method: "POST",
-        url: "https://webhook.site/fake-url",
-        headers: { "content-type": "application/json" },
-        body: {
-          tipoWH: "",
-          dataHoraEnvio: "17/06/2025 18:10:33",
-          CpfCnpjCedente: "2",
-          titulo: {
-            situacao: "REGISTRADO",
-            idintegracao: "fake-transaction-id",
-            TituloNossoNumero: "",
-            TituloMovimentos: {},
-          },
-        },
-      });
+  describe("Método estático", () => {
+    it("toPayload deve ser um método estático", () => {
+      expect(typeof BoletoPresenter.toPayload).toBe("function");
     });
   });
 });

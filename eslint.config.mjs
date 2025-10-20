@@ -51,12 +51,15 @@ export default defineConfig([
 
       parserOptions: {
         project: "./tsconfig.json",
-        tsconfigRootDir: ".",
+        tsconfigRootDir: __dirname,
         allowDefaultProject: true,
       },
     },
 
     rules: {
+      // Disable base rule as it doesn't understand TypeScript syntax well
+      "no-unused-vars": "off",
+
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-floating-promises": "warn",
       "@typescript-eslint/no-unsafe-return": "off",
@@ -64,7 +67,7 @@ export default defineConfig([
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
-      quotes: ["error", "double"],
+      quotes: ["error", "double", { avoidEscape: true }],
 
       "prettier/prettier": [
         "error",
@@ -80,7 +83,6 @@ export default defineConfig([
           varsIgnorePattern: "^_",
           caughtErrorsIgnorePattern: "^_",
           ignoreRestSiblings: true,
-          types: "all",
         },
       ],
     },

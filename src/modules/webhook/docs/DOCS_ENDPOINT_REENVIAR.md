@@ -103,7 +103,7 @@ Caso a configuração na Conta não exista, então será utilizada a configuraç
 
 Após a validação dos parâmetros, é realizado o processamento da notificação.
 
-Para cada grupo de `Servico`s (por Conta ou, se não houver, por Cedente) deve ser gerado um UUID — chamado aqui de `webhook_reprocessado`. Com base no `product` enviado na requisição, o payload a ser enviado para a TechnoSpeed será montado seguindo um dos modelos abaixo.
+Para cada grupo de `Servico`s (por Conta ou, se não houver, por Cedente) deve ser gerado um UUID — chamado aqui de `webhook_reprocessado`. Com base no `product` enviado na requisição, o payload a ser enviado para a Tecnospeed será montado seguindo um dos modelos abaixo.
 
 #### Tabela de Situações para mapeamento do type
 
@@ -113,7 +113,7 @@ Para cada grupo de `Servico`s (por Conta ou, se não houver, por Cedente) deve s
 | cancelado  | BAIXADO    | CANCELLED        | REJECTED   |
 | pago       | LIQUIDADO  | PAID             | LIQUIDATED |
 
-#### Mapeamento do payload para api da TechnoSpeed
+#### Mapeamento do payload para api da Tecnospeed
 
 Para simular a api utilize a url de envio: ([https://plug-retry.free.beeceptor.com](https://plug-retry.free.beeceptor.com)) A api aceita apenas o método POST. E retorna um UUID de protocolo.
 
@@ -125,7 +125,7 @@ Para simular a api utilize a url de envio: ([https://plug-retry.free.beeceptor.c
 
 ##### Boleto
 
-O mapeamento do serviço de boleto para o payload da api da TechnoSpeed é:
+O mapeamento do serviço de boleto para o payload da api da Tecnospeed é:
 
 ```json
 {
@@ -157,7 +157,7 @@ O mapeamento do serviço de boleto para o payload da api da TechnoSpeed é:
 | method    | ENUM   | POST                                                      |
 | url       | string | url encontrada dentro da configuração da notificação      |
 | headers   | object | headers encontrados dentro da configuração da notificação |
-| body      | object | body do payload da api da TechnoSpeed                     |
+| body      | object | body do payload da api da Tecnospeed                      |
 
 **Objeto body:**
 
@@ -174,7 +174,7 @@ O mapeamento do serviço de boleto para o payload da api da TechnoSpeed é:
 
 ##### Pagamento
 
-O mapeamento do serviço de pagamento para o payload da api da TechnoSpeed é:
+O mapeamento do serviço de pagamento para o payload da api da Tecnospeed é:
 
 ```json
 {
@@ -203,7 +203,7 @@ O mapeamento do serviço de pagamento para o payload da api da TechnoSpeed é:
 | method    | ENUM   | POST                                                      |
 | url       | string | url encontrada dentro da configuração da notificação      |
 | headers   | object | headers encontrados dentro da configuração da notificação |
-| body      | object | body do payload da api da TechnoSpeed                     |
+| body      | object | body do payload da api da Tecnospeed                      |
 
 **Objeto body:**
 
@@ -218,7 +218,7 @@ O mapeamento do serviço de pagamento para o payload da api da TechnoSpeed é:
 
 ##### Pix
 
-O mapeamento do serviço de pix para o payload da api da TechnoSpeed é:
+O mapeamento do serviço de pix para o payload da api da Tecnospeed é:
 
 ```json
 {
@@ -249,7 +249,7 @@ O mapeamento do serviço de pix para o payload da api da TechnoSpeed é:
 | method    | ENUM   | POST                                                      |
 | url       | string | url encontrada dentro da configuração da notificação      |
 | headers   | object | headers encontrados dentro da configuração da notificação |
-| body      | object | body do payload da api da TechnoSpeed                     |
+| body      | object | body do payload da api da Tecnospeed                      |
 
 **Objeto body:**
 
@@ -263,9 +263,9 @@ O mapeamento do serviço de pix para o payload da api da TechnoSpeed é:
 | id            | object | objeto id                                                                   |
 | id.pixId      | string | ID do Servico                                                               |
 
-#### Envio dos payloads para a API da TechnoSpeed
+#### Envio dos payloads para a API da Tecnospeed
 
-Os payloads acima devem ser enviados para a API da TechnoSpeed para processamento. Como retorno, a API enviará um UUID de protocolo. Esse UUID deve ser salvo na tabela `WebhookReprocessado` na coluna `protocolo`. Caso existam múltiplos grupos (por Conta/Cedente), serão enviados múltiplos payloads e recebidos múltiplos protocolos.
+Os payloads acima devem ser enviados para a API da Tecnospeed para processamento. Como retorno, a API enviará um UUID de protocolo. Esse UUID deve ser salvo na tabela `WebhookReprocessado` na coluna `protocolo`. Caso existam múltiplos grupos (por Conta/Cedente), serão enviados múltiplos payloads e recebidos múltiplos protocolos.
 
 Então deve ser salvo o objeto no banco de dados na tabela `WebhookReprocessado` como JSON através da coluna `data`. Junto ao dados da requisição e o protocolo.
 

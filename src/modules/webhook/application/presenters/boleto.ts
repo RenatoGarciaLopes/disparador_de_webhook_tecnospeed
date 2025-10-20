@@ -1,54 +1,27 @@
-import { Servico } from "@/sequelize/models/servico.model";
-import { IConfiguracaoNotificacao } from "@/shared/interfaces/IConfiguracaoNotificacao";
-import { z } from "zod";
-import { ReenviarSchemaDTO } from "../../interfaces/http/validators/ReenviarSchema";
-
-const BoletoPresenterSchema = z.object({
-  kind: z.any(),
-  method: z.any(),
-  url: z.any(),
-  headers: z.any(),
-  body: z.object({
-    tipoWH: z.any(),
-    dataHoraEnvio: z.any(),
-    CpfCnpjCedente: z.any(),
-    titulo: z.object({
-      situacao: z.any(),
-      idintegracao: z.any(),
-      TituloNossoNumero: z.any(),
-      TituloMovimentos: z.any(),
-    }),
-  }),
-});
-
-type IBoletoPresenter = z.infer<typeof BoletoPresenterSchema>;
-
 export class BoletoPresenter {
-  constructor(
-    private readonly webhookReprocessadoId: string,
-    private readonly servico: Servico,
-    private readonly data: ReenviarSchemaDTO,
-  ) {}
-
-  toPayload(
-    configuracaoNotificacao: IConfiguracaoNotificacao,
-  ): IBoletoPresenter {
+  static toPayload(
+    url: string,
+    headers: Record<string, string>,
+    metadata: {
+      webhookReprocessadoId: string;
+      situacao: string;
+      cnpjCedente: string;
+    },
+  ) {
     return {
-      kind: "webhook",
-      method: "POST",
-      url: "https://webhook.site/fake-url",
-      headers: { "content-type": "application/json" },
+      kind: "invalid",
+      method: "invalid",
+      url: "invalid",
+      headers: "invalid",
       body: {
-        tipoWH: "",
-        dataHoraEnvio: new Date()
-          .toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" })
-          .replace(",", ""),
-        CpfCnpjCedente: "2",
+        tipoWH: "invalid",
+        dataHoraEnvio: "invalid",
+        CpfCnpjCedente: "invalid",
         titulo: {
-          situacao: "REGISTRADO",
-          idintegracao: this.webhookReprocessadoId,
-          TituloNossoNumero: "",
-          TituloMovimentos: {},
+          situacao: "invalid",
+          idintegracao: "invalid",
+          TituloNossoNumero: "invalid",
+          TituloMovimentos: "invalid",
         },
       },
     };

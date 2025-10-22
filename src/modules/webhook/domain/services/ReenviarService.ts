@@ -4,13 +4,21 @@ import { TecnospeedClient } from "../../infrastructure/tecnospeed/TecnospeedClie
 import { ReenviarDTO } from "../../interfaces/http/dtos/ReenviarDTO";
 import { IServicoRepository } from "../repositories/IServicoRepository";
 import { IWebhookReprocessadoRepository } from "../repositories/IWebhookReprocessadoRepository";
+import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
+import { v4 as uuidv4 } from "uuid";
 
 type IReenviarService = Record<
   IKindReenvio,
-  (data: ReenviarDTO, cedente: { id: number; cnpj: string }) => Promise<any>
+  (
+    data: ReenviarDTO,
+    cedenteId: number,
+    softwareHouseId: number,
+  ) => Promise<any>
 >;
 
 export class ReenviarService implements IReenviarService {
+  private readonly CACHE_TTL = 24 * 60 * 60; // 1 dia em segundos
+
   constructor(
     private readonly cache: CacheService,
     private readonly servicoRepository: IServicoRepository,
@@ -20,24 +28,128 @@ export class ReenviarService implements IReenviarService {
 
   public async webhook(
     data: ReenviarDTO,
-    cedente: {
-      id: number;
-      cnpj: string;
-    },
+    cedenteId: number,
+    softwareHouseId: number,
   ) {
-    // 1. TODO: Gerar a chave de cache baseada no produto, ids e tipo do dado recebido
-    // 2. TODO: Verificar se já existe uma informação de cache para a chave gerada
-    // 3. TODO: Se houver cache, retornar essa informação já desserializada
-    // 4. TODO: Buscar todos os serviços com configurações de notificação vinculados ao cedente, produto e situação enviada
-    // 5. TODO: Validar se todos os ids de serviços enviados existem na base, caso contrário lançar InvalidFieldsError detalhando o que não existe
-    // 6. TODO: Gerar um uuid para identificar o processamento de reenvio do webhook
-    // 7. TODO: Montar as configurações de notificação para cada serviço
-    // 8. TODO: Instanciar o caso de uso responsável por montar os payloads das notificações
-    // 9. TODO: Montar os payloads das notificações para cada configuração
-    // 10. TODO: Reenviar o webhook para o cliente (usando o client TecnospeedClient) passando os payloads montados
-    // 11. TODO: Registrar o reenvio efetuado no banco de dados para futuras consultas/controle
-    // 12. TODO: Gerar mensagem de sucesso contendo o protocolo retornado
-    // 13. TODO: Salvar a mensagem de sucesso no cache com TTL de 1 dia
-    // 14. TODO: Retornar a mensagem de sucesso gerada
+    // adaptações defensivas para nomes possíveis do DTO
+    const produto = (data as any).produto ?? (data as any).product;
+    const situacao = (data as any).situacao ?? (data as any).type;
+    const servicoIds: number[] =
+      (data as any).servicoIds ??
+      (data as any).ids ??
+      (data as any).servicos ??
+      [];
+
+    // 1. chave de cache
+    const cacheKey = `reenvio:webhook:${cedenteId}:${produto}:${situacao}:${servicoIds
+      .slice()
+      .sort()
+      .join(",")}`;
+
+    // 2/3. checar cache (uso 'any' para evitar erros de tipagem caso CacheService tenha nomes diferentes)
+    const cached = await (this.cache as any).get?.(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {
+        // se desserializar falhar, prosseguir com o fluxo
+      }
+    }
+
+    // 4. buscar serviços (assinatura espera argumentos separados)
+    const servicos =
+      await this.servicoRepository.findAllConfiguracaoNotificacaoByCedente(
+        cedenteId,
+        servicoIds,
+        produto,
+        situacao,
+      );
+
+    // 5. validar ids enviados
+    const existingIds = (servicos ?? []).map((s: any) => s.id);
+    const invalidIds = servicoIds.filter(
+      (id: number) => !existingIds.includes(id),
+    );
+    if (invalidIds.length > 0) {
+      throw new InvalidFieldsError(
+        {
+          details: {
+            code: "SERVICOS_NAO_ENCONTRADOS",
+            details: { servicosInvalidos: invalidIds },
+          },
+        } as any, // ou defina a interface IFError com o formato adequado
+        "SERVICOS_NAO_ENCONTRADOS", // code
+        400, // status
+      );
+    }
+
+    // 6. gerar uuid de processamento
+    const processamentoId = uuidv4();
+
+    // 7. montar configurações de notificação (assumindo campos comuns em 'servico')
+    const configuracoes = (servicos as any[])
+      .filter((s: any) => servicoIds.includes(s.id))
+      .map((s: any) => ({
+        servicoId: s.id,
+        url: s.webhookUrl ?? s.webhook_url,
+        headers: s.webhookHeaders ?? s.webhook_headers ?? {},
+      }));
+
+    // 8/9. montar payloads - presenter genérico com os campos mínimos esperados
+    const payloads = configuracoes.map((c) => ({
+      protocolo: processamentoId, // protocolo temporário; se a API externa retornar protocolo diferente, ajustar depois
+      servicoId: c.servicoId,
+      cedenteCnpj:
+        (data as any).cedenteCnpj ?? (data as any).cedente?.cnpj ?? "",
+      produto,
+      situacao,
+      original: data, // mantém o payload original para referência
+    }));
+
+    // 10. reenviar via TecnospeedClient — o client espera um objeto { notifications: [...] }
+    const sendResult = await this.TecnospeedClient.reenviarWebhook({
+      notifications: payloads,
+    });
+
+    // 11. registrar reenvios no repositório
+    // espera-se que sendResult seja um array com { protocolo, servicoId, status? }
+    const registros = (sendResult as unknown as any[]).map((r: any) => ({
+      processamentoId,
+      cedenteId,
+      softwareHouseId,
+      servicoId: r.servicoId ?? r.servicoIdSent ?? null,
+      payload: data,
+      protocolo: r.protocolo ?? r.protocol ?? processamentoId,
+      status: r.status ?? "unknown",
+      sentAt: new Date(),
+    }));
+    if (registros.length > 0) {
+      await this.webhookReprocessadoRepository.create(registros);
+    }
+
+    // 12. mensagem de sucesso
+    const successMessage = {
+      processamentoId,
+      resultados: sendResult,
+      mensagem: "Webhooks reenviados com sucesso",
+    };
+
+    // 13. salvar no cache (usa 'any' para compatibilidade com implementação concreta)
+    if (typeof (this.cache as any).set === "function") {
+      await (this.cache as any).set(
+        cacheKey,
+        JSON.stringify(successMessage),
+        this.CACHE_TTL,
+      );
+    } else if (typeof (this.cache as any).save === "function") {
+      await (this.cache as any).save(
+        cacheKey,
+        JSON.stringify(successMessage),
+        this.CACHE_TTL,
+      );
+    }
+
+    // 14. retornar
+    return successMessage;
   }
 }

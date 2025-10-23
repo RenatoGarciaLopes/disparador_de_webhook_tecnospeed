@@ -1,5 +1,6 @@
 import express, { type Express } from "express";
 import { config } from "./infrastructure/config";
+import { ProtocolosRoutes } from "./modules/protocolo/interfaces/http/routes/ProtocolosRoutes";
 import { ReenviarRouter } from "./modules/webhook/interfaces/http/routes/ReenviarRouter";
 
 export class App {
@@ -8,6 +9,7 @@ export class App {
     this.server = express();
     this.server.use(express.json());
 
+    this.server.use(new ProtocolosRoutes().router);
     this.server.use(new ReenviarRouter().router);
   }
 

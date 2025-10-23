@@ -15,9 +15,17 @@ jest.mock("express", () => {
   return expressMock;
 });
 
-const routerMock = { router: Symbol("router") };
+const protocolosRouterMock = { router: Symbol("router") };
+jest.mock(
+  "./modules/protocolo/interfaces/http/routes/ProtocolosRoutes",
+  () => ({
+    ProtocolosRoutes: jest.fn().mockImplementation(() => protocolosRouterMock),
+  }),
+);
+
+const reenviarRouterMock = { router: Symbol("router") };
 jest.mock("./modules/webhook/interfaces/http/routes/ReenviarRouter", () => ({
-  ReenviarRouter: jest.fn().mockImplementation(() => routerMock),
+  ReenviarRouter: jest.fn().mockImplementation(() => reenviarRouterMock),
 }));
 
 import express from "express";
@@ -30,13 +38,14 @@ describe("[CORE] App", () => {
   });
 
   describe("constructor", () => {
-    it("deve registrar express.json e o ReenviarRouter", () => {
+    it("deve registrar express.json, o ProtocolosRoutes e o ReenviarRouter", () => {
       const jsonSpy = jest.spyOn(express as any, "json");
       const app = new App();
       expect(jsonSpy).toHaveBeenCalled();
-      expect(useMock).toHaveBeenCalledTimes(2);
+      expect(useMock).toHaveBeenCalledTimes(3);
       expect(useMock).toHaveBeenCalledWith("json-mw");
-      expect(useMock).toHaveBeenCalledWith(routerMock.router);
+      expect(useMock).toHaveBeenCalledWith(protocolosRouterMock.router);
+      expect(useMock).toHaveBeenCalledWith(reenviarRouterMock.router);
       expect(app.server).toBeDefined();
     });
   });

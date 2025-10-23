@@ -11,7 +11,11 @@ import { MontarNotificacaoUseCase } from "../../application/use-cases/MontarNoti
 
 type IReenviarService = Record<
   IKindReenvio,
-  (data: ReenviarDTO, cedente: { id: number; cnpj: string }) => Promise<any>
+  (
+    data: ReenviarDTO,
+    cedenteId: number,
+    softwareHouseId: number,
+  ) => Promise<any>
 >;
 
 export class ReenviarService implements IReenviarService {

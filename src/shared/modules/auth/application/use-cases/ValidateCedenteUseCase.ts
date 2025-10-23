@@ -11,7 +11,11 @@ export class ValidateCedenteUseCase {
       softwareHouseId,
     );
 
-    if (!cedente || cedente.status === "inativo") {
+    if (!cedente) {
+      throw new UnauthorizedError("Credenciais inválidas");
+    }
+
+    if (cedente.status === "inativo") {
       throw new UnauthorizedError("Credenciais inválidas");
     }
 

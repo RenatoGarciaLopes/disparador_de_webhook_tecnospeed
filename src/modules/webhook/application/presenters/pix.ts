@@ -11,18 +11,18 @@ export class PixPresenter {
     },
   ) {
     return {
-      kind: "invalid",
+      kind: "webhook",
       method: "POST",
-      url: "invalid",
-      headers: "invalid",
+      url,
+      headers,
       body: {
-        type: "invalid",
-        companyId: "invalid",
-        event: "invalid",
-        transactionId: "invalid",
-        tags: ["invalid", "pix", "invalid"],
+        type: "",
+        companyId: metadata.cedenteId,
+        event: metadata.situacao,
+        transactionId: metadata.webhookReprocessadoId,
+        tags: [metadata.contaId, "pix", new Date().getFullYear().toString()],
         id: {
-          pixId: "invalid",
+          pixId: metadata.servicoId.toString(),
         },
       },
     };

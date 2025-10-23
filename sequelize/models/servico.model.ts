@@ -34,30 +34,30 @@ export class Servico extends Model<
   @PrimaryKey
   @AutoIncrement
   @Column({ type: DataType.INTEGER })
-  declare id: number;
+  declare public id: number;
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
-  declare data_criacao: Date;
+  declare public data_criacao: Date;
 
   @ForeignKey(() => Convenio)
   @Column({ type: DataType.INTEGER })
-  declare convenio_id: number;
+  declare public convenio_id: number;
 
   @Column({
     type: DataType.ENUM("BOLETO", "PAGAMENTO", "PIX"),
     allowNull: false,
   })
-  declare produto: "BOLETO" | "PAGAMENTO" | "PIX";
+  declare public produto: "BOLETO" | "PAGAMENTO" | "PIX";
 
   @Column({ type: DataType.STRING, allowNull: false })
-  declare status: string;
+  declare public status: string;
 
   @Column({
     type: DataType.ENUM("disponivel", "cancelado", "pago"),
     allowNull: false,
   })
-  declare situacao: "disponivel" | "cancelado" | "pago";
+  declare public situacao: "disponivel" | "cancelado" | "pago";
 
   @BelongsTo(() => Convenio)
-  declare convenio: Convenio;
+  declare public convenio: Convenio;
 }

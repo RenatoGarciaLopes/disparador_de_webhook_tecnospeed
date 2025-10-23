@@ -54,4 +54,8 @@ export class CacheService {
   public async get(key: string): Promise<string | null> {
     return await this.client.get(key);
   }
+
+  public async flushAll(): Promise<void> {
+    await this.client.flushAll();
+  }
 }

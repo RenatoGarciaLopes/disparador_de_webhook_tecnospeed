@@ -1,19 +1,19 @@
 import { IConfiguracaoNotificacao } from "@/modules/cedente/interfaces/IConfiguracaoNotificacao";
 import { Optional } from "sequelize";
-import { SoftwareHouse } from "./software-house.model";
 import {
-  BelongsTo,
   AutoIncrement,
+  BelongsTo,
   Column,
   DataType,
+  ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
-  ForeignKey,
   Unique,
-  HasMany,
 } from "sequelize-typescript";
 import { Conta } from "./conta.model";
+import { SoftwareHouse } from "./software-house.model";
 
 interface CedenteAtributes {
   id: number;
@@ -26,7 +26,10 @@ interface CedenteAtributes {
 }
 
 interface CedenteCreationAttributes
-  extends Optional<CedenteAtributes, "id" | "configuracao_notificacao"> {}
+  extends Optional<
+    CedenteAtributes,
+    "id" | "data_criacao" | "configuracao_notificacao"
+  > {}
 
 @Table({
   tableName: "Cedente",
@@ -39,31 +42,31 @@ export class Cedente extends Model<
   @PrimaryKey
   @AutoIncrement
   @Column({ type: DataType.INTEGER })
-  declare id: number;
+  declare public id: number;
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
-  data_criacao!: Date;
+  declare public data_criacao: Date;
 
   @Unique
   @Column({ type: DataType.STRING })
-  cnpj!: string;
+  declare public cnpj: string;
 
   @Column({ type: DataType.STRING })
-  token!: string;
+  declare public token: string;
 
   @ForeignKey(() => SoftwareHouse)
   @Column({ type: DataType.INTEGER })
-  softwarehouse_id!: number;
+  declare public softwarehouse_id: number;
 
   @Column({ type: DataType.STRING })
-  status!: string;
+  declare public status: string;
 
   @Column({ type: DataType.JSONB })
-  declare configuracao_notificacao: IConfiguracaoNotificacao | null;
+  declare public configuracao_notificacao: IConfiguracaoNotificacao | null;
 
   @HasMany(() => Conta)
-  declare contas: Conta[];
+  declare public contas: Conta[];
 
   @BelongsTo(() => SoftwareHouse)
-  declare softwarehouse: SoftwareHouse;
+  declare public softwarehouse: SoftwareHouse;
 }

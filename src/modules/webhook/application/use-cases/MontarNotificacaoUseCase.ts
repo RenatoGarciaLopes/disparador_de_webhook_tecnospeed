@@ -20,7 +20,6 @@ export class MontarNotificacaoUseCase {
   ) {}
 
   public execute(params: { cnpjCedente: string }) {
-    // Caso não existam configurações, retorna array vazio
     if (!this.configuracaoNotificacoes?.length) return [];
 
     const payloads: any[] = [];
@@ -29,7 +28,6 @@ export class MontarNotificacaoUseCase {
       const { configuracaoNotificacao } = config;
       const headers: Record<string, string> = {};
 
-      // Header principal (opcional)
       if (
         configuracaoNotificacao.header &&
         configuracaoNotificacao.header_campo
@@ -38,7 +36,6 @@ export class MontarNotificacaoUseCase {
           configuracaoNotificacao.header_valor;
       }
 
-      // Headers adicionais
       if (Array.isArray(configuracaoNotificacao.headers_adicionais)) {
         configuracaoNotificacao.headers_adicionais.forEach((item) => {
           Object.assign(headers, item);
@@ -64,7 +61,7 @@ export class MontarNotificacaoUseCase {
           break;
 
         default:
-          continue; // produto não suportado
+          continue;
       }
 
       if (payload) payloads.push(payload);

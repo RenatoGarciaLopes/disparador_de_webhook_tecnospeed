@@ -1,7 +1,7 @@
 import { Optional } from "sequelize";
 import {
-  BelongsTo,
   AutoIncrement,
+  BelongsTo,
   Column,
   DataType,
   ForeignKey,
@@ -21,7 +21,7 @@ interface ConvenioAttributes {
 }
 
 interface ConvenioCreationAttributes
-  extends Optional<ConvenioAttributes, "id"> {}
+  extends Optional<ConvenioAttributes, "id" | "data_criacao"> {}
 
 @Table({
   tableName: "Convenio",
@@ -34,21 +34,21 @@ export class Convenio extends Model<
   @PrimaryKey
   @AutoIncrement
   @Column({ type: DataType.INTEGER })
-  declare id: number;
+  declare public id: number;
 
   @Column({ type: DataType.STRING })
-  numero_convenio!: string;
+  declare public numero_convenio: string;
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
-  data_criacao!: Date;
+  declare public data_criacao: Date;
 
   @ForeignKey(() => Conta)
   @Column({ type: DataType.INTEGER })
-  declare conta_id: number;
+  declare public conta_id: number;
 
   @HasMany(() => Servico)
-  declare servicos: Servico[];
+  declare public servicos: Servico[];
 
   @BelongsTo(() => Conta)
-  declare conta: Conta;
+  declare public conta: Conta;
 }

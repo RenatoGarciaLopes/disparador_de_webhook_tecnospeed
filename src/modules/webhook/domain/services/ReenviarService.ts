@@ -1,21 +1,17 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
+import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { IKindReenvio } from "@/shared/kind-reenvios";
+import { v4 as uuidv4 } from "uuid";
+import { ConfiguracaoNotificacaoUseCase } from "../../application/use-cases/ConfiguracaoNotificacaoUseCase";
+import { MontarNotificacaoUseCase } from "../../application/use-cases/MontarNotificacaoUseCase";
 import { TecnospeedClient } from "../../infrastructure/tecnospeed/TecnospeedClient";
 import { ReenviarDTO } from "../../interfaces/http/dtos/ReenviarDTO";
 import { IServicoRepository } from "../repositories/IServicoRepository";
 import { IWebhookReprocessadoRepository } from "../repositories/IWebhookReprocessadoRepository";
-import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
-import { v4 as uuidv4 } from "uuid";
-import { ConfiguracaoNotificacaoUseCase } from "../../application/use-cases/ConfiguracaoNotificacaoUseCase";
-import { MontarNotificacaoUseCase } from "../../application/use-cases/MontarNotificacaoUseCase";
 
 type IReenviarService = Record<
   IKindReenvio,
-  (
-    data: ReenviarDTO,
-    cedenteId: number,
-    softwareHouseId: number,
-  ) => Promise<any>
+  (data: ReenviarDTO, cedente: { id: number; cnpj: string }) => Promise<any>
 >;
 
 export class ReenviarService implements IReenviarService {
@@ -35,22 +31,13 @@ export class ReenviarService implements IReenviarService {
       cnpj: string;
     },
   ) {
-    // 1. chave de cache
     const cacheKey = `reenviar:${data.product}:${data.id
       .sort()
       .join(",")}:${data.type}`;
 
-    // 2/3. checar cache (uso 'any' para evitar erros de tipagem caso CacheService tenha nomes diferentes)
-    const cached = await (this.cache as any).get?.(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached);
-      } catch {
-        // se desserializar falhar, prosseguir com o fluxo
-      }
-    }
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return JSON.parse(cached);
 
-    // 4. buscar serviços (assinatura espera argumentos separados)
     const servicos =
       await this.servicoRepository.findAllConfiguracaoNotificacaoByCedente(
         cedente.id,
@@ -59,8 +46,7 @@ export class ReenviarService implements IReenviarService {
         data.type,
       );
 
-    // 5. validar ids enviados
-    const existingIds = (servicos ?? []).map((s: any) => s.id);
+    const existingIds = servicos.map((s) => s.id);
     const invalidIds = data.id.filter(
       (id: number) => !existingIds.includes(id),
     );
@@ -68,12 +54,13 @@ export class ReenviarService implements IReenviarService {
       throw new InvalidFieldsError(
         {
           errors: [
-            `Não foi possível gerar a notificação. A situação do ${data.product} diverge do tipo de notificação solicitado.`,
+            "Alguns serviços não foram encontrados ou estão inativos para este cedente. Verifique se o serviço está ativo, se o produto é o mesmo do solicitado e se a situação é a mesma da solicitada.",
           ],
           properties: {
             id: {
               errors: invalidIds.map(
-                (id) => `O serviço não foi encontrado: ${id}`,
+                (id) =>
+                  `O serviço ${id} não foi encontrado ou está inativo para este cedente.`,
               ),
             },
           },
@@ -83,14 +70,9 @@ export class ReenviarService implements IReenviarService {
       );
     }
 
-    // 6. gerar uuid de processamento
     const processamentoId = uuidv4();
 
-    // 7. montar configurações de notificação (assumindo campos comuns em 'servico')
-    const configuracoes = ConfiguracaoNotificacaoUseCase.execute(
-      servicos,
-    ) as any;
-    // 8/9. montar payloads - presenter genérico com os
+    const configuracoes = ConfiguracaoNotificacaoUseCase.execute(servicos);
     const payloads = new MontarNotificacaoUseCase(
       processamentoId,
       {
@@ -101,13 +83,9 @@ export class ReenviarService implements IReenviarService {
       configuracoes,
     ).execute({ cnpjCedente: cedente.cnpj }) as any;
 
-    // 10. reenviar via TecnospeedClient — o client espera um objeto { notifications: [...] }
     const sendResult = await this.TecnospeedClient.reenviarWebhook({
       notifications: payloads,
     });
-
-    // 11. registrar reenvios no repositório
-    // espera-se que sendResult seja um array com { protocolo, servicoId, status? }
 
     await this.webhookReprocessadoRepository.create({
       id: processamentoId,
@@ -122,20 +100,17 @@ export class ReenviarService implements IReenviarService {
       },
     });
 
-    // 12. mensagem de sucesso
     const successMessage = {
       message: "Notificação reenviada com sucesso",
       protocolo: sendResult.protocolo,
     };
 
-    // 13. salvar no cache (usa 'any' para compatibilidade com implementação concreta)
     await this.cache.setWithTTL(
       cacheKey,
       JSON.stringify(successMessage),
       this.CACHE_TTL,
     );
 
-    // 14. retornar
     return successMessage;
   }
 }

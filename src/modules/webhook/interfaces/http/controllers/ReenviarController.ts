@@ -15,12 +15,33 @@ export class ReenviarController {
     },
     res: Response,
   ) {
-    // 1. TODO: Extrair o kind do body da requisição
-    // 2. TODO: Verificar se o kind está incluso nos tipos KINDS_REENVIOS suportados
-    // 3. TODO: Se não estiver suportado, retornar erro 501 com mensagem apropriada
-    // 4. TODO: Chamar o método correspondente do reenviarService passando o body e os dados do cedente
-    // 5. TODO: Retornar resposta 200 com o resultado
-    // 6. TODO: Tratar erros de InvalidFieldsError retornando status e payload apropriados
-    // 7. TODO: Tratar demais erros retornando erro interno padrão
+    try {
+      const { kind } = req.body;
+
+      if (!KINDS_REENVIOS.includes(kind)) {
+        return res.status(501).json(
+          new ErrorResponse("NOT_IMPLEMENTED", 501, {
+            errors: [`Apenas ${KINDS_REENVIOS.join(", ")} são suportados.`],
+          }).json(),
+        );
+      }
+
+      const response = await this.reenviarService[kind](req.body, {
+        id: req.cedenteId,
+        cnpj: req.headers["x-api-cnpj-cedente"] as string,
+      });
+
+      return res.status(200).json(response);
+    } catch (error: unknown) {
+      if (error instanceof InvalidFieldsError) {
+        return res.status(error.status).json(error.json());
+      }
+
+      return res
+        .status(500)
+        .json(
+          ErrorResponse.internalServerErrorFromError(error as Error).json(),
+        );
+    }
   }
 }

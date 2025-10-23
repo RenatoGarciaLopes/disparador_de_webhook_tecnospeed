@@ -1,21 +1,9 @@
-import { IConfiguracaoNotificacao as IConfiguracaoNotificacaoConta } from "@/modules/conta/interfaces/IConfiguracaoNotificacao";
-import { IConfiguracaoNotificacao as IConfiguracaoNotificacaoCedente } from "@/modules/cedente/interfaces/IConfiguracaoNotificacao";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
+import { IServicoRepository } from "../../domain/repositories/IServicoRepository";
 
-export type Servicos = Array<{
-  id: number;
-  convenio: {
-    id: number;
-    conta: {
-      id: number;
-      configuracao_notificacao: IConfiguracaoNotificacaoConta;
-      cedente: {
-        id: number;
-        configuracao_notificacao: IConfiguracaoNotificacaoCedente;
-      };
-    };
-  };
-}>;
+export type Servicos = Awaited<
+  ReturnType<IServicoRepository["findAllConfiguracaoNotificacaoByCedente"]>
+>;
 
 export class ConfiguracaoNotificacaoUseCase {
   static execute(servicos: Servicos) {

@@ -20,7 +20,7 @@ interface SoftwareHouseAttributes {
 }
 
 interface SoftwareHouseCreationAttributes
-  extends Optional<SoftwareHouseAttributes, "id"> {}
+  extends Optional<SoftwareHouseAttributes, "id" | "data_criacao"> {}
 
 @Table({
   tableName: "SoftwareHouse",
@@ -33,21 +33,21 @@ export class SoftwareHouse extends Model<
   @PrimaryKey
   @AutoIncrement
   @Column({ type: DataType.INTEGER })
-  declare id: number;
+  declare public id: number;
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
-  data_criacao!: Date;
+  declare public data_criacao: Date;
 
   @Unique
   @Column({ type: DataType.STRING })
-  cnpj!: string;
+  declare public cnpj: string;
 
   @Column({ type: DataType.STRING })
-  token!: string;
+  declare public token: string;
 
   @Column({ type: DataType.STRING })
-  status!: string;
+  declare public status: string;
 
   @HasMany(() => Cedente)
-  declare cedente: Cedente[];
+  declare public cedente: Cedente[];
 }

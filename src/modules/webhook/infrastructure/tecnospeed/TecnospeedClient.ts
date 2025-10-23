@@ -1,3 +1,4 @@
+import { config } from "@/infrastructure/config";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import axios, { AxiosError } from "axios";
 import { BoletoPresenter } from "../../application/presenters/boleto";
@@ -5,7 +6,7 @@ import { PagamentoPresenter } from "../../application/presenters/pagamento";
 import { PixPresenter } from "../../application/presenters/pix";
 
 export class TecnospeedClient {
-  private baseUrl = "https://plug-retry.free.beeceptor.com";
+  private baseUrl = config.TECNOSPEED_BASE_URL;
 
   public async reenviarWebhook(payload: {
     notifications: (BoletoPresenter | PagamentoPresenter | PixPresenter)[];

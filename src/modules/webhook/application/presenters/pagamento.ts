@@ -9,17 +9,17 @@ export class PagamentoPresenter {
     },
   ) {
     return {
-      kind: "invalid",
-      method: "invalid",
-      url: "invalid",
-      headers: "invalid",
+      kind: "webhook",
+      method: "POST",
+      url,
+      headers,
       body: {
-        status: "invalid",
-        uniqueid: "invalid",
-        createdAt: "invalid",
-        accountHash: "invalid",
-        ocurrences: "invalid",
-        occurrences: "invalid",
+        status: metadata.situacao,
+        uniqueid: metadata.webhookReprocessadoId,
+        createdAt: new Date().toISOString(),
+        accountHash: metadata.contaId,
+        ocurrences: [],
+        occurrences: [],
       },
     };
   }

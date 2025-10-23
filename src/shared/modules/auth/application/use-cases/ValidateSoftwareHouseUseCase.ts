@@ -9,7 +9,11 @@ export class ValidateSoftwareHouseUseCase {
   async execute(cnpj: string, token: string) {
     const softwareHouse = await this.softwareHouseRepository.find(cnpj, token);
 
-    if (!softwareHouse || softwareHouse.status === "inativo") {
+    if (!softwareHouse) {
+      throw new UnauthorizedError("Credenciais inválidas");
+    }
+
+    if (softwareHouse.status === "inativo") {
       throw new UnauthorizedError("Credenciais inválidas");
     }
 

@@ -9,19 +9,24 @@ export class BoletoPresenter {
     },
   ) {
     return {
-      kind: "invalid",
-      method: "invalid",
-      url: "invalid",
-      headers: "invalid",
+      kind: "webhook",
+      method: "POST",
+      url,
+      headers,
       body: {
-        tipoWH: "invalid",
-        dataHoraEnvio: "invalid",
-        CpfCnpjCedente: "invalid",
+        tipoWH: "",
+        dataHoraEnvio: new Date()
+          .toLocaleString("pt-BR", {
+            dateStyle: "short",
+            timeStyle: "medium",
+          })
+          .replace(",", ""),
+        CpfCnpjCedente: metadata.cnpjCedente,
         titulo: {
-          situacao: "invalid",
-          idintegracao: "invalid",
-          TituloNossoNumero: "invalid",
-          TituloMovimentos: "invalid",
+          situacao: metadata.situacao,
+          idintegracao: metadata.webhookReprocessadoId,
+          TituloNossoNumero: "",
+          TituloMovimentos: {},
         },
       },
     };

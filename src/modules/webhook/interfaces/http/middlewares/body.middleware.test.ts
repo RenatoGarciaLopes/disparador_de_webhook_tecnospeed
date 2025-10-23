@@ -260,25 +260,6 @@ describe("[WEBHOOK] BodyMiddleware", () => {
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it("deve retornar 400 quando kind é inválido", () => {
-      mockRequest.body = {
-        product: "boleto",
-        id: ["1"],
-        kind: "invalido",
-        type: "pago",
-      };
-
-      BodyMiddleware.validate(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext,
-      );
-
-      expect(statusMock).toHaveBeenCalledWith(400);
-      expect(jsonMock).toHaveBeenCalled();
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-
     it("deve retornar 400 quando id é um array vazio", () => {
       mockRequest.body = {
         product: "boleto",

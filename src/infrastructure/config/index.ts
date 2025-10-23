@@ -30,6 +30,8 @@ const envSchema = z.object({
     })
     .transform(Number),
   REDIS_HOST: z.string().min(2),
+
+  TECNOSPEED_BASE_URL: z.url(),
 });
 
 const { success, data, error } = envSchema.safeParse(process.env);

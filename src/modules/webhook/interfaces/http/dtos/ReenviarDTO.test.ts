@@ -174,17 +174,6 @@ describe("[WEBHOOK] ReenviarDTO", () => {
       expect(() => new ReenviarDTO(body)).toThrow(InvalidFieldsError);
     });
 
-    it("deve lançar InvalidFieldsError quando kind é inválido", () => {
-      const body = {
-        product: "boleto",
-        id: ["1"],
-        kind: "invalido",
-        type: "pago",
-      };
-
-      expect(() => new ReenviarDTO(body)).toThrow(InvalidFieldsError);
-    });
-
     it("deve lançar InvalidFieldsError quando type é inválido", () => {
       const body = {
         product: "boleto",

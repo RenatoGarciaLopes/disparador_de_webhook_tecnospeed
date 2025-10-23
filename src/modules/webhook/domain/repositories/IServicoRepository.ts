@@ -1,7 +1,5 @@
-import {
-  IConfiguracaoNotificacao as IConfiguracaoNotificacaoCedente,
-  IConfiguracaoNotificacao as IConfiguracaoNotificacaoConta,
-} from "@/modules/conta/interfaces/IConfiguracaoNotificacao";
+import { IConfiguracaoNotificacao as IConfiguracaoNotificacaoCedente } from "@/modules/cedente/interfaces/IConfiguracaoNotificacao";
+import { IConfiguracaoNotificacao as IConfiguracaoNotificacaoConta } from "@/modules/conta/interfaces/IConfiguracaoNotificacao";
 import { IReenviarDTO } from "../../interfaces/http/dtos/ReenviarDTO";
 
 export interface IServicoRepository {

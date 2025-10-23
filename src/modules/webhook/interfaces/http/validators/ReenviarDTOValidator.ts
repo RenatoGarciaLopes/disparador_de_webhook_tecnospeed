@@ -1,4 +1,3 @@
-import { KINDS_REENVIOS } from "@/shared/kind-reenvios";
 import { z } from "zod";
 
 export const ReenviarDTOValidator = z
@@ -17,7 +16,7 @@ export const ReenviarDTOValidator = z
       )
       .max(30)
       .min(1),
-    kind: z.enum(KINDS_REENVIOS),
+    kind: z.string(),
     type: z.enum(["pago", "cancelado", "disponivel"]),
   })
   .strict();

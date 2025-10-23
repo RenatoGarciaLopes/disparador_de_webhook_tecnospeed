@@ -5,7 +5,7 @@ const config: Config = {
   testEnvironment: "node",
 
   roots: ["<rootDir>"],
-  testMatch: ["<rootDir>/src/**/*.test.ts"],
+  testMatch: ["<rootDir>/__tests__/integration/**/*.test.ts"],
   moduleFileExtensions: ["ts", "js", "json"],
 
   moduleNameMapper: {
@@ -14,16 +14,29 @@ const config: Config = {
     "@/(.*)": "<rootDir>/src/$1",
   },
 
+  globalSetup: "<rootDir>/__tests__/integration/setup/globalSetup.ts",
+  globalTeardown: "<rootDir>/__tests__/integration/setup/globalTeardown.ts",
+  setupFilesAfterEnv: ["<rootDir>/__tests__/integration/setup/testHelpers.ts"],
+
   collectCoverageFrom: [
     "src/**/*.ts",
-    "!src/**/__tests__/**",
     "!src/**/*.test.ts",
     "!src/**/*.d.ts",
     "!src/server.ts",
   ],
 
-  coveragePathIgnorePatterns: ["./sequelize/*", "node_modules/*"],
-  clearMocks: true,
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+
+  testTimeout: 10000,
+  verbose: true,
+  maxWorkers: 1,
 };
 
 export default config;

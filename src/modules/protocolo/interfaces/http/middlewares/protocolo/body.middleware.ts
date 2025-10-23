@@ -1,7 +1,7 @@
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { NextFunction, Request, Response } from "express";
-import { ProtocolosDTO } from "../../dtos/ProtocolosDto";
+import { ProtocolosDTO } from "../../dtos/ProtocolosDTO";
 
 export class BodyMiddleware {
   public static validate(req: Request, res: Response, next: NextFunction) {

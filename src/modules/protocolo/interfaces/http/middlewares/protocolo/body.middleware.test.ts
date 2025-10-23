@@ -204,7 +204,7 @@ describe("[HTTP Middleware] /protocolo - BodyMiddleware.validate", () => {
       });
 
       const mockDTO = jest
-        .spyOn(require("../../dtos/ProtocolosDto"), "ProtocolosDTO" as any)
+        .spyOn(require("../../dtos/ProtocolosDTO"), "ProtocolosDTO" as any)
         .mockImplementationOnce(() => {
           throw new Error("Erro desconhecido");
         });

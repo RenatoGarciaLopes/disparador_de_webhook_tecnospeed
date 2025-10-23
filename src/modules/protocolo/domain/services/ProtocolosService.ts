@@ -1,8 +1,8 @@
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
-import { CacheService } from "@/infra/cache/cache.service";
+import { CacheService } from "@/infrastructure/cache/cache.service";
 import { IProtocoloParamDTO } from "../../interfaces/http/dtos/ProtocoloParamDTO";
 import { WebhookReprocessadoRepository } from "../../infrastructure/database/repositories/WebHookReprocessadoRespository";
-import { IProtocolosDTO } from "../../interfaces/http/dtos/ProtocolosDto";
+import { IProtocolosDTO } from "../../interfaces/http/dtos/ProtocolosDTO";
 
 export class ProtocolosService {
   constructor(

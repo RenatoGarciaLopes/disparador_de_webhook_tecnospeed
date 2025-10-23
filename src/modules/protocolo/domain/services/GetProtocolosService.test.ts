@@ -1,10 +1,10 @@
 import { ProtocolosService } from "./ProtocolosService";
 import { WebhookReprocessadoRepository } from "../../infrastructure/database/repositories/WebHookReprocessadoRespository";
-import { CacheService } from "@/infra/cache/cache.service";
+import { CacheService } from "@/infrastructure/cache/cache.service";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { WebhookReprocessado } from "@/sequelize/models/webhookreprocessado.model";
 import { ProtocoloParamDTO } from "../../interfaces/http/dtos/ProtocoloParamDTO";
-import { IProtocolosDTO } from "../../interfaces/http/dtos/ProtocolosDto";
+import { IProtocolosDTO } from "../../interfaces/http/dtos/ProtocolosDTO";
 
 describe("[Service] ProtocolosService", () => {
   let repository: jest.Mocked<WebhookReprocessadoRepository>;

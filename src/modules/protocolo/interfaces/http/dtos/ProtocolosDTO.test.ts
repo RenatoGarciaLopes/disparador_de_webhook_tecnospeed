@@ -1,6 +1,6 @@
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { ProtocolosDTOValidator } from "../validators/ProtocolosDTOValidator";
-import { ProtocolosDTO } from "./ProtocolosDto";
+import { ProtocolosDTO } from "./ProtocolosDTO";
 
 jest.mock("../validators/ProtocolosDTOValidator", () => ({
   ProtocolosDTOValidator: {

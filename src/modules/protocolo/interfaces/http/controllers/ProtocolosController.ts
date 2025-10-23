@@ -6,7 +6,7 @@ import {
   IProtocoloParamDTO,
   ProtocoloParamDTO,
 } from "../dtos/ProtocoloParamDTO";
-import { IProtocolosDTO } from "../dtos/ProtocolosDto";
+import { IProtocolosDTO } from "../dtos/ProtocolosDTO";
 
 export class ProtocolosController {
   constructor(private service: ProtocolosService) {}

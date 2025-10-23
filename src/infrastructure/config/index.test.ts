@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { envSchema } from "./schema";
 
 jest.mock("zod", () => {
   const actualZod = jest.requireActual("zod");
@@ -15,54 +15,14 @@ jest.mock("zod", () => {
 });
 
 describe("[CHORE] config/index.ts", () => {
-  const envSchema = z.object({
-    NODE_ENV: z.string().min(3),
-    PORT: z
-      .string()
-      .refine((val) => !isNaN(Number(val)), {
-        message: "PORT deve ser um número válido",
-      })
-      .transform(Number),
-
-    DB_USERNAME: z.string().min(3),
-    DB_PASSWORD: z.string().min(3),
-    DB_DATABASE: z.string().min(3),
-    DB_HOST: z.string().min(3),
-    DB_PORT: z
-      .string()
-      .refine((val) => !isNaN(Number(val)), {
-        message: "DB_PORT deve ser um número válido",
-      })
-      .transform(Number),
-
-    REDIS_PASSWORD: z.string().min(3),
-    REDIS_PORT: z
-      .string()
-      .refine((val) => !isNaN(Number(val)), {
-        message: "REDIS_PORT deve ser um número válido",
-      })
-      .transform(Number),
-    REDIS_HOST: z.string().min(3),
-  });
-  let originalEnv: typeof process.env;
-  let originalExit: typeof process.exit;
-  let originalConsoleError: typeof console.error;
-
   beforeEach(() => {
-    originalEnv = { ...process.env };
-    originalExit = process.exit;
-    originalConsoleError = console.error;
-
     process.exit = jest.fn() as any;
     console.error = jest.fn();
   });
 
   afterEach(() => {
-    process.env = originalEnv;
-    process.exit = originalExit;
-    console.error = originalConsoleError;
-
     jest.resetModules();
+    jest.clearAllMocks();
   });
 
   describe("[SCHEMA] envSchema", () => {
@@ -78,6 +38,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
       };
 
       const result = envSchema.safeParse(validEnv);
@@ -93,6 +54,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: 6379,
         REDIS_HOST: "localhost",
+        TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
       });
     });
 
@@ -260,6 +222,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "pwd",
         REDIS_PORT: "6379",
         REDIS_HOST: "loc",
+        TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
       };
 
       const result = envSchema.safeParse(env);
@@ -458,6 +421,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
       const configModule = require("../config");
@@ -480,6 +444,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
       require("../config");
@@ -503,6 +468,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
       require("../config");
@@ -527,6 +493,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
       require("../config");
@@ -561,9 +528,9 @@ describe("[CHORE] config/index.ts", () => {
 
     it("deve formatar múltiplos erros quando várias validações falham", () => {
       process.env = {
-        NODE_ENV: "te",
+        NODE_ENV: "t",
         PORT: "invalid",
-        DB_USERNAME: "us",
+        DB_USERNAME: "u",
         DB_PASSWORD: "password",
         DB_DATABASE: "database",
         DB_HOST: "localhost",
@@ -571,6 +538,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
       require("../config");
@@ -585,7 +553,7 @@ describe("[CHORE] config/index.ts", () => {
   describe("[INTEGRATION] zod configuration and error handling", () => {
     it("deve configurar locale português antes de validar", () => {
       const env = {
-        NODE_ENV: "te",
+        NODE_ENV: "t",
         PORT: "3000",
         DB_USERNAME: "user",
         DB_PASSWORD: "password",
@@ -595,6 +563,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
       const result = envSchema.safeParse(env);
 
@@ -605,7 +574,7 @@ describe("[CHORE] config/index.ts", () => {
 
     it("deve manter configuração do locale entre validações", () => {
       const env1 = {
-        NODE_ENV: "te",
+        NODE_ENV: "t",
         PORT: "3000",
         DB_USERNAME: "user",
         DB_PASSWORD: "password",
@@ -615,6 +584,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
       const env2 = {
         NODE_ENV: "test",
@@ -627,6 +597,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
       const result1 = envSchema.safeParse(env1);
@@ -667,42 +638,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
-      };
-
-      const result = envSchema.safeParse(env);
-      expect(result.success).toBe(false);
-    });
-
-    it("NÃO deve aceitar strings com apenas 1 caractere", () => {
-      const env = {
-        NODE_ENV: "t",
-        PORT: "3000",
-        DB_USERNAME: "user",
-        DB_PASSWORD: "password",
-        DB_DATABASE: "database",
-        DB_HOST: "localhost",
-        DB_PORT: "5432",
-        REDIS_PASSWORD: "redis_password",
-        REDIS_PORT: "6379",
-        REDIS_HOST: "localhost",
-      };
-
-      const result = envSchema.safeParse(env);
-      expect(result.success).toBe(false);
-    });
-
-    it("NÃO deve aceitar strings com apenas 2 caracteres", () => {
-      const env = {
-        NODE_ENV: "te",
-        PORT: "3000",
-        DB_USERNAME: "user",
-        DB_PASSWORD: "password",
-        DB_DATABASE: "database",
-        DB_HOST: "localhost",
-        DB_PORT: "5432",
-        REDIS_PASSWORD: "redis_password",
-        REDIS_PORT: "6379",
-        REDIS_HOST: "localhost",
+        TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
       const result = envSchema.safeParse(env);

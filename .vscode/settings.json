@@ -53,4 +53,7 @@
     "*.s3db": "${capture}.${extname}-*",
     "jest.config*": "jest*"
   },
+  "cSpell.words": [
+    "TECNOSPEED"
+  ],
 }

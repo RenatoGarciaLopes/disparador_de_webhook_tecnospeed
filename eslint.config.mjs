@@ -26,10 +26,8 @@ export default defineConfig([
     "coverage",
   ]),
 
-  // Bring in "eslint:recommended" via FlatCompat
   ...compat.extends("eslint:recommended"),
 
-  // Apply our config to TS/JS files
   {
     files: ["**/*.{ts,tsx,js,jsx,cjs,mjs}"],
 
@@ -57,7 +55,6 @@ export default defineConfig([
     },
 
     rules: {
-      // Disable base rule as it doesn't understand TypeScript syntax well
       "no-unused-vars": "off",
 
       "@typescript-eslint/no-explicit-any": "off",

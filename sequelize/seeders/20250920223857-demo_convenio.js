@@ -7,7 +7,7 @@ module.exports = {
       // Convenio para BOLETO (conta_id: 1)
       {
         id: 1,
-        numero_convenio: "102938", // 6-7 digits, numeric only
+        numero_convenio: "102938",
         data_criacao: new Date(),
         conta_id: 1,
       },

@@ -38,7 +38,6 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction = await sequelize.transaction();
 
       try {
-        // Criar Software House
         const softwareHouse = await SoftwareHouse.create(
           {
             cnpj: "12345678000195",
@@ -48,7 +47,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Criar Cedente
         await Cedente.create(
           {
             cnpj: "98765432000123",
@@ -59,13 +57,11 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Simular erro
         throw new Error("Erro simulado");
       } catch {
         await transaction.rollback();
       }
 
-      // Verificar que nada foi criado
       const softwareHouseCount = await SoftwareHouse.count();
       const cedenteCount = await Cedente.count();
 
@@ -77,12 +73,11 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction = await sequelize.transaction();
 
       try {
-        // Tentar criar Cedente com softwarehouse_id inexistente
         await Cedente.create(
           {
             cnpj: "98765432000123",
             token: "test-cedente-token",
-            softwarehouse_id: 99999, // ID inexistente
+            softwarehouse_id: 99999,
             status: "ativo",
           },
           { transaction },
@@ -93,7 +88,6 @@ describe("Database Transactions - Integration Tests", () => {
         await transaction.rollback();
       }
 
-      // Verificar que nada foi criado
       const cedenteCount = await Cedente.count();
       expect(cedenteCount).toBe(0);
     });
@@ -104,7 +98,6 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction = await sequelize.transaction();
 
       try {
-        // Criar Software House
         const softwareHouse = await SoftwareHouse.create(
           {
             cnpj: "12345678000195",
@@ -114,7 +107,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Criar Cedente
         const cedente = await Cedente.create(
           {
             cnpj: "98765432000123",
@@ -125,7 +117,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Criar Conta
         const conta = await Conta.create(
           {
             cedente_id: cedente.id,
@@ -136,7 +127,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Criar Convenio
         const convenio = await Convenio.create(
           {
             numero_convenio: "convenio-test",
@@ -145,7 +135,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Criar Serviço
         await Servico.create(
           {
             convenio_id: convenio.id,
@@ -158,7 +147,6 @@ describe("Database Transactions - Integration Tests", () => {
 
         await transaction.commit();
 
-        // Verificar que tudo foi criado
         const softwareHouseCount = await SoftwareHouse.count();
         const cedenteCount = await Cedente.count();
         const contaCount = await Conta.count();
@@ -183,7 +171,6 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction2 = await sequelize.transaction();
 
       try {
-        // Transação 1
         await SoftwareHouse.create(
           {
             cnpj: "11111111000111",
@@ -193,7 +180,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction: transaction1 },
         );
 
-        // Transação 2
         await SoftwareHouse.create(
           {
             cnpj: "22222222000222",
@@ -206,7 +192,6 @@ describe("Database Transactions - Integration Tests", () => {
         await transaction1.commit();
         await transaction2.commit();
 
-        // Verificar que ambas foram criadas
         const softwareHouseCount = await SoftwareHouse.count();
         expect(softwareHouseCount).toBe(2);
       } catch (error) {
@@ -221,7 +206,6 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction2 = await sequelize.transaction();
 
       try {
-        // Criar Software House na transação 1
         const softwareHouse1 = await SoftwareHouse.create(
           {
             cnpj: "11111111000111",
@@ -231,7 +215,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction: transaction1 },
         );
 
-        // Criar Software House na transação 2
         const softwareHouse2 = await SoftwareHouse.create(
           {
             cnpj: "22222222000222",
@@ -241,8 +224,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction: transaction2 },
         );
 
-        // Tentar criar Cedentes que referenciam as Software Houses
-        // em ordem diferente para simular deadlock
         await Cedente.create(
           {
             cnpj: "33333333000333",
@@ -266,7 +247,6 @@ describe("Database Transactions - Integration Tests", () => {
         await transaction1.commit();
         await transaction2.commit();
 
-        // Verificar que tudo foi criado
         const softwareHouseCount = await SoftwareHouse.count();
         const cedenteCount = await Cedente.count();
 
@@ -285,7 +265,6 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction = await sequelize.transaction();
 
       try {
-        // Criar Software House
         const softwareHouse = await SoftwareHouse.create(
           {
             cnpj: "12345678000195",
@@ -295,7 +274,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Criar múltiplos Cedentes
         await Cedente.bulkCreate(
           [
             {
@@ -322,7 +300,6 @@ describe("Database Transactions - Integration Tests", () => {
 
         await transaction.commit();
 
-        // Verificar que tudo foi criado
         const softwareHouseCount = await SoftwareHouse.count();
         const cedenteCount = await Cedente.count();
 
@@ -338,7 +315,6 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction = await sequelize.transaction();
 
       try {
-        // Criar Software House
         const softwareHouse = await SoftwareHouse.create(
           {
             cnpj: "12345678000195",
@@ -348,7 +324,6 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Tentar criar Cedentes com um ID inválido
         await Cedente.bulkCreate(
           [
             {
@@ -360,7 +335,7 @@ describe("Database Transactions - Integration Tests", () => {
             {
               cnpj: "22222222000222",
               token: "test-cedente-token-2",
-              softwarehouse_id: 99999, // ID inexistente
+              softwarehouse_id: 99999,
               status: "ativo",
             },
           ],
@@ -372,7 +347,6 @@ describe("Database Transactions - Integration Tests", () => {
         await transaction.rollback();
       }
 
-      // Verificar que nada foi criado
       const softwareHouseCount = await SoftwareHouse.count();
       const cedenteCount = await Cedente.count();
 
@@ -386,7 +360,6 @@ describe("Database Transactions - Integration Tests", () => {
       const transaction = await sequelize.transaction();
 
       try {
-        // Criar primeira Software House
         await SoftwareHouse.create(
           {
             cnpj: "12345678000195",
@@ -396,10 +369,9 @@ describe("Database Transactions - Integration Tests", () => {
           { transaction },
         );
 
-        // Tentar criar segunda Software House com mesmo CNPJ
         await SoftwareHouse.create(
           {
-            cnpj: "12345678000195", // CNPJ duplicado
+            cnpj: "12345678000195",
             token: "test-sh-token-2",
             status: "ativo",
           },
@@ -412,21 +384,19 @@ describe("Database Transactions - Integration Tests", () => {
         expect(error).toBeDefined();
       }
 
-      // Verificar que apenas uma foi criada
       const softwareHouseCount = await SoftwareHouse.count();
-      expect(softwareHouseCount).toBe(0); // Nenhuma deve ter sido criada devido ao rollback
+      expect(softwareHouseCount).toBe(0);
     });
 
     it("deve respeitar foreign key constraint em transação", async () => {
       const transaction = await sequelize.transaction();
 
       try {
-        // Tentar criar Cedente sem Software House
         await Cedente.create(
           {
             cnpj: "98765432000123",
             token: "test-cedente-token",
-            softwarehouse_id: 99999, // ID inexistente
+            softwarehouse_id: 99999,
             status: "ativo",
           },
           { transaction },
@@ -438,7 +408,6 @@ describe("Database Transactions - Integration Tests", () => {
         expect(error).toBeDefined();
       }
 
-      // Verificar que nada foi criado
       const cedenteCount = await Cedente.count();
       expect(cedenteCount).toBe(0);
     });

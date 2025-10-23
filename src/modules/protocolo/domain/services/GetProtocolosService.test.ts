@@ -14,7 +14,7 @@ describe("[Service] ProtocolosService", () => {
   beforeEach(() => {
     repository = {
       findAll: jest.fn<Promise<WebhookReprocessado[]>, any>(),
-      findById: jest.fn<Promise<WebhookReprocessado | null>, any>(), // <- permitir null
+      findById: jest.fn<Promise<WebhookReprocessado | null>, any>(),
     } as unknown as jest.Mocked<WebhookReprocessadoRepository>;
 
     cache = {

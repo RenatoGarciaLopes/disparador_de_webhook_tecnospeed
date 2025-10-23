@@ -11,18 +11,15 @@ describe("Cache TTL - Basic Expiration", () => {
   it("deve expirar chave após TTL", async () => {
     const key = "test:ttl:expire";
     const value = "temporary";
-    const ttl = 1; // 1 segundo
+    const ttl = 2; // 2 segundo
 
     await cache.setWithTTL(key, value, ttl);
 
-    // Verificar que existe
     const beforeExpire = await cache.get(key);
     expect(beforeExpire).toBe(value);
 
-    // Aguardar expiração
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2500));
 
-    // Verificar que expirou
     const afterExpire = await cache.get(key);
     expect(afterExpire).toBeNull();
   }, 3000);

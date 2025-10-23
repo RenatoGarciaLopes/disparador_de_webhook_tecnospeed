@@ -300,7 +300,7 @@ describe("Error Handling - Integration Tests", () => {
         .set("x-api-cnpj-cedente", testData.cedente.cnpj)
         .set("x-api-token-cedente", testData.cedente.token)
         .send({
-          product: "pix", // Diferente do serviço que é "boleto"
+          product: "pix",
           id: [servico.id.toString()],
           kind: "webhook",
           type: "disponivel",
@@ -349,7 +349,6 @@ describe("Error Handling - Integration Tests", () => {
           type: "disponivel",
         });
 
-      // Este teste pode ser expandido para simular cenários de erro específicos
       expect([200, 500]).toContain(response.status);
     });
   });

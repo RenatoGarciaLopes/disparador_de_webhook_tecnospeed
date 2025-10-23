@@ -15,7 +15,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    // Remove columns first, then drop enum types for Postgres
     await queryInterface.removeColumn("Servico", "situacao");
     await queryInterface.sequelize.query(
       'DROP TYPE IF EXISTS "enum_Servico_situacao";',

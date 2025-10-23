@@ -1,3 +1,4 @@
+import { config } from "@/infrastructure/config";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import axios, { AxiosError } from "axios";
 import { BoletoPresenter } from "../../application/presenters/boleto";
@@ -5,6 +6,9 @@ import { PagamentoPresenter } from "../../application/presenters/pagamento";
 import { PixPresenter } from "../../application/presenters/pix";
 import { TecnospeedClient } from "./TecnospeedClient";
 
+jest.mock("@/infrastructure/config", () => ({
+  config: { TECNOSPEED_BASE_URL: "https://api.tecnospeed.mock" },
+}));
 jest.mock("axios");
 
 describe("[Tecnospeed] TecnospeedClient", () => {
@@ -54,7 +58,7 @@ describe("[Tecnospeed] TecnospeedClient", () => {
         await client.reenviarWebhook(payload);
 
         expect(mockedAxios.post).toHaveBeenCalledWith(
-          "https://plug-retry.free.beeceptor.com/",
+          `${config.TECNOSPEED_BASE_URL}/`,
           payload,
         );
       });

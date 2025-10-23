@@ -14,7 +14,6 @@ describe("Cache Connection - Success", () => {
   it("deve manter conexão em estado aberto", async () => {
     await cache.connect();
 
-    // Verificar se a conexão está aberta através de uma operação simples
     await expect(cache.exists("test-key")).resolves.toBeDefined();
   });
 

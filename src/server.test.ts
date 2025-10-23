@@ -65,7 +65,7 @@ describe("[CHORE] server.ts", () => {
 
     beforeEach(() => {
       originalExit = process.exit;
-      // @ts-expect-error override for test
+      /// @ts-expect-error override for test
       process.exit = jest.fn();
       consoleErrorSpy = jest
         .spyOn(console, "error")

@@ -8,7 +8,7 @@
     "start": "node ./dist/server.js",
     "test": "jest",
     "test:unit": "jest",
-    "test:integration": "sh ./scripts/test-integration.sh -- --detectOpenHandles",
+    "test:integration": "sh ./scripts/test-integration.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

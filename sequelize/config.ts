@@ -4,6 +4,7 @@ const config = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT) || 5432,
     dialect: "postgres",
   },
   development: {
@@ -11,6 +12,7 @@ const config = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT) || 5432,
     dialect: "postgres",
   },
   production: {
@@ -18,6 +20,7 @@ const config = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT) || 5432,
     dialect: "postgres",
   },
 };

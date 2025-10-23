@@ -1,5 +1,6 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
 import { DatabaseService } from "@/infrastructure/database/database.service";
+import { sequelize } from "@/sequelize";
 import { Cedente } from "@/sequelize/models/cedente.model";
 import { Conta } from "@/sequelize/models/conta.model";
 import { Convenio } from "@/sequelize/models/convenio.model";
@@ -23,13 +24,31 @@ export class TestDataHelper {
   }
 
   static async cleanup() {
-    await this.cacheService.flushAll();
+    try {
+      await this.cacheService.flushAll();
+    } catch (e) {
+      console.warn("[warning] Falha ao limpar cache", e);
+    }
     await WebhookReprocessado.destroy({ where: {}, force: true });
     await Servico.destroy({ where: {}, force: true });
     await Convenio.destroy({ where: {}, force: true });
     await Conta.destroy({ where: {}, force: true });
     await Cedente.destroy({ where: {}, force: true });
     await SoftwareHouse.destroy({ where: {}, force: true });
+  }
+
+  static async shutdown() {
+    try {
+      await this.cacheService.quit();
+    } catch (e) {
+      console.warn("[warning] Falha ao encerrar cache", e);
+    }
+
+    try {
+      await sequelize.close();
+    } catch (e) {
+      console.warn("[warning] Falha ao encerrar conexão com o banco", e);
+    }
   }
 
   static async createSoftwareHouse(data: Partial<any> = {}) {

@@ -23,22 +23,29 @@ fi
 
 echo -e "${GREEN}✅ Docker está rodando${NC}"
 
+# 1.1 Carregar variáveis do .env.test para interpolação do docker compose
+if [ -f .env.test ]; then
+  export $(grep -v '^#' .env.test | xargs)
+else
+  echo -e "${RED}❌ Arquivo .env.test não encontrado${NC}"
+  exit 1
+fi
+
 # 2. Parar containers de teste anteriores (se existirem)
 echo ""
 echo "🛑 Parando containers de teste anteriores..."
-docker compose -f docker-compose.test.yml down -v 2>/dev/null || true
+docker compose --env-file .env.test -f docker-compose.test.yml down -v 2>/dev/null || true
 
 # 3. Subir containers de teste
 echo ""
 echo "🚀 Subindo containers de teste (PostgreSQL e Redis)..."
-docker compose -f docker-compose.test.yml up -d
+docker compose --env-file .env.test -f docker-compose.test.yml up -d
 
 # 4. Aguardar containers ficarem saudáveis (healthy)
 echo ""
 echo "⏳ Aguardando containers ficarem prontos..."
 
-# Carrega variáveis do .env.test
-export $(grep -v '^#' .env.test | xargs)
+# Variáveis já carregadas acima
 
 # Aguardar PostgreSQL
 echo -n "   PostgreSQL: "
@@ -81,7 +88,7 @@ echo ""
 export NODE_ENV=test
 
 # Executar jest com arquivo de config de integração
-npx cross-env NODE_ENV=test jest --config ./jest.integration.config.ts --runInBand --env-file=.env.test "$@"
+npx cross-env NODE_ENV=test jest --config ./jest.integration.config.ts --runInBand --env-file=.env.test --detectOpenHandles "$@"
 
 TEST_EXIT_CODE=$?
 

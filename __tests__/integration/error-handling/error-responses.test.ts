@@ -240,14 +240,12 @@ describe("Error Handling - Integration Tests", () => {
         cedente_id: anotherCedente.id,
       });
 
-      const convenio = await TestDataHelper.createConvenio(anotherCedente.id, {
+      const convenio = await TestDataHelper.createConvenio(conta.id, {
         id: 10,
-        conta_id: conta.id,
       });
 
       const servico = await TestDataHelper.createServico(convenio.id, {
         id: 10,
-        convenio_id: convenio.id,
       });
 
       const response = await request(app)
@@ -268,7 +266,7 @@ describe("Error Handling - Integration Tests", () => {
     });
 
     it("deve retornar 422 quando serviço está inativo", async () => {
-      const servico = await TestDataHelper.createServico(testData.cedente.id, {
+      const servico = await TestDataHelper.createServico(testData.convenio.id, {
         id: 14,
         status: "inativo",
       });
@@ -291,9 +289,8 @@ describe("Error Handling - Integration Tests", () => {
     });
 
     it("deve retornar 422 quando product não corresponde ao serviço", async () => {
-      const servico = await TestDataHelper.createServico(testData.cedente.id, {
+      const servico = await TestDataHelper.createServico(testData.convenio.id, {
         id: 11,
-        product: "boleto",
       });
 
       const response = await request(app)

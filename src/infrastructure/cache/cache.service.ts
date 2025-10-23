@@ -56,6 +56,15 @@ export class CacheService {
   }
 
   public async flushAll(): Promise<void> {
+    if (!this.client.isOpen) {
+      await this.client.connect();
+    }
     await this.client.flushAll();
+  }
+
+  public async quit(): Promise<void> {
+    if (this.client.isOpen) {
+      await this.client.quit();
+    }
   }
 }

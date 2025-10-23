@@ -10,6 +10,7 @@ export default async function globalTeardown() {
   try {
     console.log("📦 Limpando dados de teste...");
     await TestDataHelper.cleanup();
+    await TestDataHelper.shutdown();
 
     console.log("   ✅ Dados limpos com sucesso");
 

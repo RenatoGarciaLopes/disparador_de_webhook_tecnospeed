@@ -16,9 +16,10 @@ interface WebhookReprocessadoAttributes {
   data_criacao: Date;
   cedente_id: number;
   kind: string;
+  product: string;
+  protocolo: string;
   type: string;
   servico_id: string[]; // array de IDs (armazenado como JSON string)
-  product: string;
 }
 
 interface WebhookReprocessadoCreationAttributes
@@ -95,4 +96,10 @@ export class WebhookReprocessado extends Model<
     allowNull: false,
   })
   declare product: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare protocolo: string;
 }

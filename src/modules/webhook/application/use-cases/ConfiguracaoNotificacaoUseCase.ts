@@ -1,27 +1,68 @@
+import { IConfiguracaoNotificacao as IConfiguracaoNotificacaoConta } from "@/modules/conta/interfaces/IConfiguracaoNotificacao";
+import { IConfiguracaoNotificacao as IConfiguracaoNotificacaoCedente } from "@/modules/cedente/interfaces/IConfiguracaoNotificacao";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
-import { IServicoRepository } from "../../domain/repositories/IServicoRepository";
 
-export type Servicos = Awaited<
-  ReturnType<IServicoRepository["findAllConfiguracaoNotificacaoByCedente"]>
->;
+export type Servicos = Array<{
+  id: number;
+  convenio: {
+    id: number;
+    conta: {
+      id: number;
+      configuracao_notificacao: IConfiguracaoNotificacaoConta;
+      cedente: {
+        id: number;
+        configuracao_notificacao: IConfiguracaoNotificacaoCedente;
+      };
+    };
+  };
+}>;
 
 export class ConfiguracaoNotificacaoUseCase {
   static execute(servicos: Servicos) {
-    // TODO: Inicializar o array que irá armazenar as configurações de notificação
-    // TODO: Inicializar o array que irá armazenar ids de serviços sem configuração de notificação
+    const configuracoes: any[] = [];
+    const servicosSemConfiguracao: number[] = [];
 
-    // TODO: Iterar sobre os serviços retornados
-    // TODO: Para cada serviço, recuperar a configuração de notificação do nível da conta
-    // TODO: Se não existir no nível da conta, recuperar do nível do cedente
+    if (!servicos || servicos.length === 0) {
+      return [];
+    }
 
-    // TODO: Checar se o serviço atual não possui configuração de notificação
-    // TODO: Se não possuir, adicionar o id do serviço no array de serviços sem configuração de notificação e continuar para o próximo
+    for (const servico of servicos) {
+      const conta = servico.convenio.conta;
+      const cedente = conta.cedente;
 
-    // TODO: Se possuir configuração, adicionar no array de configurações de notificação o objeto com cedenteId, servicoId, contaId e a configuração
+      let configuracao = conta.configuracao_notificacao;
 
-    // TODO: Após a iteração, checar se existe algum serviço sem configuração de notificação
-    // TODO: Se existir, lançar uma exceção InvalidFieldsError contendo uma mensagem de erro para cada serviço
+      if (!configuracao) {
+        configuracao = cedente.configuracao_notificacao;
+      }
 
-    // TODO: Retornar o array de configurações encontradas
+      if (!configuracao) {
+        servicosSemConfiguracao.push(servico.id);
+        continue;
+      }
+
+      configuracoes.push({
+        cedenteId: cedente.id,
+        servicoId: servico.id,
+        contaId: conta.id,
+        configuracaoNotificacao: configuracao,
+      });
+    }
+
+    if (servicosSemConfiguracao.length > 0) {
+      const errorDetails = {
+        properties: {
+          id: {
+            errors: servicosSemConfiguracao.map(
+              (id) => `Serviço ${id} não possui configuração de notificação.`,
+            ),
+          },
+        },
+      };
+
+      throw new InvalidFieldsError(errorDetails, "INVALID_FIELDS", 422);
+    }
+
+    return configuracoes;
   }
 }

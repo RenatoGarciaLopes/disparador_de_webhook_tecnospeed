@@ -2,7 +2,7 @@ import { App } from "@/app";
 import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
 import { Express } from "express";
 import request from "supertest";
-import { TestDataHelper } from "../helpers/test-data.helper";
+import { TestDataHelper } from "../../helpers/test-data.helper";
 
 describe("Error Handling - Integration Tests", () => {
   let testData: any;

@@ -19,6 +19,7 @@ export default async function globalTeardown() {
     console.log("✅ TEARDOWN COMPLETO - Ambiente limpo!");
     console.log("=".repeat(60));
     console.log("");
+    process.exit(0);
   } catch (error) {
     console.error("\n❌ ERRO NO TEARDOWN:");
     console.error(error);

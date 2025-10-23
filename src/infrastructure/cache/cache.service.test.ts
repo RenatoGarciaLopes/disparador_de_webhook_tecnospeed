@@ -6,6 +6,8 @@ const mockRedisClient = {
   set: jest.fn(),
   exists: jest.fn(),
   get: jest.fn(),
+  flushAll: jest.fn(),
+  quit: jest.fn(),
   isOpen: false,
 };
 
@@ -180,6 +182,52 @@ describe("[INFRA] CacheService", () => {
       const result = await service.get("non-existing-key");
       expect(result).toBeNull();
       expect(mockRedisClient.get).toHaveBeenCalledWith("non-existing-key");
+    });
+  });
+
+  describe("[COMMANDS] flushAll()", () => {
+    it("deve conectar e executar flushAll quando client não estiver aberto", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = false;
+      mockRedisClient.connect.mockResolvedValue(undefined as never);
+      mockRedisClient.flushAll.mockResolvedValue("OK" as never);
+
+      await service.flushAll();
+
+      expect(mockRedisClient.connect).toHaveBeenCalledTimes(1);
+      expect(mockRedisClient.flushAll).toHaveBeenCalledTimes(1);
+    });
+
+    it("deve executar flushAll sem conectar quando client já estiver aberto", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = true;
+      mockRedisClient.flushAll.mockResolvedValue("OK" as never);
+
+      await service.flushAll();
+
+      expect(mockRedisClient.connect).not.toHaveBeenCalled();
+      expect(mockRedisClient.flushAll).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("[COMMANDS] quit()", () => {
+    it("deve executar quit quando client estiver aberto", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = true;
+      mockRedisClient.quit.mockResolvedValue(undefined as never);
+
+      await service.quit();
+
+      expect(mockRedisClient.quit).toHaveBeenCalledTimes(1);
+    });
+
+    it("não deve executar quit quando client não estiver aberto", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = false;
+
+      await service.quit();
+
+      expect(mockRedisClient.quit).not.toHaveBeenCalled();
     });
   });
 

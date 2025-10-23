@@ -19,15 +19,58 @@ export class MontarNotificacaoUseCase {
     private readonly configuracaoNotificacoes: ConfiguracaoNotificacao[],
   ) {}
 
-  public execute(metadata: { cnpjCedente: string }) {
-    // TODO: Inicializar o array de payloads para armazenar os resultados de cada notificação montada
-    // TODO: Iterar sobre cada configuração de notificação recebida no construtor
-    // TODO: Criar um objeto de headers (cabeçalhos) inicial vazio
-    // TODO: Se existir um header principal, adicionar ao objeto de headers
-    // TODO: Percorrer os headers adicionais da configuração de notificação e mesclar ao objeto de headers
-    // TODO: Verificar o tipo do produto para definir qual presenter utilizar e montar o payload correto
-    // TODO: Retornar o array de payloads montados para as notificações de cada configuração processada
-    // return payloads;
+  public execute(params: { cnpjCedente: string }) {
+    // Caso não existam configurações, retorna array vazio
+    if (!this.configuracaoNotificacoes?.length) return [];
+
+    const payloads: any[] = [];
+
+    for (const config of this.configuracaoNotificacoes) {
+      const { configuracaoNotificacao } = config;
+      const headers: Record<string, string> = {};
+
+      // Header principal (opcional)
+      if (
+        configuracaoNotificacao.header &&
+        configuracaoNotificacao.header_campo
+      ) {
+        headers[configuracaoNotificacao.header_campo] =
+          configuracaoNotificacao.header_valor;
+      }
+
+      // Headers adicionais
+      if (Array.isArray(configuracaoNotificacao.headers_adicionais)) {
+        configuracaoNotificacao.headers_adicionais.forEach((item) => {
+          Object.assign(headers, item);
+        });
+      }
+
+      let payload;
+
+      switch (this.data.product) {
+        case "BOLETO":
+          payload = this.montarBoleto(config, {
+            headers,
+            cnpjCedente: params.cnpjCedente,
+          });
+          break;
+
+        case "PAGAMENTO":
+          payload = this.montarPagamento(config, { headers });
+          break;
+
+        case "PIX":
+          payload = this.montarPix(config, { headers });
+          break;
+
+        default:
+          continue; // produto não suportado
+      }
+
+      if (payload) payloads.push(payload);
+    }
+
+    return payloads;
   }
 
   private montarBoleto(

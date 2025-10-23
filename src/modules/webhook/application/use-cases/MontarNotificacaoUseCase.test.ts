@@ -466,4 +466,83 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe("Cobertura de branches adicionais", () => {
+    it("não deve adicionar headers_adicionais quando não for array", () => {
+      const configuracoes: ConfiguracaoNotificacao[] = [
+        {
+          cedenteId: 1,
+          servicoId: 10,
+          contaId: 20,
+          configuracaoNotificacao: {
+            url: "http://webhook.com",
+            header: true,
+            header_campo: "X-Only",
+            header_valor: "only-value",
+            // @ts-expect-error: cobrindo caso não-array
+            headers_adicionais: undefined,
+          },
+        },
+      ] as any;
+
+      const data = {
+        product: "BOLETO" as const,
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+
+      useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
+
+      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue({});
+
+      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(BoletoPresenter.toPayload).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          "X-Only": "only-value",
+        }),
+        expect.any(Object),
+      );
+    });
+
+    it("deve ignorar produto desconhecido (default continue)", () => {
+      const data = {
+        // @ts-expect-error: produto desconhecido para cobrir default do switch
+        product: "DESCONHECIDO",
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+
+      useCase = new MontarNotificacaoUseCase(
+        "uuid",
+        data as any,
+        mockConfiguracoes,
+      );
+
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(result).toHaveLength(0);
+      expect(BoletoPresenter.toPayload).not.toHaveBeenCalled();
+      expect(PagamentoPresenter.toPayload).not.toHaveBeenCalled();
+      expect(PixPresenter.toPayload).not.toHaveBeenCalled();
+    });
+
+    it("não empilha payload quando presenter retorna falsy", () => {
+      const data = {
+        product: "BOLETO" as const,
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+
+      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
+
+      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue(null);
+
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(BoletoPresenter.toPayload).toHaveBeenCalledTimes(1);
+      expect(result).toHaveLength(0);
+    });
+  });
 });

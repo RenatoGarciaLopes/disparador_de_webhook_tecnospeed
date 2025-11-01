@@ -9,6 +9,8 @@ export interface IProtocolosDTO {
   id?: string[];
   kind?: IKindReenvio;
   type?: "pago" | "cancelado" | "disponivel";
+  page?: number;
+  limit?: number;
 }
 
 export class ProtocolosDTO implements IProtocolosDTO {
@@ -18,6 +20,8 @@ export class ProtocolosDTO implements IProtocolosDTO {
   declare id: IProtocolosDTO["id"];
   declare kind: IProtocolosDTO["kind"];
   declare type: IProtocolosDTO["type"];
+  declare page: IProtocolosDTO["page"];
+  declare limit: IProtocolosDTO["limit"];
 
   constructor(body: unknown) {
     const { success, data, error } = ProtocolosDTOValidator.safeParse(body);

@@ -1,6 +1,6 @@
 import { WebhookReprocessado } from "@/sequelize/models/webhookreprocessado.model";
-import { WebhookReprocessadoRepository } from "./WebHookReprocessadoRespository";
 import { Op } from "sequelize";
+import { WebhookReprocessadoRepository } from "./WebHookReprocessadoRespository";
 
 describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
   let repository: WebhookReprocessadoRepository;
@@ -17,9 +17,13 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
         { dataValues: { id: "1" } },
         { dataValues: { id: "2" } },
       ] as unknown as WebhookReprocessado[]);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(2);
 
     const result = await repository.findAll(1, new Date(), new Date());
-    expect(result).toEqual([{ id: "1" }, { id: "2" }]);
+    expect(result).toEqual({
+      data: [{ id: "1" }, { id: "2" }],
+      total: 2,
+    });
   });
 
   it("deve retornar protocolos com filtros aplicados", async () => {
@@ -29,6 +33,7 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
         { dataValues: { id: "1" } },
         { dataValues: { id: "2" } },
       ] as unknown as WebhookReprocessado[]);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(2);
 
     const result = await repository.findAll(
       1,
@@ -40,20 +45,28 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
       "pago",
     );
 
-    expect(result).toEqual([{ id: "1" }, { id: "2" }]);
+    expect(result).toEqual({
+      data: [{ id: "1" }, { id: "2" }],
+      total: 2,
+    });
   });
 
   it("deve retornar array vazio se nenhum protocolo for encontrado", async () => {
     jest.spyOn(WebhookReprocessado, "findAll").mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
 
     const result = await repository.findAll(1, new Date(), new Date());
-    expect(result).toEqual([]);
+    expect(result).toEqual({
+      data: [],
+      total: 0,
+    });
   });
 
   it("não deve aplicar Op.contains se servico_ids estiver vazio ou indefinido", async () => {
     const spy = jest
       .spyOn(WebhookReprocessado, "findAll")
       .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
 
     await repository.findAll(1, new Date(), new Date());
     expect(spy).toHaveBeenCalledWith(
@@ -75,6 +88,7 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
     const spy = jest
       .spyOn(WebhookReprocessado, "findAll")
       .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
 
     await repository.findAll(1, new Date(), new Date(), undefined, ids);
     expect(spy).toHaveBeenCalledWith(
@@ -90,6 +104,7 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
     const spy = jest
       .spyOn(WebhookReprocessado, "findAll")
       .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
 
     const start = new Date("2025-01-01");
     const end = new Date("2025-01-31");
@@ -137,6 +152,7 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
     const spy = jest
       .spyOn(WebhookReprocessado, "findAll")
       .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
 
     const cedenteId = 10;
     await repository.findAll(cedenteId, new Date(), new Date());
@@ -159,6 +175,111 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { protocolo: "uuid-123", cedente_id: cedenteId },
+      }),
+    );
+  });
+
+  it("deve aplicar limit quando fornecido", async () => {
+    const spy = jest
+      .spyOn(WebhookReprocessado, "findAll")
+      .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
+
+    await repository.findAll(
+      1,
+      new Date(),
+      new Date(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      10,
+    );
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        limit: 10,
+      }),
+    );
+  });
+
+  it("deve aplicar offset quando fornecido", async () => {
+    const spy = jest
+      .spyOn(WebhookReprocessado, "findAll")
+      .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
+
+    await repository.findAll(
+      1,
+      new Date(),
+      new Date(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      5,
+    );
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        offset: 5,
+      }),
+    );
+  });
+
+  it("deve aplicar limit e offset quando ambos forem fornecidos", async () => {
+    const spy = jest
+      .spyOn(WebhookReprocessado, "findAll")
+      .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
+
+    await repository.findAll(
+      1,
+      new Date(),
+      new Date(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      10,
+      5,
+    );
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        limit: 10,
+        offset: 5,
+      }),
+    );
+  });
+
+  it("não deve aplicar limit quando não for fornecido", async () => {
+    const spy = jest
+      .spyOn(WebhookReprocessado, "findAll")
+      .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
+
+    await repository.findAll(1, new Date(), new Date());
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        limit: expect.anything(),
+      }),
+    );
+  });
+
+  it("não deve aplicar offset quando não for fornecido", async () => {
+    const spy = jest
+      .spyOn(WebhookReprocessado, "findAll")
+      .mockResolvedValue([] as any);
+    jest.spyOn(WebhookReprocessado, "count").mockResolvedValue(0);
+
+    await repository.findAll(1, new Date(), new Date());
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        offset: expect.anything(),
       }),
     );
   });

@@ -2,51 +2,41 @@ import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { ProtocolosDTOValidator } from "../validators/ProtocolosDTOValidator";
 import { ProtocolosDTO } from "./ProtocolosDTO";
 
-jest.mock("../validators/ProtocolosDTOValidator", () => ({
-  ProtocolosDTOValidator: {
-    safeParse: jest.fn(),
-  },
-}));
-
 describe("ProtocolosDTO", () => {
-  const mockSafeParse = ProtocolosDTOValidator.safeParse as jest.Mock;
-
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   it("deve criar uma instância válida quando os dados são corretos", () => {
     const mockData = {
-      start_date: new Date("2025-01-01"),
-      end_date: new Date("2025-01-05"),
-      product: "PIX",
+      start_date: new Date("2025-01-01").toISOString(),
+      end_date: new Date("2025-01-05").toISOString(),
+      product: "pix",
       id: ["123", "456"],
       kind: "webhook",
       type: "pago",
+      page: "1",
+      limit: "10",
     };
-
-    mockSafeParse.mockReturnValue({
-      success: true,
-      data: mockData,
-    });
 
     const dto = new ProtocolosDTO(mockData);
 
     expect(dto).toBeInstanceOf(ProtocolosDTO);
-    expect(dto.start_date).toEqual(mockData.start_date);
-    expect(dto.end_date).toEqual(mockData.end_date);
+    expect(dto.start_date).toEqual(new Date(mockData.start_date));
+    expect(dto.end_date).toEqual(new Date(mockData.end_date));
     expect(dto.product).toBe("PIX");
     expect(dto.id).toEqual(["123", "456"]);
     expect(dto.kind).toBe("webhook");
     expect(dto.type).toBe("pago");
+    expect(dto.page).toBe(1);
+    expect(dto.limit).toBe(10);
   });
 
   it("deve lançar InvalidFieldsError quando os dados são inválidos", () => {
     const mockError = { message: "Erro de validação" };
-    mockSafeParse.mockReturnValue({
-      success: false,
-      error: mockError,
-    });
+    jest
+      .spyOn(ProtocolosDTOValidator, "safeParse")
+      .mockReturnValue({ success: false, error: mockError as any } as any);
 
     const fromZodErrorSpy = jest
       .spyOn(InvalidFieldsError, "fromZodError")
@@ -58,11 +48,9 @@ describe("ProtocolosDTO", () => {
 
   it("deve chamar Object.assign corretamente quando a validação for bem-sucedida", () => {
     const mockData = { start_date: new Date(), end_date: new Date() };
-
-    mockSafeParse.mockReturnValue({
-      success: true,
-      data: mockData,
-    });
+    jest
+      .spyOn(ProtocolosDTOValidator, "safeParse")
+      .mockReturnValue({ success: true, data: mockData as any } as any);
 
     const assignSpy = jest.spyOn(Object, "assign");
     new ProtocolosDTO(mockData);
@@ -71,10 +59,12 @@ describe("ProtocolosDTO", () => {
 
   it("deve chamar o validator com o body recebido", () => {
     const mockBody = { start_date: new Date(), end_date: new Date() };
-    mockSafeParse.mockReturnValue({ success: true, data: mockBody });
+    jest
+      .spyOn(ProtocolosDTOValidator, "safeParse")
+      .mockReturnValue({ success: true, data: mockBody as any } as any);
 
     new ProtocolosDTO(mockBody);
 
-    expect(mockSafeParse).toHaveBeenCalledWith(mockBody);
+    expect(ProtocolosDTOValidator.safeParse).toHaveBeenCalledWith(mockBody);
   });
 });

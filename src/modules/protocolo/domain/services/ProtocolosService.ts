@@ -1,7 +1,7 @@
-import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { CacheService } from "@/infrastructure/cache/cache.service";
-import { IProtocoloParamDTO } from "../../interfaces/http/dtos/ProtocoloParamDTO";
+import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { WebhookReprocessadoRepository } from "../../infrastructure/database/repositories/WebHookReprocessadoRespository";
+import { IProtocoloParamDTO } from "../../interfaces/http/dtos/ProtocoloParamDTO";
 import { IProtocolosDTO } from "../../interfaces/http/dtos/ProtocolosDTO";
 
 export class ProtocolosService {
@@ -11,7 +11,11 @@ export class ProtocolosService {
   ) {}
 
   async getProtocolos(cedenteId: number, data: IProtocolosDTO) {
-    const cacheKey = `protocolos:${cedenteId}:${data.product}:${data.id?.sort().join(",")}:${data.type}:${data.kind}:${data.start_date.toISOString()}:${data.end_date.toISOString()}`;
+    const page = data.page ?? 1;
+    const limit = data.limit ?? 10;
+    const offset = (page - 1) * limit;
+
+    const cacheKey = `protocolos:${cedenteId}:${data.product}:${data.id?.sort().join(",")}:${data.type}:${data.kind}:${data.start_date.toISOString()}:${data.end_date.toISOString()}:${page}:${limit}`;
 
     const cachedResult = await this.cache.get(cacheKey);
 
@@ -27,11 +31,29 @@ export class ProtocolosService {
       data.id,
       data.kind,
       data.type,
+      limit,
+      offset,
     );
 
-    await this.cache.setWithTTL(cacheKey, JSON.stringify(result), 60 * 60 * 24);
+    const totalPages = Math.ceil(result.total / limit);
 
-    return result;
+    const paginatedResponse = {
+      data: result.data,
+      pagination: {
+        page,
+        limit,
+        total: result.total,
+        total_pages: totalPages,
+      },
+    };
+
+    await this.cache.setWithTTL(
+      cacheKey,
+      JSON.stringify(paginatedResponse),
+      60 * 60 * 24,
+    );
+
+    return paginatedResponse;
   }
 
   async getProtocoloById(cedenteId: number, data: IProtocoloParamDTO) {

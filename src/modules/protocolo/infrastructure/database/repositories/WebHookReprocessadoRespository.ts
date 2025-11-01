@@ -10,6 +10,8 @@ export class WebhookReprocessadoRepository {
     servico_ids?: string[],
     kind?: string,
     type?: string,
+    limit?: number,
+    offset?: number,
   ) {
     const whereClause: any = {
       cedente_id,
@@ -23,11 +25,26 @@ export class WebhookReprocessadoRepository {
       whereClause.servico_id = { [Op.contains]: servico_ids };
     }
 
-    const result = await WebhookReprocessado.findAll({ where: whereClause });
+    const findOptions: any = { where: whereClause };
 
-    return result.map((wh) => ({
-      ...wh.dataValues,
-    }));
+    if (limit !== undefined) {
+      findOptions.limit = limit;
+    }
+    if (offset !== undefined) {
+      findOptions.offset = offset;
+    }
+
+    const [result, total] = await Promise.all([
+      WebhookReprocessado.findAll(findOptions),
+      WebhookReprocessado.count({ where: whereClause }),
+    ]);
+
+    return {
+      data: result.map((wh) => ({
+        ...wh.dataValues,
+      })),
+      total,
+    };
   }
 
   async findById(id: string, cedente_id: number) {

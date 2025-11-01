@@ -32,6 +32,20 @@ export const ProtocolosDTOValidator = z
       .optional(),
     kind: z.enum(KINDS_REENVIOS).optional(),
     type: z.enum(["pago", "cancelado", "disponivel"]).optional(),
+    page: z
+      .string()
+      .transform((val) => parseInt(val, 10))
+      .refine((val) => !isNaN(val) && val > 0, {
+        message: "page deve ser um número inteiro positivo",
+      })
+      .optional(),
+    limit: z
+      .string()
+      .transform((val) => parseInt(val, 10))
+      .refine((val) => !isNaN(val) && val > 0 && val <= 100, {
+        message: "limit deve ser um número inteiro positivo entre 1 e 100",
+      })
+      .optional(),
   })
   .strict()
   .refine(

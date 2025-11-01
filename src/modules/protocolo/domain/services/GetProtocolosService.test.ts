@@ -1,10 +1,10 @@
-import { ProtocolosService } from "./ProtocolosService";
-import { WebhookReprocessadoRepository } from "../../infrastructure/database/repositories/WebHookReprocessadoRespository";
 import { CacheService } from "@/infrastructure/cache/cache.service";
-import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { WebhookReprocessado } from "@/sequelize/models/webhookreprocessado.model";
+import { ErrorResponse } from "@/shared/errors/ErrorResponse";
+import { WebhookReprocessadoRepository } from "../../infrastructure/database/repositories/WebHookReprocessadoRespository";
 import { ProtocoloParamDTO } from "../../interfaces/http/dtos/ProtocoloParamDTO";
 import { IProtocolosDTO } from "../../interfaces/http/dtos/ProtocolosDTO";
+import { ProtocolosService } from "./ProtocolosService";
 
 describe("[Service] ProtocolosService", () => {
   let repository: jest.Mocked<WebhookReprocessadoRepository>;
@@ -13,7 +13,10 @@ describe("[Service] ProtocolosService", () => {
 
   beforeEach(() => {
     repository = {
-      findAll: jest.fn<Promise<WebhookReprocessado[]>, any>(),
+      findAll: jest.fn<
+        Promise<{ data: WebhookReprocessado[]; total: number }>,
+        any
+      >(),
       findById: jest.fn<Promise<WebhookReprocessado | null>, any>(),
     } as unknown as jest.Mocked<WebhookReprocessadoRepository>;
 
@@ -35,7 +38,10 @@ describe("[Service] ProtocolosService", () => {
       type: "disponivel",
     };
 
-    const mockResult = [{ id: "1" }] as WebhookReprocessado[];
+    const mockResult = {
+      data: [{ id: "1" }] as WebhookReprocessado[],
+      total: 1,
+    };
 
     cache.get.mockResolvedValue(null);
     repository.findAll.mockResolvedValue(mockResult);
@@ -50,9 +56,19 @@ describe("[Service] ProtocolosService", () => {
       dto.id,
       dto.kind,
       dto.type,
+      10,
+      0,
     );
     expect(cache.setWithTTL).toHaveBeenCalled();
-    expect(result).toEqual(mockResult);
+    expect(result).toEqual({
+      data: mockResult.data,
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 1,
+        total_pages: 1,
+      },
+    });
   });
 
   it("deve retornar resultado em cache se existir", async () => {
@@ -65,7 +81,10 @@ describe("[Service] ProtocolosService", () => {
       type: "disponivel",
     };
 
-    const cachedData = JSON.stringify([{ id: "cached" }]);
+    const cachedData = JSON.stringify({
+      data: [{ id: "cached" }],
+      pagination: { page: 1, limit: 10, total: 1, total_pages: 1 },
+    });
     cache.get.mockResolvedValue(cachedData);
 
     const result = await service.getProtocolos(1, dto);
@@ -140,7 +159,7 @@ describe("[Service] ProtocolosService", () => {
     const dto2: IProtocolosDTO = { ...dto1, id: ["1", "2"] };
     const mockResult: WebhookReprocessado[] = [{ id: "1" }] as any;
 
-    repository.findAll.mockResolvedValue(mockResult);
+    repository.findAll.mockResolvedValue(mockResult as any);
     cache.get.mockResolvedValue(null);
 
     await service.getProtocolos(1, dto1);
@@ -159,7 +178,10 @@ describe("[Service] ProtocolosService", () => {
       id: ["1"],
     };
 
-    const mockResult: WebhookReprocessado[] = [{ id: "1" }] as any;
+    const mockResult = {
+      data: [{ id: "1" }] as WebhookReprocessado[],
+      total: 1,
+    };
     repository.findAll.mockResolvedValue(mockResult);
     cache.get.mockResolvedValue(null);
 
@@ -173,8 +195,18 @@ describe("[Service] ProtocolosService", () => {
       dto.id,
       undefined,
       undefined,
+      10,
+      0,
     );
-    expect(result).toEqual(mockResult);
+    expect(result).toEqual({
+      data: mockResult.data,
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 1,
+        total_pages: 1,
+      },
+    });
   });
 
   it("deve passar TTL correto para cache", async () => {
@@ -184,7 +216,10 @@ describe("[Service] ProtocolosService", () => {
       id: ["1"],
     };
 
-    const mockResult: WebhookReprocessado[] = [{ id: "1" }] as any;
+    const mockResult = {
+      data: [{ id: "1" }] as WebhookReprocessado[],
+      total: 1,
+    };
     repository.findAll.mockResolvedValue(mockResult);
     cache.get.mockResolvedValue(null);
 
@@ -192,7 +227,15 @@ describe("[Service] ProtocolosService", () => {
 
     expect(cache.setWithTTL).toHaveBeenCalledWith(
       expect.any(String),
-      JSON.stringify(mockResult),
+      JSON.stringify({
+        data: mockResult.data,
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 1,
+          total_pages: 1,
+        },
+      }),
       60 * 60 * 24,
     );
   });

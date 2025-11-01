@@ -49,8 +49,8 @@ npm: v10.9.3
 
 **UUIDs:** uuid (para gerar identificadores únicos)
 
-**Validação de Dados:** joi (para validar os dados de entrada das requisições)
+**Validação de Dados:** zod (para validar os dados de entrada das requisições)
 
 **Simulação de Webhook:** webhook.site (uma ferramenta online para testar o envio de webhooks)
 
-All in english
+All code should be in english, Except for the documentation and comments and messages returned to the user (should be in portuguese).

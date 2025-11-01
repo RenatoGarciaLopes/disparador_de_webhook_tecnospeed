@@ -2,7 +2,7 @@ import { CacheService } from "@/infrastructure/cache/cache.service";
 import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
 import { ServicoRepository } from "@/modules/webhook/infrastructure/repositories/ServicoRepository";
 import { WebhookReprocessadoRepository } from "@/modules/webhook/infrastructure/repositories/WebhookReprocessadoRepository";
-import { TecnospeedClient } from "@/modules/webhook/infrastructure/tecnospeed/TecnospeedClient";
+import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { AuthMiddleware } from "@/shared/modules/auth/interfaces/http/middlewares/auth.middleware";
 import { RouterImplementation } from "@/shared/RouterImplementation";
 import { ReenviarController } from "../controllers/ReenviarController";

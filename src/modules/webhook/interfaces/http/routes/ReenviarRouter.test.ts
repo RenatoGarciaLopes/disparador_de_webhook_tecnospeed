@@ -28,7 +28,7 @@ jest.mock("@/modules/webhook/infrastructure/repositories/ServicoRepository");
 jest.mock(
   "@/modules/webhook/infrastructure/repositories/WebhookReprocessadoRepository",
 );
-jest.mock("@/modules/webhook/infrastructure/tecnospeed/TecnospeedClient");
+jest.mock("@/infrastructure/tecnospeed/TecnospeedClient");
 
 import { CacheService } from "@/infrastructure/cache/cache.service";
 import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";

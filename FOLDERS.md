@@ -59,14 +59,9 @@ project-root/
 │ │ ├── cache/ # Config Redis
 │ │ └── config/ # dotenv e variáveis de ambiente
 │ │
-│ └── main.ts # Entry point Express
+│ └── app.ts # Entry point Express
+│ └── server.ts # Servidor Node.js
 │
 ├── docker-compose.yml
-├── Dockerfile
-├── .eslintrc.json
-├── .prettierrc
-├── jest.config.js
-├── tsconfig.json
-├── package.json
-├── .env.example
-└── README.md
+├── Dockerfile.development
+├── Dockerfile.production

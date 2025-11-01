@@ -4,11 +4,11 @@ import { ConfiguracaoNotificacaoUseCase } from "../../application/use-cases/Conf
 import { MontarNotificacaoUseCase } from "../../application/use-cases/MontarNotificacaoUseCase";
 import { ServicoRepository } from "../../infrastructure/repositories/ServicoRepository";
 import { WebhookReprocessadoRepository } from "../../infrastructure/repositories/WebhookReprocessadoRepository";
-import { TecnospeedClient } from "../../infrastructure/tecnospeed/TecnospeedClient";
+import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { ReenviarService } from "./ReenviarService";
 
 jest.mock("@/infrastructure/cache/cache.service");
-jest.mock("../../infrastructure/tecnospeed/TecnospeedClient");
+jest.mock("@/infrastructure/tecnospeed/TecnospeedClient");
 jest.mock("../../infrastructure/repositories/ServicoRepository");
 jest.mock("../../infrastructure/repositories/WebhookReprocessadoRepository");
 jest.mock("../../application/use-cases/ConfiguracaoNotificacaoUseCase");

@@ -1,5 +1,5 @@
 import { App } from "@/app";
-import { TecnospeedClient } from "@/modules/webhook/infrastructure/tecnospeed/TecnospeedClient";
+import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { Express } from "express";
 import request from "supertest";
 import { TestDataHelper } from "../../helpers/test-data.helper";

@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
-import { ProtocolosController } from "./ProtocolosController";
 import { ProtocolosService } from "@/modules/protocolo/domain/services/ProtocolosService";
-import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
+import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
+import { Response } from "express";
+import { ProtocolosController } from "./ProtocolosController";
 
 jest.mock("@/shared/errors/ErrorResponse");
 

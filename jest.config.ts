@@ -20,6 +20,7 @@ const config: Config = {
     "!src/**/*.test.ts",
     "!src/**/*.d.ts",
     "!src/server.ts",
+    "!src/**/docs/*",
   ],
 
   coveragePathIgnorePatterns: ["./sequelize/*", "node_modules/*"],

@@ -52,9 +52,9 @@ describe("[PROTOCOL] /protocolos - Success Responses", () => {
       });
 
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThanOrEqual(1);
-    expect(res.body[0]).toHaveProperty("protocolo");
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+    expect(res.body.data[0]).toHaveProperty("protocolo");
   });
 
   it("aplica filtros de product, type, kind e id", async () => {
@@ -94,10 +94,10 @@ describe("[PROTOCOL] /protocolos - Success Responses", () => {
       });
 
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(1);
-    expect(res.body[0].product).toBe("BOLETO");
-    expect(res.body[0].type).toBe("pago");
-    expect(res.body[0].servico_id).toContain("10");
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBe(1);
+    expect(res.body.data[0].product).toBe("BOLETO");
+    expect(res.body.data[0].type).toBe("pago");
+    expect(res.body.data[0].servico_id).toContain("10");
   });
 });

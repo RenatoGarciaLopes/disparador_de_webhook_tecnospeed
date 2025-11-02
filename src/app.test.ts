@@ -2,14 +2,23 @@ jest.mock("./infrastructure/config", () => ({
   config: { NODE_ENV: "test" },
 }));
 
+const serveMock = jest.fn();
+const setupMock = jest.fn();
 const useMock = jest.fn();
 const listenMock = jest.fn();
 const onMock = jest.fn();
+const getMock = jest.fn();
+
+jest.mock("swagger-ui-express", () => ({
+  serve: serveMock,
+  setup: setupMock,
+}));
 
 jest.mock("express", () => {
   const expressMock = () => ({
     use: useMock,
     listen: listenMock.mockReturnValue({ on: onMock }),
+    get: getMock,
   });
   (expressMock as any).json = jest.fn(() => "json-mw");
   return expressMock;
@@ -28,9 +37,15 @@ jest.mock("./modules/webhook/interfaces/http/routes/ReenviarRouter", () => ({
   ReenviarRouter: jest.fn().mockImplementation(() => reenviarRouterMock),
 }));
 
+const mockOpenApiDocument = { openapi: "3.0.3", info: { title: "Test" } };
+jest.mock("./infrastructure/docs/openapi", () => ({
+  getOpenApiDocument: jest.fn(() => mockOpenApiDocument),
+}));
+
 import express from "express";
 import { App } from "./app";
 import { config } from "./infrastructure/config";
+import { getOpenApiDocument } from "./infrastructure/docs/openapi";
 
 describe("[CORE] App", () => {
   beforeEach(() => {
@@ -42,11 +57,28 @@ describe("[CORE] App", () => {
       const jsonSpy = jest.spyOn(express as any, "json");
       const app = new App();
       expect(jsonSpy).toHaveBeenCalled();
-      expect(useMock).toHaveBeenCalledTimes(3);
+      expect(useMock).toHaveBeenCalledTimes(4);
       expect(useMock).toHaveBeenCalledWith("json-mw");
       expect(useMock).toHaveBeenCalledWith(protocolosRouterMock.router);
       expect(useMock).toHaveBeenCalledWith(reenviarRouterMock.router);
+      expect(getMock).toHaveBeenCalledWith("/docs.json", expect.any(Function));
       expect(app.server).toBeDefined();
+    });
+
+    it("deve configurar /docs.json para retornar documentação OpenAPI", () => {
+      new App();
+      expect(getOpenApiDocument).toHaveBeenCalled();
+
+      // Verifica se o handler registrado chama getOpenApiDocument
+      const getCall = getMock.mock.calls.find(
+        (call) => call[0] === "/docs.json",
+      );
+      expect(getCall).toBeDefined();
+
+      const resMock = { json: jest.fn() };
+      getCall![1]({}, resMock);
+
+      expect(resMock.json).toHaveBeenCalledWith(mockOpenApiDocument);
     });
   });
 
@@ -77,7 +109,7 @@ describe("[CORE] App", () => {
         "--------------------------------",
       );
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        "TecnoSpeed - Webhook Dispatcher",
+        "Tecnospeed - Webhook Dispatcher",
       );
       expect(consoleLogSpy).toHaveBeenCalledWith(
         "--------------------------------",

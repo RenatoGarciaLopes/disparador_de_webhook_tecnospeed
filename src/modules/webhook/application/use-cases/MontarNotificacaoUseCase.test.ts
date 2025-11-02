@@ -479,7 +479,6 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
             header: true,
             header_campo: "X-Only",
             header_valor: "only-value",
-            // @ts-expect-error: cobrindo caso não-array
             headers_adicionais: undefined,
           },
         },
@@ -508,7 +507,6 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
     it("deve ignorar produto desconhecido (default continue)", () => {
       const data = {
-        // @ts-expect-error: produto desconhecido para cobrir default do switch
         product: "DESCONHECIDO",
         kind: "webhook" as const,
         type: "pago" as const,

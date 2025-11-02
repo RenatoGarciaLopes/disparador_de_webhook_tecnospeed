@@ -32,4 +32,11 @@ export const envSchema = z.object({
   REDIS_HOST: z.string().min(2),
 
   TECNOSPEED_BASE_URL: z.url(),
+
+  HTTP_TIMEOUT_MS: z.coerce.number().default(5 * 1000), // 5s default
+
+  CB_TIMEOUT_MS: z.coerce.number().default(4 * 1000), // 4s default
+  CB_RESET_TIMEOUT_MS: z.coerce.number().default(30 * 1000), // 30s default
+  CB_ERROR_THRESHOLD_PERCENT: z.coerce.number().min(1).max(100).default(50),
+  CB_VOLUME_THRESHOLD: z.coerce.number().default(10),
 });

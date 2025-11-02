@@ -7,7 +7,14 @@ import { PixPresenter } from "../../modules/webhook/application/presenters/pix";
 import { TecnospeedClient } from "./TecnospeedClient";
 
 jest.mock("@/infrastructure/config", () => ({
-  config: { TECNOSPEED_BASE_URL: "https://api.tecnospeed.mock" },
+  config: {
+    TECNOSPEED_BASE_URL: "https://api.tecnospeed.mock",
+    HTTP_TIMEOUT_MS: 5000,
+    CB_TIMEOUT_MS: 50,
+    CB_RESET_TIMEOUT_MS: 200,
+    CB_ERROR_THRESHOLD_PERCENT: 1,
+    CB_VOLUME_THRESHOLD: 1,
+  },
 }));
 jest.mock("axios");
 
@@ -60,6 +67,7 @@ describe("[Tecnospeed] TecnospeedClient", () => {
         expect(mockedAxios.post).toHaveBeenCalledWith(
           `${config.TECNOSPEED_BASE_URL}/`,
           payload,
+          expect.objectContaining({ timeout: expect.any(Number) }),
         );
       });
 
@@ -90,6 +98,7 @@ describe("[Tecnospeed] TecnospeedClient", () => {
         expect(mockedAxios.post).toHaveBeenCalledWith(
           expect.any(String),
           payload,
+          expect.any(Object),
         );
         expect(result).toEqual({ protocolo: "BOLETO123" });
       });
@@ -116,6 +125,7 @@ describe("[Tecnospeed] TecnospeedClient", () => {
         expect(mockedAxios.post).toHaveBeenCalledWith(
           expect.any(String),
           payload,
+          expect.any(Object),
         );
       });
 
@@ -141,6 +151,7 @@ describe("[Tecnospeed] TecnospeedClient", () => {
         expect(mockedAxios.post).toHaveBeenCalledWith(
           expect.any(String),
           payload,
+          expect.objectContaining({ timeout: expect.any(Number) }),
         );
       });
 
@@ -352,6 +363,75 @@ describe("[Tecnospeed] TecnospeedClient", () => {
         await client.reenviarWebhook(payload);
 
         expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe("Circuit Breaker", () => {
+      it("deve abrir após falha 5xx e short-circuitar novas chamadas", async () => {
+        const axiosError = new AxiosError(
+          "Request failed with status code 500",
+          "ERR_INTERNAL_SERVER_ERROR",
+          undefined,
+          undefined,
+          {
+            status: 500,
+            statusText: "Internal Server Error",
+            data: { error: "Internal Server Error" },
+            headers: {},
+            config: {} as any,
+          },
+        );
+
+        mockedAxios.post.mockRejectedValueOnce(axiosError);
+
+        const payload = { notifications: [] };
+        const client = new TecnospeedClient();
+
+        // Primeira chamada falha e deve disparar abertura do breaker (thresholds = 1)
+        await expect(client.reenviarWebhook(payload)).rejects.toBeInstanceOf(
+          ErrorResponse,
+        );
+
+        mockedAxios.post.mockClear();
+
+        // Segunda chamada deve ser rejeitada imediatamente (sem chamar axios)
+        // Usa a mesma instância do client para manter o mesmo circuit breaker
+        await expect(client.reenviarWebhook(payload)).rejects.toBeInstanceOf(
+          ErrorResponse,
+        );
+        expect(mockedAxios.post).not.toHaveBeenCalled();
+      });
+
+      it("não deve contar 4xx para abrir o circuito", async () => {
+        mockedAxios.post.mockImplementation(() => {
+          const error = new AxiosError(
+            "Request failed with status code 400",
+            "ERR_BAD_REQUEST",
+          );
+          error.response = {
+            status: 400,
+            statusText: "Bad Request",
+            data: { detail: "Payload inválido" },
+            headers: {},
+            config: {} as any,
+          };
+          return Promise.reject(error);
+        });
+
+        const client = new TecnospeedClient();
+        const payload = { notifications: [] };
+
+        await expect(client.reenviarWebhook(payload)).rejects.toBeInstanceOf(
+          ErrorResponse,
+        );
+        await expect(client.reenviarWebhook(payload)).rejects.toBeInstanceOf(
+          ErrorResponse,
+        );
+        await expect(client.reenviarWebhook(payload)).rejects.toBeInstanceOf(
+          ErrorResponse,
+        );
+
+        expect(mockedAxios.post).toHaveBeenCalledTimes(3);
       });
     });
   });

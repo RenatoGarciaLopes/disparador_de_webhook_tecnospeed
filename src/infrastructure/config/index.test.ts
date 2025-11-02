@@ -55,6 +55,11 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: 6379,
         REDIS_HOST: "localhost",
         TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
+        HTTP_TIMEOUT_MS: 5000,
+        CB_TIMEOUT_MS: 4000,
+        CB_RESET_TIMEOUT_MS: 30000,
+        CB_ERROR_THRESHOLD_PERCENT: 50,
+        CB_VOLUME_THRESHOLD: 10,
       });
     });
 
@@ -77,6 +82,33 @@ describe("[CHORE] config/index.ts", () => {
       const result = envSchema.partial().safeParse(env);
       expect(result.success).toBe(true);
       expect(result.data?.REDIS_PORT).toBe(6379);
+    });
+
+    it("deve transformar HTTP_TIMEOUT_MS, CB_TIMEOUT_MS, CB_RESET_TIMEOUT_MS, CB_ERROR_THRESHOLD_PERCENT e CB_VOLUME_THRESHOLD de string para number e aplicar defaults", () => {
+      const env = {
+        HTTP_TIMEOUT_MS: "8000",
+        CB_TIMEOUT_MS: "6000",
+        CB_RESET_TIMEOUT_MS: "45000",
+        CB_ERROR_THRESHOLD_PERCENT: "75",
+        CB_VOLUME_THRESHOLD: "20",
+      };
+      const result = envSchema.partial().safeParse(env);
+      expect(result.success).toBe(true);
+      expect(result.data?.HTTP_TIMEOUT_MS).toBe(8000);
+      expect(result.data?.CB_TIMEOUT_MS).toBe(6000);
+      expect(result.data?.CB_RESET_TIMEOUT_MS).toBe(45000);
+      expect(result.data?.CB_ERROR_THRESHOLD_PERCENT).toBe(75);
+      expect(result.data?.CB_VOLUME_THRESHOLD).toBe(20);
+
+      // Testa defaults quando não fornecidos
+      const envEmpty = {};
+      const resultEmpty = envSchema.partial().safeParse(envEmpty);
+      expect(resultEmpty.success).toBe(true);
+      expect(resultEmpty.data?.HTTP_TIMEOUT_MS).toBe(5000);
+      expect(resultEmpty.data?.CB_TIMEOUT_MS).toBe(4000);
+      expect(resultEmpty.data?.CB_RESET_TIMEOUT_MS).toBe(30000);
+      expect(resultEmpty.data?.CB_ERROR_THRESHOLD_PERCENT).toBe(50);
+      expect(resultEmpty.data?.CB_VOLUME_THRESHOLD).toBe(10);
     });
   });
 
@@ -345,6 +377,40 @@ describe("[CHORE] config/index.ts", () => {
       const result = envSchema.safeParse(env);
       expect(result.success).toBe(false);
     });
+
+    it("deve validar CB_ERROR_THRESHOLD_PERCENT: aceitar valores entre 1-100 e rejeitar fora do range", () => {
+      const envValid = {
+        NODE_ENV: "test",
+        PORT: "3000",
+        DB_USERNAME: "user",
+        DB_PASSWORD: "password",
+        DB_DATABASE: "database",
+        DB_HOST: "localhost",
+        DB_PORT: "5432",
+        REDIS_PASSWORD: "redis_password",
+        REDIS_PORT: "6379",
+        REDIS_HOST: "localhost",
+        TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
+        CB_ERROR_THRESHOLD_PERCENT: "75",
+      };
+      const resultValid = envSchema.safeParse(envValid);
+      expect(resultValid.success).toBe(true);
+      expect(resultValid.data?.CB_ERROR_THRESHOLD_PERCENT).toBe(75);
+
+      const envInvalidMin = {
+        ...envValid,
+        CB_ERROR_THRESHOLD_PERCENT: "0",
+      };
+      const resultInvalidMin = envSchema.safeParse(envInvalidMin);
+      expect(resultInvalidMin.success).toBe(false);
+
+      const envInvalidMax = {
+        ...envValid,
+        CB_ERROR_THRESHOLD_PERCENT: "101",
+      };
+      const resultInvalidMax = envSchema.safeParse(envInvalidMax);
+      expect(resultInvalidMax.success).toBe(false);
+    });
   });
 
   describe("[CONFIGURATION] zod locale", () => {
@@ -430,6 +496,39 @@ describe("[CHORE] config/index.ts", () => {
       expect(configModule.config.PORT).toBe(3000);
       expect(configModule.config.DB_PORT).toBe(5432);
       expect(configModule.config.REDIS_PORT).toBe(6379);
+      expect(configModule.config.HTTP_TIMEOUT_MS).toBe(5000);
+      expect(configModule.config.CB_TIMEOUT_MS).toBe(4000);
+      expect(configModule.config.CB_RESET_TIMEOUT_MS).toBe(30000);
+      expect(configModule.config.CB_ERROR_THRESHOLD_PERCENT).toBe(50);
+      expect(configModule.config.CB_VOLUME_THRESHOLD).toBe(10);
+
+      // Testa com valores explícitos das novas variáveis
+      jest.resetModules();
+      process.env = {
+        NODE_ENV: "test",
+        PORT: "3000",
+        DB_USERNAME: "user",
+        DB_PASSWORD: "password",
+        DB_DATABASE: "database",
+        DB_HOST: "localhost",
+        DB_PORT: "5432",
+        REDIS_PASSWORD: "redis_password",
+        REDIS_PORT: "6379",
+        REDIS_HOST: "localhost",
+        TECNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        HTTP_TIMEOUT_MS: "10000",
+        CB_TIMEOUT_MS: "8000",
+        CB_RESET_TIMEOUT_MS: "60000",
+        CB_ERROR_THRESHOLD_PERCENT: "75",
+        CB_VOLUME_THRESHOLD: "20",
+      };
+
+      const configModuleWithValues = require("../config");
+      expect(configModuleWithValues.config.HTTP_TIMEOUT_MS).toBe(10000);
+      expect(configModuleWithValues.config.CB_TIMEOUT_MS).toBe(8000);
+      expect(configModuleWithValues.config.CB_RESET_TIMEOUT_MS).toBe(60000);
+      expect(configModuleWithValues.config.CB_ERROR_THRESHOLD_PERCENT).toBe(75);
+      expect(configModuleWithValues.config.CB_VOLUME_THRESHOLD).toBe(20);
     });
 
     it("deve chamar process.exit(1) quando variáveis são inválidas", () => {
@@ -643,6 +742,36 @@ describe("[CHORE] config/index.ts", () => {
 
       const result = envSchema.safeParse(env);
       expect(result.success).toBe(false);
+    });
+
+    it("deve aceitar valores boundary para timeouts e CB_ERROR_THRESHOLD_PERCENT", () => {
+      const env = {
+        HTTP_TIMEOUT_MS: "0",
+        CB_TIMEOUT_MS: "0",
+        CB_RESET_TIMEOUT_MS: "0",
+        CB_VOLUME_THRESHOLD: "0",
+        CB_ERROR_THRESHOLD_PERCENT: "1",
+      };
+      const result = envSchema.partial().safeParse(env);
+      expect(result.success).toBe(true);
+      expect(result.data?.HTTP_TIMEOUT_MS).toBe(0);
+      expect(result.data?.CB_TIMEOUT_MS).toBe(0);
+      expect(result.data?.CB_RESET_TIMEOUT_MS).toBe(0);
+      expect(result.data?.CB_VOLUME_THRESHOLD).toBe(0);
+      expect(result.data?.CB_ERROR_THRESHOLD_PERCENT).toBe(1);
+
+      const envMax = {
+        HTTP_TIMEOUT_MS: "300000",
+        CB_TIMEOUT_MS: "300000",
+        CB_RESET_TIMEOUT_MS: "600000",
+        CB_ERROR_THRESHOLD_PERCENT: "100",
+      };
+      const resultMax = envSchema.partial().safeParse(envMax);
+      expect(resultMax.success).toBe(true);
+      expect(resultMax.data?.HTTP_TIMEOUT_MS).toBe(300000);
+      expect(resultMax.data?.CB_TIMEOUT_MS).toBe(300000);
+      expect(resultMax.data?.CB_RESET_TIMEOUT_MS).toBe(600000);
+      expect(resultMax.data?.CB_ERROR_THRESHOLD_PERCENT).toBe(100);
     });
   });
 });

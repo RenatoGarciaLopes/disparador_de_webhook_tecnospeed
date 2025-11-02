@@ -59,5 +59,7 @@
     "presenters": "views",
     "sequelize": "functions",
     "migrations": "database",
+    "logger": "log",
+    "tecnospeed": "contract"
   },
 }

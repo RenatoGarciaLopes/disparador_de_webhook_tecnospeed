@@ -11,6 +11,17 @@ jest.mock("@/infrastructure/config", () => ({
   },
 }));
 
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
 let mockCircuitBreaker: jest.Mock;
 
 jest.mock("opossum", () => {
@@ -48,24 +59,13 @@ jest.mock("opossum", () => {
   };
 });
 
-describe("[INFRA] circuit-breaker.service", () => {
-  let consoleWarnSpy: jest.SpyInstance;
-  let consoleLogSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+import { Logger } from "@/infrastructure/logger/logger";
 
+describe("[INFRA] circuit-breaker.service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCircuitBreaker = require("opossum").default;
     mockCircuitBreaker.mockClear();
-    consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
-    consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-  });
-
-  afterEach(() => {
-    consoleWarnSpy.mockRestore();
-    consoleLogSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
   });
 
   describe("buildCircuitBreakerFor", () => {
@@ -106,7 +106,9 @@ describe("[INFRA] circuit-breaker.service", () => {
 
       expect(openHandler).toBeDefined();
       openHandler();
-      expect(consoleWarnSpy).toHaveBeenCalledWith("[cb] open - test-breaker");
+      expect(Logger.warn).toHaveBeenCalledWith(
+        "Circuit breaker [test-breaker] state changed: open",
+      );
     });
 
     it("deve logar evento 'halfOpen' quando breaker entra em half-open", () => {
@@ -119,8 +121,8 @@ describe("[INFRA] circuit-breaker.service", () => {
 
       expect(halfOpenHandler).toBeDefined();
       halfOpenHandler();
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        "[cb] halfOpen - test-breaker",
+      expect(Logger.info).toHaveBeenCalledWith(
+        "Circuit breaker [test-breaker] state changed: halfOpen",
       );
     });
 
@@ -134,7 +136,9 @@ describe("[INFRA] circuit-breaker.service", () => {
 
       expect(closeHandler).toBeDefined();
       closeHandler();
-      expect(consoleLogSpy).toHaveBeenCalledWith("[cb] close - test-breaker");
+      expect(Logger.info).toHaveBeenCalledWith(
+        "Circuit breaker [test-breaker] state changed: close",
+      );
     });
 
     it("deve logar evento 'reject' quando chamada é rejeitada", () => {
@@ -147,7 +151,9 @@ describe("[INFRA] circuit-breaker.service", () => {
 
       expect(rejectHandler).toBeDefined();
       rejectHandler();
-      expect(consoleWarnSpy).toHaveBeenCalledWith("[cb] reject - test-breaker");
+      expect(Logger.warn).toHaveBeenCalledWith(
+        "Circuit breaker [test-breaker] short-circuited request",
+      );
     });
 
     it("deve logar evento 'timeout' quando ocorre timeout", () => {
@@ -160,8 +166,8 @@ describe("[INFRA] circuit-breaker.service", () => {
 
       expect(timeoutHandler).toBeDefined();
       timeoutHandler();
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        "[cb] timeout - test-breaker",
+      expect(Logger.warn).toHaveBeenCalledWith(
+        "Circuit breaker [test-breaker] action timed out",
       );
     });
 
@@ -176,9 +182,8 @@ describe("[INFRA] circuit-breaker.service", () => {
       expect(failureHandler).toBeDefined();
       const error = new Error("test error");
       failureHandler(error);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[cb] failure - test-breaker",
-        error,
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Circuit breaker [test-breaker] action failed: test error",
       );
     });
 
@@ -192,7 +197,9 @@ describe("[INFRA] circuit-breaker.service", () => {
 
       expect(successHandler).toBeDefined();
       successHandler();
-      expect(consoleLogSpy).toHaveBeenCalledWith("[cb] success - test-breaker");
+      expect(Logger.info).toHaveBeenCalledWith(
+        "Circuit breaker [test-breaker] action succeeded",
+      );
     });
 
     describe("errorFilter", () => {

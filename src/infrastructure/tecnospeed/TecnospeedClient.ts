@@ -1,5 +1,6 @@
 import { config } from "@/infrastructure/config";
 import { buildCircuitBreakerFor } from "@/infrastructure/http/circuit-breaker.service";
+import { Logger } from "@/infrastructure/logger/logger";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import axios, { AxiosError } from "axios";
 import { BoletoPresenter } from "../../modules/webhook/application/presenters/boleto";
@@ -13,9 +14,14 @@ export class TecnospeedClient {
     async (payload: {
       notifications: (BoletoPresenter | PagamentoPresenter | PixPresenter)[];
     }) => {
+      Logger.info(
+        `Sending notifications to Tecnospeed: ${payload.notifications?.length || 0} notifications`,
+      );
+
       const response = await axios.post(`${this.baseUrl}/`, payload, {
         timeout: config.HTTP_TIMEOUT_MS,
       });
+      Logger.info(`Tecnospeed response received: status=${response.status}`);
       return response.data;
     },
   );
@@ -28,6 +34,10 @@ export class TecnospeedClient {
       return response as { protocolo: string };
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
+        Logger.error(
+          `Tecnospeed request failed: status=${err.response?.status}, code=${err.code}, message=${err.message}`,
+        );
+
         if (err.response?.status === 400) {
           throw ErrorResponse.internalServerErrorFromError(
             new Error(

@@ -1,3 +1,4 @@
+import { Logger } from "@/infrastructure/logger/logger";
 import { IConfiguracaoNotificacao } from "@/shared/interfaces/IConfiguracaoNotificacao";
 import { SituacaoMapper } from "../../domain/mappers/SituacaoMapper";
 import { ReenviarDTO } from "../../interfaces/http/dtos/ReenviarDTO";
@@ -20,7 +21,12 @@ export class MontarNotificacaoUseCase {
   ) {}
 
   public execute(params: { cnpjCedente: string }) {
-    if (!this.configuracaoNotificacoes?.length) return [];
+    if (!this.configuracaoNotificacoes?.length) {
+      Logger.info(
+        `Nenhuma configuração de notificação encontrada: product=${this.data.product}, type=${this.data.type}`,
+      );
+      return [];
+    }
 
     const payloads: any[] = [];
 
@@ -42,30 +48,53 @@ export class MontarNotificacaoUseCase {
         });
       }
 
-      let payload;
+      try {
+        let payload;
 
-      switch (this.data.product) {
-        case "BOLETO":
-          payload = this.montarBoleto(config, {
-            headers,
-            cnpjCedente: params.cnpjCedente,
-          });
-          break;
+        switch (this.data.product) {
+          case "BOLETO":
+            Logger.debug(
+              `Montando payload de BOLETO: url=${configuracaoNotificacao.url?.substring(0, 50)}...`,
+            );
+            payload = this.montarBoleto(config, {
+              headers,
+              cnpjCedente: params.cnpjCedente,
+            });
+            break;
 
-        case "PAGAMENTO":
-          payload = this.montarPagamento(config, { headers });
-          break;
+          case "PAGAMENTO":
+            Logger.debug(
+              `Montando payload de PAGAMENTO: url=${configuracaoNotificacao.url?.substring(0, 50)}...`,
+            );
+            payload = this.montarPagamento(config, { headers });
+            break;
 
-        case "PIX":
-          payload = this.montarPix(config, { headers });
-          break;
+          case "PIX":
+            Logger.debug(
+              `Montando payload de PIX: url=${configuracaoNotificacao.url?.substring(0, 50)}...`,
+            );
+            payload = this.montarPix(config, { headers });
+            break;
 
-        default:
-          continue;
+          default:
+            continue;
+        }
+
+        if (payload) payloads.push(payload);
+      } catch (e: any) {
+        Logger.warn(
+          `Erro ao montar payload: url=${configuracaoNotificacao.url}, error=${e?.message}`,
+        );
       }
-
-      if (payload) payloads.push(payload);
     }
+
+    const destinos = new Set(
+      payloads.map((p) => (p?.url ? String(p.url) : "")),
+    );
+
+    Logger.info(
+      `Payloads de notificação montados: total=${payloads.length}, destinos=${destinos.size}, produto=${this.data.product}`,
+    );
 
     return payloads;
   }

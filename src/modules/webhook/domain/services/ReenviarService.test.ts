@@ -17,6 +17,19 @@ jest.mock("uuid", () => ({
   v4: jest.fn(() => "test-uuid-123"),
 }));
 
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
+import { Logger } from "@/infrastructure/logger/logger";
+
 describe("[WEBHOOK] ReenviarService", () => {
   let service: ReenviarService;
   let mockCache: jest.Mocked<CacheService>;
@@ -73,6 +86,9 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         const result = await service.webhook(data, cedente);
 
+        expect(Logger.info).toHaveBeenCalledWith(
+          "Webhook reenvio started: product=BOLETO, type=pago, kind=webhook, idsCount=2, cedenteId=1",
+        );
         expect(result).toEqual(cachedData);
         expect(
           mockServicoRepository.findAllConfiguracaoNotificacaoByCedente,
@@ -94,8 +110,34 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         await service.webhook(data, cedente);
 
+        expect(Logger.info).toHaveBeenCalledWith(
+          "Webhook reenvio started: product=BOLETO, type=pago, kind=webhook, idsCount=3, cedenteId=1",
+        );
         expect(mockCache.get).toHaveBeenCalledWith(
           "reenviar:BOLETO:1,2,3:pago",
+        );
+      });
+
+      it("deve logar corretamente quando id é undefined", async () => {
+        mockCache.get.mockResolvedValue(null);
+
+        const data = {
+          product: "PIX" as const,
+          id: undefined as any,
+          kind: "webhook" as const,
+          type: "disponivel" as const,
+        };
+
+        const cedente = { id: 10, cnpj: "98.765.432/0001-10" };
+
+        try {
+          await service.webhook(data, cedente);
+        } catch (error) {
+          // Esperado que lance erro ao tentar usar data.id.sort()
+        }
+
+        expect(Logger.info).toHaveBeenCalledWith(
+          "Webhook reenvio started: product=PIX, type=disponivel, kind=webhook, idsCount=0, cedenteId=10",
         );
       });
     });
@@ -161,6 +203,9 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         const result = await service.webhook(data, cedente);
 
+        expect(Logger.info).toHaveBeenCalledWith(
+          "Webhook reenvio started: product=BOLETO, type=pago, kind=webhook, idsCount=1, cedenteId=1",
+        );
         expect(result).toEqual({
           message: "Notificação reenviada com sucesso",
           protocolo: "PROTO123",

@@ -1,35 +1,43 @@
+import { Logger } from "@/infrastructure/logger/logger";
 import { sequelize } from "@/sequelize";
 
 export class DatabaseService {
   async connect(): Promise<boolean> {
+    Logger.info("Attempting to authenticate database connection");
+
     const cantAuthenticate = await sequelize
       .authenticate()
       .then(() => {
-        console.log("[debug] Conexão estabelecida com sucesso");
+        Logger.info("Database authentication successful");
         return false;
       })
       .catch((error) => {
-        console.error("[error] Erro ao conectar ao banco de dados:", error);
+        Logger.error(
+          `Database authentication failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
         return true;
       });
 
     if (cantAuthenticate) return false;
 
+    Logger.info("Attempting to sync database models");
+
     const cantSync = await sequelize
       .sync()
       .then(() => {
-        console.log(
-          "[debug] Sincronização do banco de dados realizada com sucesso",
-        );
+        Logger.info("Database models synchronized successfully");
         return false;
       })
       .catch((error) => {
-        console.error("[error] Erro ao sincronizar o banco de dados:", error);
+        Logger.error(
+          `Database synchronization failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
         return true;
       });
 
     if (cantSync) return false;
 
+    Logger.info("Database connection established and synchronized");
     return true;
   }
 }

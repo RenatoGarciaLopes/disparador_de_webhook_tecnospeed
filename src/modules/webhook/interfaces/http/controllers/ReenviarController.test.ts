@@ -1,9 +1,23 @@
 import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
+import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { Request, Response } from "express";
 import { ReenviarController } from "./ReenviarController";
 
 jest.mock("@/modules/webhook/domain/services/ReenviarService");
+
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
+import { Logger } from "@/infrastructure/logger/logger";
 
 describe("[WEBHOOK] ReenviarController", () => {
   let controller: ReenviarController;
@@ -45,6 +59,7 @@ describe("[WEBHOOK] ReenviarController", () => {
     };
 
     jest.clearAllMocks();
+    jest.spyOn(ErrorResponse, "internalServerErrorFromError");
   });
 
   describe("Casos de sucesso", () => {
@@ -57,6 +72,9 @@ describe("[WEBHOOK] ReenviarController", () => {
         mockResponse as Response,
       );
 
+      expect(Logger.info).toHaveBeenCalledWith(
+        "Reenviar webhook request received: product=BOLETO, type=pago, kind=webhook, idsCount=3",
+      );
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalledWith(mockResponseData);
     });
@@ -70,6 +88,9 @@ describe("[WEBHOOK] ReenviarController", () => {
         mockResponse as Response,
       );
 
+      expect(Logger.info).toHaveBeenCalledWith(
+        "Reenviar webhook request received: product=BOLETO, type=pago, kind=webhook, idsCount=3",
+      );
       expect(mockService.webhook).toHaveBeenCalledWith(
         {
           product: "BOLETO",
@@ -82,6 +103,26 @@ describe("[WEBHOOK] ReenviarController", () => {
           cnpj: "98.765.432/0001-10",
         },
       );
+    });
+
+    it("deve logar corretamente quando id é undefined", async () => {
+      const mockResponseData = { success: true };
+      mockService.webhook.mockResolvedValue(mockResponseData);
+      mockRequest.body = {
+        product: "BOLETO",
+        kind: "webhook",
+        type: "pago",
+      };
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(Logger.info).toHaveBeenCalledWith(
+        "Reenviar webhook request received: product=BOLETO, type=pago, kind=webhook, idsCount=0",
+      );
+      expect(statusMock).toHaveBeenCalledWith(200);
     });
 
     it("deve usar cedenteId do request", async () => {
@@ -283,17 +324,55 @@ describe("[WEBHOOK] ReenviarController", () => {
     it("deve usar ErrorResponse.internalServerErrorFromError para erros genéricos", async () => {
       const genericError = new Error("Unexpected error");
       mockService.webhook.mockRejectedValue(genericError);
+      const mockInternalError = {
+        code: "INTERNAL_SERVER_ERROR",
+        statusCode: 500,
+        error: { errors: ["Unexpected error"] },
+      };
+      (
+        ErrorResponse.internalServerErrorFromError as unknown as jest.SpyInstance
+      ).mockReturnValue({
+        json: () => mockInternalError,
+      } as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
         mockResponse as Response,
       );
 
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Unexpected error in reenviar request: Unexpected error",
+      );
       expect(jsonMock).toHaveBeenCalled();
       const errorResponse = jsonMock.mock.calls[0][0];
       expect(errorResponse.code).toBe("INTERNAL_SERVER_ERROR");
       expect(errorResponse.statusCode).toBe(500);
       expect(errorResponse.error.errors).toContain("Unexpected error");
+
+      // Testa quando erro não é instância de Error
+      jest.clearAllMocks();
+      const nonErrorValue = "String error message" as any;
+      mockService.webhook.mockRejectedValue(nonErrorValue);
+      const mockInternalError2 = {
+        code: "INTERNAL_SERVER_ERROR",
+        statusCode: 500,
+        error: { errors: [String(nonErrorValue)] },
+      };
+      (
+        ErrorResponse.internalServerErrorFromError as unknown as jest.SpyInstance
+      ).mockReturnValue({
+        json: () => mockInternalError2,
+      } as any);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        `Unexpected error in reenviar request: ${String(nonErrorValue)}`,
+      );
+      expect(statusMock).toHaveBeenCalledWith(500);
     });
   });
 

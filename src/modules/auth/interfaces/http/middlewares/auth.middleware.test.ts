@@ -8,6 +8,19 @@ jest.mock(
 );
 jest.mock("../../../infrastructure/database/repositories/CedenteRepository");
 
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
+import { Logger } from "@/infrastructure/logger/logger";
+
 describe("[AUTH] AuthMiddleware", () => {
   let mockRequest: Partial<
     Request & { softwareHouseId: number; cedenteId: number }
@@ -425,6 +438,52 @@ describe("[AUTH] AuthMiddleware", () => {
         mockNext,
       );
 
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalled();
+    });
+
+    it("deve logar erro quando erro não é instância de Error", async () => {
+      const nonErrorValue = "String error message" as any;
+      const mockSoftwareHouseRepo = {
+        find: jest.fn().mockRejectedValue(nonErrorValue),
+      };
+
+      (SoftwareHouseRepository as jest.Mock).mockImplementation(
+        () => mockSoftwareHouseRepo,
+      );
+
+      await AuthMiddleware.validate(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+        mockNext,
+      );
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        `Unexpected error in auth middleware: ${String(nonErrorValue)}`,
+      );
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalled();
+    });
+
+    it("deve logar erro quando erro é um objeto não Error", async () => {
+      const nonErrorObject = { code: "CUSTOM_ERROR", message: "Custom" } as any;
+      const mockSoftwareHouseRepo = {
+        find: jest.fn().mockRejectedValue(nonErrorObject),
+      };
+
+      (SoftwareHouseRepository as jest.Mock).mockImplementation(
+        () => mockSoftwareHouseRepo,
+      );
+
+      await AuthMiddleware.validate(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+        mockNext,
+      );
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        `Unexpected error in auth middleware: ${String(nonErrorObject)}`,
+      );
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalled();
     });

@@ -1,4 +1,5 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
+import { Logger } from "@/infrastructure/logger/logger";
 import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { IKindReenvio } from "@/shared/utils/kind-reenvios";
@@ -31,12 +32,21 @@ export class ReenviarService implements IReenviarService {
       cnpj: string;
     },
   ) {
+    Logger.info(
+      `Webhook reenvio started: product=${data.product}, type=${data.type}, kind=${data.kind}, idsCount=${data.id?.length || 0}, cedenteId=${cedente.id}`,
+    );
+
     const cacheKey = `reenviar:${data.product}:${data.id
       .sort()
       .join(",")}:${data.type}`;
 
     const cached = await this.cache.get(cacheKey);
-    if (cached) return JSON.parse(cached);
+    if (cached) {
+      Logger.info("Cache hit");
+      return JSON.parse(cached);
+    }
+
+    Logger.debug("Cache miss");
 
     const servicos =
       await this.servicoRepository.findAllConfiguracaoNotificacaoByCedente(
@@ -46,11 +56,16 @@ export class ReenviarService implements IReenviarService {
         data.type,
       );
 
+    Logger.debug(
+      `Servicos retrieved from repository: ${servicos?.length || 0} servicos`,
+    );
+
     const existingIds = servicos.map((s) => s.id);
     const invalidIds = data.id.filter(
       (id: number) => !existingIds.includes(id),
     );
     if (invalidIds.length > 0) {
+      Logger.warn(`Invalid servicos found: ${invalidIds.length} invalid ids`);
       throw new InvalidFieldsError(
         {
           errors: [
@@ -71,8 +86,13 @@ export class ReenviarService implements IReenviarService {
     }
 
     const processamentoId = uuidv4();
+    Logger.debug(`Generating processamento ID: ${processamentoId}`);
 
     const configuracoes = ConfiguracaoNotificacaoUseCase.execute(servicos);
+    Logger.debug(
+      `Configuracoes processed: ${configuracoes?.length || 0} configuracoes`,
+    );
+
     const payloads = new MontarNotificacaoUseCase(
       processamentoId,
       {
@@ -83,9 +103,17 @@ export class ReenviarService implements IReenviarService {
       configuracoes,
     ).execute({ cnpjCedente: cedente.cnpj }) as any;
 
+    Logger.info(
+      `Payloads mounted, sending to Tecnospeed: ${payloads?.length || 0} payloads`,
+    );
+
     const sendResult = await this.TecnospeedClient.reenviarWebhook({
       notifications: payloads,
     });
+
+    Logger.info(
+      `Tecnospeed response received: protocolo=${sendResult.protocolo}`,
+    );
 
     await this.webhookReprocessadoRepository.create({
       id: processamentoId,
@@ -100,6 +128,10 @@ export class ReenviarService implements IReenviarService {
       },
     });
 
+    Logger.debug(
+      `WebhookReprocessado created in database: processamentoId=${processamentoId}, protocolo=${sendResult.protocolo}`,
+    );
+
     const successMessage = {
       message: "Notificação reenviada com sucesso",
       protocolo: sendResult.protocolo,
@@ -109,6 +141,12 @@ export class ReenviarService implements IReenviarService {
       cacheKey,
       JSON.stringify(successMessage),
       this.CACHE_TTL,
+    );
+
+    Logger.debug("Result cached");
+
+    Logger.info(
+      `Webhook reenvio completed successfully: protocolo=${sendResult.protocolo}`,
     );
 
     return successMessage;

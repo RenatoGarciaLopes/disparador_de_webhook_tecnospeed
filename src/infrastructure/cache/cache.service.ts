@@ -1,3 +1,4 @@
+import { Logger } from "@/infrastructure/logger/logger";
 import { createClient, RedisClientType } from "redis";
 import { config } from "../config";
 
@@ -14,7 +15,7 @@ export class CacheService {
       password: config.REDIS_PASSWORD,
     });
     this.client.on("error", (err) => {
-      console.error("[error] Cache connection error:", err);
+      Logger.error(`Redis connection error: ${err.message}`);
     });
   }
 
@@ -28,12 +29,16 @@ export class CacheService {
   public async connect(): Promise<void> {
     try {
       if (!this.client.isOpen) {
-        console.log("[debug] Connecting to Cache");
+        Logger.info("Connecting to Redis cache");
         await this.client.connect();
-        console.log("[debug] Cache connected");
+        Logger.info("Redis cache connected successfully");
+      } else {
+        Logger.debug("Redis cache already connected");
       }
     } catch (err) {
-      console.error("[error] Cache connection error:", err);
+      Logger.error(
+        `Failed to connect to Redis cache: ${err instanceof Error ? err.message : String(err)}`,
+      );
       throw err;
     }
   }
@@ -43,28 +48,59 @@ export class CacheService {
     value: string,
     ttlSeconds: number,
   ): Promise<void> {
-    await this.client.set(key, value, { EX: ttlSeconds, NX: true });
+    try {
+      await this.client.set(key, value, { EX: ttlSeconds, NX: true });
+      Logger.debug(`Cache set with TTL: ${key.substring(0, 50)}...`);
+    } catch (err) {
+      Logger.error(
+        `Failed to set cache value: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw err;
+    }
   }
 
   public async exists(key: string): Promise<boolean> {
-    const result = await this.client.exists(key);
-    return result === 1;
+    try {
+      const result = await this.client.exists(key);
+      return result === 1;
+    } catch (err) {
+      Logger.error(
+        `Failed to check cache existence: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw err;
+    }
   }
 
   public async get(key: string): Promise<string | null> {
-    return await this.client.get(key);
+    try {
+      return await this.client.get(key);
+    } catch (err) {
+      Logger.error(
+        `Failed to get cache value: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw err;
+    }
   }
 
   public async flushAll(): Promise<void> {
-    if (!this.client.isOpen) {
-      await this.client.connect();
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect();
+      }
+      await this.client.flushAll();
+      Logger.warn("Cache flushed (all keys removed)");
+    } catch (err) {
+      Logger.error(
+        `Failed to flush cache: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw err;
     }
-    await this.client.flushAll();
   }
 
   public async quit(): Promise<void> {
     if (this.client.isOpen) {
       await this.client.quit();
+      Logger.info("Redis cache connection closed");
     }
   }
 }

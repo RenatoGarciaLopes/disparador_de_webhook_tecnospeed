@@ -12,6 +12,19 @@ jest.mock("../presenters/pagamento");
 jest.mock("../presenters/pix");
 jest.mock("../../domain/mappers/SituacaoMapper");
 
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
+import { Logger } from "@/infrastructure/logger/logger";
+
 describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
   let useCase: MontarNotificacaoUseCase;
   let mockConfiguracoes: ConfiguracaoNotificacao[];
@@ -540,6 +553,72 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
       const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
       expect(BoletoPresenter.toPayload).toHaveBeenCalledTimes(1);
+      expect(result).toHaveLength(0);
+    });
+
+    it("deve logar erro quando presenter lança exceção com message", () => {
+      const data = {
+        product: "BOLETO" as const,
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+
+      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
+
+      const error = new Error("Erro ao montar payload de boleto");
+      (BoletoPresenter.toPayload as jest.Mock).mockImplementation(() => {
+        throw error;
+      });
+
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        `Erro ao montar payload: url=http://webhook.com, error=${error.message}`,
+      );
+      expect(result).toHaveLength(0);
+    });
+
+    it("deve logar erro quando presenter lança exceção sem message", () => {
+      const data = {
+        product: "PAGAMENTO" as const,
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+
+      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
+
+      const errorWithoutMessage = {} as Error;
+      (PagamentoPresenter.toPayload as jest.Mock).mockImplementation(() => {
+        throw errorWithoutMessage;
+      });
+
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        `Erro ao montar payload: url=http://webhook.com, error=${errorWithoutMessage?.message}`,
+      );
+      expect(result).toHaveLength(0);
+    });
+
+    it("deve logar erro quando presenter lança exceção não Error", () => {
+      const data = {
+        product: "PIX" as const,
+        kind: "webhook" as const,
+        type: "disponivel" as const,
+      };
+
+      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
+
+      const nonErrorException = "String error" as any;
+      (PixPresenter.toPayload as jest.Mock).mockImplementation(() => {
+        throw nonErrorException;
+      });
+
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        `Erro ao montar payload: url=http://webhook.com, error=${nonErrorException?.message}`,
+      );
       expect(result).toHaveLength(0);
     });
   });

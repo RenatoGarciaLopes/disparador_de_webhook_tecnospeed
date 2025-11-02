@@ -1,4 +1,5 @@
 import { config } from "@/infrastructure/config";
+import { Logger } from "@/infrastructure/logger/logger";
 import { AxiosError } from "axios";
 import CircuitBreaker from "opossum";
 
@@ -25,25 +26,27 @@ export function buildCircuitBreakerFor<Args extends any[], Result>(
   });
 
   breaker.on("open", () => {
-    console.warn(`[cb] open - ${name}`);
+    Logger.warn(`Circuit breaker [${name}] state changed: open`);
   });
   breaker.on("halfOpen", () => {
-    console.log(`[cb] halfOpen - ${name}`);
+    Logger.info(`Circuit breaker [${name}] state changed: halfOpen`);
   });
   breaker.on("close", () => {
-    console.log(`[cb] close - ${name}`);
+    Logger.info(`Circuit breaker [${name}] state changed: close`);
   });
   breaker.on("reject", () => {
-    console.warn(`[cb] reject - ${name}`);
+    Logger.warn(`Circuit breaker [${name}] short-circuited request`);
   });
   breaker.on("timeout", () => {
-    console.warn(`[cb] timeout - ${name}`);
+    Logger.warn(`Circuit breaker [${name}] action timed out`);
   });
   breaker.on("failure", (err: unknown) => {
-    console.error(`[cb] failure - ${name}`, err);
+    Logger.error(
+      `Circuit breaker [${name}] action failed: ${(err as any)?.message || String(err)}`,
+    );
   });
   breaker.on("success", () => {
-    console.log(`[cb] success - ${name}`);
+    Logger.info(`Circuit breaker [${name}] action succeeded`);
   });
 
   return breaker;

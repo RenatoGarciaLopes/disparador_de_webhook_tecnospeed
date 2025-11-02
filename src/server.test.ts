@@ -16,6 +16,17 @@ jest.mock("./infrastructure/config", () => ({
   },
 }));
 
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
 const mockCacheConnect = jest.fn().mockResolvedValue(undefined);
 jest.mock("./infrastructure/cache/cache.service", () => {
   const instance = { connect: mockCacheConnect };
@@ -35,6 +46,8 @@ const mockAppStart = jest.fn();
 jest.mock("./app", () => {
   return { App: jest.fn().mockImplementation(() => ({ start: mockAppStart })) };
 });
+
+import { Logger } from "@/infrastructure/logger/logger";
 
 describe("[CHORE] server.ts", () => {
   describe("[FUNCTION] bootstrap", () => {
@@ -61,20 +74,15 @@ describe("[CHORE] server.ts", () => {
 
   describe("[FUNCTION] bootstrap.catch", () => {
     let originalExit: typeof process.exit;
-    let consoleErrorSpy: jest.SpyInstance;
 
     beforeEach(() => {
       originalExit = process.exit;
       /// @ts-expect-error override for test
       process.exit = jest.fn();
-      consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
     });
 
     afterEach(() => {
       process.exit = originalExit;
-      consoleErrorSpy.mockRestore();
       jest.resetModules();
     });
 
@@ -88,9 +96,8 @@ describe("[CHORE] server.ts", () => {
         setImmediate(() => resolve());
       });
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[error] Failed to bootstrap application:",
-        expect.any(Error),
+      expect(Logger.fatal).toHaveBeenCalledWith(
+        expect.stringContaining("Fatal error during bootstrap"),
       );
       expect(process.exit).toHaveBeenCalledWith(1);
     });

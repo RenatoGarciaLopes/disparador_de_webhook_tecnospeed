@@ -23,6 +23,18 @@ jest.mock("../config", () => ({
   },
 }));
 
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
+import { Logger } from "@/infrastructure/logger/logger";
 import { CacheService } from "./cache.service";
 
 describe("[INFRA] CacheService", () => {
@@ -40,10 +52,6 @@ describe("[INFRA] CacheService", () => {
     });
 
     it("deve registrar handler de erro do client Redis", () => {
-      const consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
       CacheService.getInstance();
 
       expect(mockRedisClient.on).toHaveBeenCalledWith(
@@ -58,31 +66,13 @@ describe("[INFRA] CacheService", () => {
       const testError = new Error("Redis client error");
       errorHandler(testError);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[error] Cache connection error:",
-        testError,
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Redis connection error: Redis client error",
       );
-
-      consoleErrorSpy.mockRestore();
     });
   });
 
   describe("[CONNECT] connect()", () => {
-    let consoleLogSpy: jest.SpiedFunction<jest.Mock>;
-    let consoleErrorSpy: jest.SpiedFunction<jest.Mock>;
-
-    beforeEach(() => {
-      consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
-      consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-    });
-
-    afterEach(() => {
-      consoleLogSpy.mockRestore();
-      consoleErrorSpy.mockRestore();
-    });
-
     it("deve conectar quando client não estiver aberto", async () => {
       const service = CacheService.getInstance();
       mockRedisClient.isOpen = false;
@@ -90,9 +80,11 @@ describe("[INFRA] CacheService", () => {
 
       await service.connect();
 
-      expect(consoleLogSpy).toHaveBeenCalledWith("[debug] Connecting to Cache");
+      expect(Logger.info).toHaveBeenCalledWith("Connecting to Redis cache");
       expect(mockRedisClient.connect).toHaveBeenCalledTimes(1);
-      expect(consoleLogSpy).toHaveBeenCalledWith("[debug] Cache connected");
+      expect(Logger.info).toHaveBeenCalledWith(
+        "Redis cache connected successfully",
+      );
     });
 
     it("não deve conectar quando client já estiver aberto", async () => {
@@ -102,8 +94,21 @@ describe("[INFRA] CacheService", () => {
       await service.connect();
 
       expect(mockRedisClient.connect).not.toHaveBeenCalled();
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(
-        "[debug] Connecting to Cache",
+      expect(Logger.info).not.toHaveBeenCalledWith("Connecting to Redis cache");
+      expect(Logger.debug).toHaveBeenCalledWith(
+        "Redis cache already connected",
+      );
+    });
+
+    it("deve logar erro quando erro não é instância de Error no connect", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = false;
+      const error = "String error" as any;
+      mockRedisClient.connect.mockRejectedValue(error as never);
+
+      await expect(service.connect()).rejects.toBe("String error");
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to connect to Redis cache: String error",
       );
     });
 
@@ -114,9 +119,8 @@ describe("[INFRA] CacheService", () => {
       mockRedisClient.connect.mockRejectedValue(error as never);
 
       await expect(service.connect()).rejects.toThrow("Connection failed");
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[error] Cache connection error:",
-        error,
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to connect to Redis cache: Connection failed",
       );
     });
   });
@@ -141,6 +145,35 @@ describe("[INFRA] CacheService", () => {
 
       const result = await service.setWithTTL("key", "value", 60);
       expect(result).toBeUndefined();
+      expect(Logger.debug).toHaveBeenCalledWith(
+        expect.stringContaining("Cache set with TTL:"),
+      );
+    });
+
+    it("deve logar erro quando erro não é instância de Error no setWithTTL", async () => {
+      const service = CacheService.getInstance();
+      const error = { code: "ERROR_CODE" } as any;
+      mockRedisClient.set.mockRejectedValue(error as never);
+
+      await expect(
+        service.setWithTTL("test-key", "test-value", 300),
+      ).rejects.toEqual(error);
+      expect(Logger.error).toHaveBeenCalledWith(
+        `Failed to set cache value: ${String(error)}`,
+      );
+    });
+
+    it("deve propagar erro quando set falhar", async () => {
+      const service = CacheService.getInstance();
+      const error = new Error("Redis set failed");
+      mockRedisClient.set.mockRejectedValue(error as never);
+
+      await expect(
+        service.setWithTTL("test-key", "test-value", 300),
+      ).rejects.toThrow("Redis set failed");
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to set cache value: Redis set failed",
+      );
     });
   });
 
@@ -161,6 +194,30 @@ describe("[INFRA] CacheService", () => {
       const result = await service.exists("non-existing-key");
       expect(result).toBe(false);
       expect(mockRedisClient.exists).toHaveBeenCalledWith("non-existing-key");
+    });
+
+    it("deve propagar erro quando exists falhar", async () => {
+      const service = CacheService.getInstance();
+      const error = new Error("Redis exists failed");
+      mockRedisClient.exists.mockRejectedValue(error as never);
+
+      await expect(service.exists("test-key")).rejects.toThrow(
+        "Redis exists failed",
+      );
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to check cache existence: Redis exists failed",
+      );
+    });
+
+    it("deve logar erro quando erro não é instância de Error no exists", async () => {
+      const service = CacheService.getInstance();
+      const error = 500 as any;
+      mockRedisClient.exists.mockRejectedValue(error as never);
+
+      await expect(service.exists("test-key")).rejects.toBe(500);
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to check cache existence: 500",
+      );
     });
   });
 
@@ -183,6 +240,28 @@ describe("[INFRA] CacheService", () => {
       expect(result).toBeNull();
       expect(mockRedisClient.get).toHaveBeenCalledWith("non-existing-key");
     });
+
+    it("deve propagar erro quando get falhar", async () => {
+      const service = CacheService.getInstance();
+      const error = new Error("Redis get failed");
+      mockRedisClient.get.mockRejectedValue(error as never);
+
+      await expect(service.get("test-key")).rejects.toThrow("Redis get failed");
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to get cache value: Redis get failed",
+      );
+    });
+
+    it("deve logar erro quando erro não é instância de Error no get", async () => {
+      const service = CacheService.getInstance();
+      const error = null as any;
+      mockRedisClient.get.mockRejectedValue(error as never);
+
+      await expect(service.get("test-key")).rejects.toBeNull();
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to get cache value: null",
+      );
+    });
   });
 
   describe("[COMMANDS] flushAll()", () => {
@@ -196,6 +275,9 @@ describe("[INFRA] CacheService", () => {
 
       expect(mockRedisClient.connect).toHaveBeenCalledTimes(1);
       expect(mockRedisClient.flushAll).toHaveBeenCalledTimes(1);
+      expect(Logger.warn).toHaveBeenCalledWith(
+        "Cache flushed (all keys removed)",
+      );
     });
 
     it("deve executar flushAll sem conectar quando client já estiver aberto", async () => {
@@ -207,6 +289,47 @@ describe("[INFRA] CacheService", () => {
 
       expect(mockRedisClient.connect).not.toHaveBeenCalled();
       expect(mockRedisClient.flushAll).toHaveBeenCalledTimes(1);
+      expect(Logger.warn).toHaveBeenCalledWith(
+        "Cache flushed (all keys removed)",
+      );
+    });
+
+    it("deve propagar erro quando flushAll falhar", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = true;
+      const error = new Error("Redis flushAll failed");
+      mockRedisClient.flushAll.mockRejectedValue(error as never);
+
+      await expect(service.flushAll()).rejects.toThrow("Redis flushAll failed");
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to flush cache: Redis flushAll failed",
+      );
+    });
+
+    it("deve propagar erro quando conexão falhar durante flushAll", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = false;
+      const error = new Error("Connection failed during flushAll");
+      mockRedisClient.connect.mockRejectedValue(error as never);
+
+      await expect(service.flushAll()).rejects.toThrow(
+        "Connection failed during flushAll",
+      );
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Failed to flush cache: Connection failed during flushAll",
+      );
+    });
+
+    it("deve logar erro quando erro não é instância de Error no flushAll", async () => {
+      const service = CacheService.getInstance();
+      mockRedisClient.isOpen = true;
+      const error = ["array", "error"] as any;
+      mockRedisClient.flushAll.mockRejectedValue(error as never);
+
+      await expect(service.flushAll()).rejects.toEqual(error);
+      expect(Logger.error).toHaveBeenCalledWith(
+        `Failed to flush cache: ${String(error)}`,
+      );
     });
   });
 
@@ -219,6 +342,7 @@ describe("[INFRA] CacheService", () => {
       await service.quit();
 
       expect(mockRedisClient.quit).toHaveBeenCalledTimes(1);
+      expect(Logger.info).toHaveBeenCalledWith("Redis cache connection closed");
     });
 
     it("não deve executar quit quando client não estiver aberto", async () => {

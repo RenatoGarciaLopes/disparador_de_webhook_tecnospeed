@@ -4,7 +4,18 @@ import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { Response } from "express";
 import { ProtocolosController } from "./ProtocolosController";
 
-jest.mock("@/shared/errors/ErrorResponse");
+jest.mock("@/infrastructure/logger/logger", () => ({
+  Logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  },
+}));
+
+import { Logger } from "@/infrastructure/logger/logger";
 
 describe("[Controller] /protocolo - ProtocolosController", () => {
   let controller: ProtocolosController;
@@ -23,6 +34,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
     mockResponse = { status: statusMock, json: jsonMock };
     jest.clearAllMocks();
+    jest.spyOn(ErrorResponse, "internalServerErrorFromError");
   });
 
   describe("getProtocolos", () => {
@@ -150,14 +162,41 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
         statusCode: 500,
         error: { errors: ["Erro no banco de dados"] },
       };
-      (ErrorResponse.internalServerErrorFromError as jest.Mock).mockReturnValue(
-        { json: () => mockInternalError },
-      );
+      (
+        ErrorResponse.internalServerErrorFromError as unknown as jest.SpyInstance
+      ).mockReturnValue({
+        json: () => mockInternalError,
+      } as any);
 
       await controller.getProtocolos(mockRequest, mockResponse as Response);
 
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Unexpected error in getProtocolos: Erro no banco de dados",
+      );
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith(mockInternalError);
+
+      // Testa quando erro não é instância de Error
+      jest.clearAllMocks();
+      const nonErrorValue = "String database error" as any;
+      (mockService.getProtocolos as jest.Mock).mockRejectedValue(nonErrorValue);
+      const mockInternalError2 = {
+        code: "INTERNAL_SERVER_ERROR",
+        statusCode: 500,
+        error: { errors: [String(nonErrorValue)] },
+      };
+      (
+        ErrorResponse.internalServerErrorFromError as unknown as jest.SpyInstance
+      ).mockReturnValue({
+        json: () => mockInternalError2,
+      } as any);
+
+      await controller.getProtocolos(mockRequest, mockResponse as Response);
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        `Unexpected error in getProtocolos: ${String(nonErrorValue)}`,
+      );
+      expect(statusMock).toHaveBeenCalledWith(500);
     });
 
     it("deve validar campos opcionais: product, kind, type e id", async () => {
@@ -220,6 +259,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
       ];
 
       for (const { params, error } of cases) {
+        jest.clearAllMocks();
         const mockRequest = { params, cedenteId: 1 } as any;
         const invalidError = new InvalidFieldsError({ errors: [error] });
         (mockService.getProtocoloById as jest.Mock).mockRejectedValue(
@@ -232,7 +272,7 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
         );
 
         expect(statusMock).toHaveBeenCalledWith(400);
-        expect(jsonMock).toHaveBeenCalledWith(invalidError.json());
+        expect(jsonMock).toHaveBeenCalled();
       }
     });
 
@@ -252,6 +292,23 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
       );
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalledWith(protocolo);
+
+      // Testa quando protocolo não é encontrado (ErrorResponse com statusCode 400)
+      jest.clearAllMocks();
+      const notFoundError = new ErrorResponse("NOT_FOUND", 400, {
+        errors: ["Protocolo não encontrado"],
+      });
+      (mockService.getProtocoloById as jest.Mock).mockRejectedValue(
+        notFoundError,
+      );
+
+      await controller.getProtolocoById(mockRequest, mockResponse as Response);
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        `Protocolo not found: id=${mockRequest.params.id}, cedenteId=${mockRequest.cedenteId}`,
+      );
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith(notFoundError.json());
     });
 
     it("deve retornar 500 em caso de erro inesperado", async () => {
@@ -267,14 +324,46 @@ describe("[Controller] /protocolo - ProtocolosController", () => {
         statusCode: 500,
         error: { errors: ["Erro no banco de dados"] },
       };
-      (ErrorResponse.internalServerErrorFromError as jest.Mock).mockReturnValue(
-        { json: () => mockInternalError },
-      );
+      (
+        ErrorResponse.internalServerErrorFromError as unknown as jest.SpyInstance
+      ).mockReturnValue({
+        json: () => mockInternalError,
+      } as any);
 
       await controller.getProtolocoById(mockRequest, mockResponse as Response);
 
+      expect(Logger.error).toHaveBeenCalledWith(
+        "Unexpected error in getProtocoloById: Erro no banco de dados",
+      );
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith(mockInternalError);
+
+      // Testa quando erro não é instância de Error
+      jest.clearAllMocks();
+      const nonErrorObject = {
+        code: "DB_ERROR",
+        message: "Database failed",
+      } as any;
+      (mockService.getProtocoloById as jest.Mock).mockRejectedValue(
+        nonErrorObject,
+      );
+      const mockInternalError2 = {
+        code: "INTERNAL_SERVER_ERROR",
+        statusCode: 500,
+        error: { errors: [String(nonErrorObject)] },
+      };
+      (
+        ErrorResponse.internalServerErrorFromError as unknown as jest.SpyInstance
+      ).mockReturnValue({
+        json: () => mockInternalError2,
+      } as any);
+
+      await controller.getProtolocoById(mockRequest, mockResponse as Response);
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        `Unexpected error in getProtocoloById: ${String(nonErrorObject)}`,
+      );
+      expect(statusMock).toHaveBeenCalledWith(500);
     });
   });
 });

@@ -17,7 +17,7 @@ jest.mock("zod", () => {
 describe("[CHORE] config/index.ts", () => {
   beforeEach(() => {
     process.exit = jest.fn() as any;
-    console.error = jest.fn();
+    jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -532,6 +532,9 @@ describe("[CHORE] config/index.ts", () => {
     });
 
     it("deve chamar process.exit(1) quando variáveis são inválidas", () => {
+      jest.clearAllMocks();
+      jest.resetModules();
+
       process.env = {
         NODE_ENV: "test",
 
@@ -546,7 +549,9 @@ describe("[CHORE] config/index.ts", () => {
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
-      require("../config");
+      jest.isolateModules(() => {
+        require("../config");
+      });
 
       expect(process.exit).toHaveBeenCalledWith(1);
       expect(console.error).toHaveBeenCalledWith(
@@ -556,6 +561,9 @@ describe("[CHORE] config/index.ts", () => {
     });
 
     it("deve logar erro formatado quando validação falha", () => {
+      jest.clearAllMocks();
+      jest.resetModules();
+
       process.env = {
         NODE_ENV: "test",
         PORT: "invalid_port",
@@ -570,7 +578,9 @@ describe("[CHORE] config/index.ts", () => {
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
-      require("../config");
+      jest.isolateModules(() => {
+        require("../config");
+      });
 
       expect(console.error).toHaveBeenCalledWith(
         "Variáveis de ambiente inválidas:",
@@ -581,6 +591,9 @@ describe("[CHORE] config/index.ts", () => {
 
   describe("[BEHAVIOR] prettifyError", () => {
     it("deve usar z.prettifyError para formatar erro de validação", () => {
+      jest.clearAllMocks();
+      jest.resetModules();
+
       process.env = {
         NODE_ENV: "t",
         PORT: "000",
@@ -595,7 +608,9 @@ describe("[CHORE] config/index.ts", () => {
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
-      require("../config");
+      jest.isolateModules(() => {
+        require("../config");
+      });
 
       expect(console.error).toHaveBeenCalledWith(
         "Variáveis de ambiente inválidas:",
@@ -604,6 +619,9 @@ describe("[CHORE] config/index.ts", () => {
     });
 
     it("deve chamar console.error com mensagem formatada quando validação falha", () => {
+      jest.clearAllMocks();
+      jest.resetModules();
+
       process.env = {
         NODE_ENV: "test",
         PORT: "invalid_port",
@@ -617,7 +635,9 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_HOST: "localhost",
       };
 
-      require("../config");
+      jest.isolateModules(() => {
+        require("../config");
+      });
 
       expect(console.error).toHaveBeenCalledWith(
         "Variáveis de ambiente inválidas:",
@@ -626,6 +646,9 @@ describe("[CHORE] config/index.ts", () => {
     });
 
     it("deve formatar múltiplos erros quando várias validações falham", () => {
+      jest.clearAllMocks();
+      jest.resetModules();
+
       process.env = {
         NODE_ENV: "t",
         PORT: "invalid",
@@ -640,7 +663,9 @@ describe("[CHORE] config/index.ts", () => {
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
       };
 
-      require("../config");
+      jest.isolateModules(() => {
+        require("../config");
+      });
 
       expect(console.error).toHaveBeenCalledWith(
         "Variáveis de ambiente inválidas:",

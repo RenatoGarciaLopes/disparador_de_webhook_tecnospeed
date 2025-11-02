@@ -98,7 +98,12 @@ describe("Circuit Breaker - Integration Tests", () => {
         headers: {},
         config: {} as any,
       };
-      error500.isAxiosError = true;
+      Object.defineProperty(error500, "isAxiosError", {
+        value: true,
+        writable: false,
+        enumerable: false,
+        configurable: false,
+      });
 
       mockedAxios.post.mockRejectedValue(error500);
 
@@ -142,7 +147,12 @@ describe("Circuit Breaker - Integration Tests", () => {
         headers: {},
         config: {} as any,
       };
-      error400.isAxiosError = true;
+      Object.defineProperty(error400, "isAxiosError", {
+        value: true,
+        writable: false,
+        enumerable: false,
+        configurable: false,
+      });
 
       mockedAxios.post.mockRejectedValue(error400);
 

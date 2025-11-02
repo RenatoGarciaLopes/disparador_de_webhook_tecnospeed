@@ -131,6 +131,158 @@ describe("[PROTOCOL] /protocolos - Error Responses", () => {
     });
   });
 
+  describe("Validação de paginação", () => {
+    it("retorna 400 para page inválido (não numérico)", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          page: "abc",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para page inválido (zero)", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          page: "0",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para page inválido (negativo)", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          page: "-1",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para limit inválido (não numérico)", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          limit: "abc",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para limit inválido (zero)", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          limit: "0",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para limit inválido (negativo)", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          limit: "-1",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para limit maior que 100", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          limit: "101",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para limit maior que 100 (valor alto)", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          limit: "1000",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para page com valor decimal", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          page: "1.5",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+
+    it("retorna 400 para limit com valor decimal", async () => {
+      const now = new Date();
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: now.toISOString(),
+          end_date: now.toISOString(),
+          limit: "10.5",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body?.error?.properties).toBeDefined();
+    });
+  });
+
   describe("Validação de filtros opcionais", () => {
     it("retorna 400 para product inválido", async () => {
       const now = new Date();

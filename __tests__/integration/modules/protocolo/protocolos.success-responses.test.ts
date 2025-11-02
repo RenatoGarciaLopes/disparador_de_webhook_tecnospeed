@@ -100,4 +100,77 @@ describe("[PROTOCOL] /protocolos - Success Responses", () => {
     expect(res.body.data[0].type).toBe("pago");
     expect(res.body.data[0].servico_id).toContain("10");
   });
+
+  describe("Paginação", () => {
+    it("retorna paginação padrão (page=1, limit=10) quando não especificado", async () => {
+      const now = new Date();
+      const start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const end = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      // Criar 15 protocolos para testar paginação
+      for (let i = 0; i < 15; i++) {
+        await TestDataHelper.createWebhookReprocessado(testData.cedente.id, {
+          protocolo: `123e4567-e89b-12d3-a456-42661417400${i}`,
+          product: "BOLETO",
+          kind: "webhook",
+          type: "pago",
+          servico_id: [`${i + 1}`],
+          data: { notifications: [] },
+          data_criacao: now,
+        });
+      }
+
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: start.toISOString(),
+          end_date: end.toISOString(),
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("pagination");
+      expect(res.body.pagination.page).toBe(1);
+      expect(res.body.pagination.limit).toBe(10);
+      expect(res.body.pagination.total).toBe(15);
+      expect(res.body.pagination.total_pages).toBe(2);
+      expect(res.body.data.length).toBe(10);
+    });
+
+    it("aplica paginação customizada com page e limit", async () => {
+      const now = new Date();
+      const start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const end = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      // Criar 25 protocolos
+      for (let i = 0; i < 25; i++) {
+        await TestDataHelper.createWebhookReprocessado(testData.cedente.id, {
+          protocolo: `123e4567-e89b-12d3-a456-42661417400${i}`,
+          product: "BOLETO",
+          kind: "webhook",
+          type: "pago",
+          servico_id: [`${i + 1}`],
+          data: { notifications: [] },
+          data_criacao: now,
+        });
+      }
+
+      const res = await request(app)
+        .get("/protocolos")
+        .set(validHeaders())
+        .query({
+          start_date: start.toISOString(),
+          end_date: end.toISOString(),
+          page: "2",
+          limit: "10",
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.pagination.page).toBe(2);
+      expect(res.body.pagination.limit).toBe(10);
+      expect(res.body.pagination.total).toBe(25);
+      expect(res.body.pagination.total_pages).toBe(3);
+      expect(res.body.data.length).toBe(10);
+    });
+  });
 });

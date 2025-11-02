@@ -34,6 +34,7 @@ export const ProtocolosDTOValidator = z
     type: z.enum(["pago", "cancelado", "disponivel"]).optional(),
     page: z
       .string()
+      .regex(/^\d+$/, { message: "page deve ser um número inteiro positivo" })
       .transform((val) => parseInt(val, 10))
       .refine((val) => !isNaN(val) && val > 0, {
         message: "page deve ser um número inteiro positivo",
@@ -41,6 +42,7 @@ export const ProtocolosDTOValidator = z
       .optional(),
     limit: z
       .string()
+      .regex(/^\d+$/, { message: "limit deve ser um número inteiro positivo" })
       .transform((val) => parseInt(val, 10))
       .refine((val) => !isNaN(val) && val > 0 && val <= 100, {
         message: "limit deve ser um número inteiro positivo entre 1 e 100",

@@ -1,4 +1,4 @@
-import { KINDS_REENVIOS } from "@/shared/kind-reenvios";
+import { KINDS_REENVIOS } from "@/shared/utils/kind-reenvios";
 import { z } from "zod";
 
 export const ProtocolosDTOValidator = z

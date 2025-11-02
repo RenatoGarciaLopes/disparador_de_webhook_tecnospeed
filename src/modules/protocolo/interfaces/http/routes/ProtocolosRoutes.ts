@@ -1,10 +1,10 @@
-import { RouterImplementation } from "@/shared/RouterImplementation";
-import { ProtocolosController } from "../controllers/ProtocolosController";
-import { AuthMiddleware } from "@/shared/modules/auth/interfaces/http/middlewares/auth.middleware";
+import { CacheService } from "@/infrastructure/cache/cache.service";
+import { AuthMiddleware } from "@/modules/auth/interfaces/http/middlewares/auth.middleware";
 import { ProtocolosService } from "@/modules/protocolo/domain/services/ProtocolosService";
 import { WebhookReprocessadoRepository } from "@/modules/protocolo/infrastructure/database/repositories/WebHookReprocessadoRespository";
+import { RouterImplementation } from "@/shared/core/RouterImplementation";
+import { ProtocolosController } from "../controllers/ProtocolosController";
 import { BodyMiddleware } from "../middlewares/protocolo/body.middleware";
-import { CacheService } from "@/infrastructure/cache/cache.service";
 
 export class ProtocolosRoutes extends RouterImplementation {
   protected configure(): void {

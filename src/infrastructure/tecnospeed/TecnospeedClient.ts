@@ -1,9 +1,9 @@
 import { config } from "@/infrastructure/config";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import axios, { AxiosError } from "axios";
-import { BoletoPresenter } from "../../application/presenters/boleto";
-import { PagamentoPresenter } from "../../application/presenters/pagamento";
-import { PixPresenter } from "../../application/presenters/pix";
+import { BoletoPresenter } from "../../modules/webhook/application/presenters/boleto";
+import { PagamentoPresenter } from "../../modules/webhook/application/presenters/pagamento";
+import { PixPresenter } from "../../modules/webhook/application/presenters/pix";
 
 export class TecnospeedClient {
   private baseUrl = config.TECNOSPEED_BASE_URL;

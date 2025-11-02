@@ -12,14 +12,11 @@ jest.mock("@/infrastructure/config", () => ({
   },
 }));
 
-jest.mock(
-  "@/shared/modules/auth/interfaces/http/middlewares/auth.middleware",
-  () => ({
-    AuthMiddleware: {
-      validate: jest.fn((req, res, next) => next()),
-    },
-  }),
-);
+jest.mock("@/modules/auth/interfaces/http/middlewares/auth.middleware", () => ({
+  AuthMiddleware: {
+    validate: jest.fn((req, res, next) => next()),
+  },
+}));
 
 jest.mock("../controllers/ReenviarController");
 jest.mock("@/modules/webhook/domain/services/ReenviarService");

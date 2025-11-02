@@ -1,5 +1,5 @@
+import { ICedenteRepository } from "@/modules/auth/domain/repositories/ICedenteRepository";
 import { UnauthorizedError } from "@/shared/errors/Unauthorized";
-import { ICedenteRepository } from "@/shared/modules/auth/domain/repositories/ICedenteRepository";
 
 export class ValidateCedenteUseCase {
   constructor(private readonly cedenteRepository: ICedenteRepository) {}

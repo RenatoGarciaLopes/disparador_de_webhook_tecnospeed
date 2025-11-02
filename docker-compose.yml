@@ -2,18 +2,29 @@ services:
   app:
     container_name: disparador-wh
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     build:
       context: .
       dockerfile: Dockerfile.${NODE_ENV:-development}
+    volumes:
+      - .:/app
+      - /app/node_modules
     ports:
       - ${PORT}:${PORT}
     env_file: .env
     networks:
       - disparador-wh-network
-    volumes:
-      - .:/app:cached
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
 
   db:
     container_name: disparador-wh-db
@@ -32,6 +43,12 @@ services:
       - dbdata:/var/lib/postgresql/data
     networks:
       - disparador-wh-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     container_name: disparador-wh-redis
@@ -63,5 +80,4 @@ networks:
 
 volumes:
   dbdata:
-  node_modules:
   redisdata:

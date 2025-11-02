@@ -1,10 +1,10 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
+import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
-import { IKindReenvio } from "@/shared/kind-reenvios";
+import { IKindReenvio } from "@/shared/utils/kind-reenvios";
 import { v4 as uuidv4 } from "uuid";
 import { ConfiguracaoNotificacaoUseCase } from "../../application/use-cases/ConfiguracaoNotificacaoUseCase";
 import { MontarNotificacaoUseCase } from "../../application/use-cases/MontarNotificacaoUseCase";
-import { TecnospeedClient } from "../../infrastructure/tecnospeed/TecnospeedClient";
 import { ReenviarDTO } from "../../interfaces/http/dtos/ReenviarDTO";
 import { IServicoRepository } from "../repositories/IServicoRepository";
 import { IWebhookReprocessadoRepository } from "../repositories/IWebhookReprocessadoRepository";

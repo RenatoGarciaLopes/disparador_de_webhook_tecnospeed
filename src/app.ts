@@ -1,9 +1,9 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import { config } from "./infrastructure/config";
-import { getOpenApiDocument } from "./infrastructure/docs/openapi";
-import { ProtocolosRoutes } from "./modules/protocolo/interfaces/http/routes/ProtocolosRoutes";
-import { ReenviarRouter } from "./modules/webhook/interfaces/http/routes/ReenviarRouter";
+import { config } from "@/infrastructure/config";
+import { getOpenApiDocument } from "@/infrastructure/docs/openapi";
+import { ProtocolosRoutes } from "@/modules/protocolo/interfaces/http/routes/ProtocolosRoutes";
+import { ReenviarRouter } from "@/modules/webhook/interfaces/http/routes/ReenviarRouter";
 
 export class App {
   public server: any;

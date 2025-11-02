@@ -1,5 +1,5 @@
+import { ISoftwareHouseRepository } from "@/modules/auth/domain/repositories/ISoftwareHouseRepository";
 import { SoftwareHouse } from "@/sequelize/models/software-house.model";
-import { ISoftwareHouseRepository } from "@/shared/modules/auth/domain/repositories/ISoftwareHouseRepository";
 
 export class SoftwareHouseRepository implements ISoftwareHouseRepository {
   async find(cnpj: string, token: string) {

@@ -4,8 +4,8 @@
   "description": "Sistema disparador de webhooks para TecnSpeed",
   "scripts": {
     "dev": "tsx watch --env-file=.env ./src/server.ts",
-    "build": "tsc",
-    "start": "node ./dist/server.js",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json",
+    "start": "node -r tsconfig-paths/register ./dist/src/server.js",
     "test": "jest",
     "test:unit": "jest",
     "test:integration": "sh ./scripts/test-integration.sh",
@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "sequelize:migrate": "sequelize-cli db:migrate",
-    "sequelize:seed": "sequelize-cli db:seed:all"
+    "sequelize:seed": "sequelize-cli db:seed"
   },
   "keywords": [
     "webhook",
@@ -37,6 +37,7 @@
     "sequelize-cli": "^6.3.0",
     "sequelize-typescript": "^2.1.6",
     "swagger-ui-express": "^5.0.1",
+    "tsconfig-paths": "^4.2.0",
     "uuid": "^11.1.0",
     "zod": "^4.1.12"
   },
@@ -59,7 +60,6 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.40.0"

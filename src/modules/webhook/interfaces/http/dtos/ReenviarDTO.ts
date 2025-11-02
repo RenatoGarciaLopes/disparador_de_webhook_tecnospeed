@@ -1,5 +1,5 @@
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
-import { IKindReenvio } from "@/shared/kind-reenvios";
+import { IKindReenvio } from "@/shared/utils/kind-reenvios";
 import { ReenviarDTOValidator } from "../validators/ReenviarDTOValidator";
 
 export interface IReenviarDTO {

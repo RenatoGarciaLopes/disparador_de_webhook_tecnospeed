@@ -1,7 +1,7 @@
 import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
-import { KINDS_REENVIOS } from "@/shared/kind-reenvios";
+import { KINDS_REENVIOS } from "@/shared/utils/kind-reenvios";
 import { Request, Response } from "express";
 import { ReenviarDTO } from "../dtos/ReenviarDTO";
 

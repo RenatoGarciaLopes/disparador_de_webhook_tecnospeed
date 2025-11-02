@@ -1,7 +1,7 @@
-import { App } from "./app";
-import { CacheService } from "./infrastructure/cache/cache.service";
-import { config } from "./infrastructure/config";
-import { DatabaseService } from "./infrastructure/database/database.service";
+import { App } from "@/app";
+import { CacheService } from "@/infrastructure/cache/cache.service";
+import { config } from "@/infrastructure/config";
+import { DatabaseService } from "@/infrastructure/database/database.service";
 
 export async function bootstrap() {
   await new DatabaseService().connect();

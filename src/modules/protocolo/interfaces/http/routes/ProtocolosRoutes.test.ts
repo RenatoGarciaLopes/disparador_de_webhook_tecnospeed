@@ -18,7 +18,7 @@ jest.mock(
 );
 jest.mock("@/infrastructure/cache/cache.service");
 jest.mock("../middlewares/protocolo/body.middleware");
-jest.mock("@/shared/modules/auth/interfaces/http/middlewares/auth.middleware");
+jest.mock("@/modules/auth/interfaces/http/middlewares/auth.middleware");
 
 const getMock = jest.fn();
 jest.mock("express", () => {
@@ -33,11 +33,11 @@ jest.mock("express", () => {
   };
 });
 
-import { ProtocolosRoutes } from "./ProtocolosRoutes";
-import { AuthMiddleware } from "@/shared/modules/auth/interfaces/http/middlewares/auth.middleware";
-import { BodyMiddleware } from "../middlewares/protocolo/body.middleware";
-import { ProtocolosController } from "../controllers/ProtocolosController";
 import { CacheService } from "@/infrastructure/cache/cache.service";
+import { AuthMiddleware } from "@/modules/auth/interfaces/http/middlewares/auth.middleware";
+import { ProtocolosController } from "../controllers/ProtocolosController";
+import { BodyMiddleware } from "../middlewares/protocolo/body.middleware";
+import { ProtocolosRoutes } from "./ProtocolosRoutes";
 
 describe("[PROTOCOL] ProtocolosRoutes", () => {
   let protocolosRoutes: ProtocolosRoutes;

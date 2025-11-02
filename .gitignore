@@ -53,9 +53,6 @@ Thumbs.db
 .parcel-cache/
 .eslintcache
 
-# Arquivos de Docker
-.dockerignore
-
 # Arquivos de backup
 *.bak
 *.backup

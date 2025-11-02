@@ -4,9 +4,9 @@ import {
   extendZodWithOpenApi,
 } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
+import { registerAuthDocs } from "../../modules/auth/docs/openapi";
 import { registerProtocoloDocs } from "../../modules/protocolo/docs/openapi";
 import { registerWebhookDocs } from "../../modules/webhook/docs/openapi";
-import { registerAuthDocs } from "../../shared/modules/auth/docs/openapi";
 import { registerErrorResponse } from "./schemas";
 
 extendZodWithOpenApi(z);

@@ -15,14 +15,15 @@
     "emitDecoratorMetadata": true,
     "paths": {
       "@/*": [
-        "./src/*"
+        "./src/*",
+        "./dist/src/*"
       ],
       "@/sequelize/*": [
         "./sequelize/*"
       ],
       "@/sequelize": [
-        "./sequelize/index.ts"
+        "./sequelize/index"
       ]
     }
-  },
+  }
 }

@@ -26,35 +26,38 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "testing.automaticallyOpenTestResults": "neverOpen",
-  "jest.outputConfig": {
-    "revealOn": "run",
-    "revealWithFocus": "none",
-    "clearOnRun": "none"
-  },
+  "cSpell.words": [
+    "Conectre",
+    "dtos",
+    "sequelize",
+    "sequelizerc",
+    "Tecnospeed"
+  ],
+  "explorer.sortOrder": "foldersNestsFiles",
   "explorer.fileNesting.patterns": {
     "*.ts": "${capture}.js",
     "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
-    "*.jsx": "${capture}.js",
-    "*.tsx": "${capture}.ts",
     "tsconfig.json": "tsconfig.*.json",
-    "package.json": "tsconfig*, vite*, package-lock.json, pnpm-lock*, bun.lockb, nest*",
+    "package.json": "tsconfig*, vite*, package-lock.json, pnpm-lock*, bun*, nest*",
     "docker-compose.yml": "Dockerfile*, .dockerignore, docker-compose*",
-    "tailwind.config*": "tailwind*, postcss.config*",
-    "next.config*": "next*",
-    ".editorconfig": ".editorconfig, .prettier*, .eslint*, biome*, commitlint*",
+    "eslint*js": ".editorconfig, .prettier*, eslint*, biome*, commitlint*",
     ".env.local": ".env*",
     ".env": ".env*",
-    "*.sqlite": "${capture}.${extname}-*",
-    "*.db": "${capture}.${extname}-*",
-    "*.sqlite3": "${capture}.${extname}-*",
-    "*.db3": "${capture}.${extname}-*",
-    "*.sdb": "${capture}.${extname}-*",
-    "*.s3db": "${capture}.${extname}-*",
-    "jest.config*": "jest*"
+    "jest.config*": "jest*",
+    "README.md": "*.md",
   },
-  "cSpell.words": [
-    "Tecnospeed",
-    "TECNOSPEED"
-  ],
+  "prismaERDPreviewer.preferredTheme": "dark",
+  "material-icon-theme.folders.associations": {
+    "infrastructure": "server",
+    "domain": "organism",
+    "mappers": "pipe",
+    "http": "api",
+    "dtos": "interface",
+    "use-cases": "tools",
+    "hash": "keys",
+    "openapi": "docs",
+    "presenters": "views",
+    "sequelize": "functions",
+    "migrations": "database",
+  },
 }

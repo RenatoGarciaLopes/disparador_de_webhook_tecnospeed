@@ -1,10 +1,10 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
+import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { ConfiguracaoNotificacaoUseCase } from "../../application/use-cases/ConfiguracaoNotificacaoUseCase";
 import { MontarNotificacaoUseCase } from "../../application/use-cases/MontarNotificacaoUseCase";
 import { ServicoRepository } from "../../infrastructure/repositories/ServicoRepository";
 import { WebhookReprocessadoRepository } from "../../infrastructure/repositories/WebhookReprocessadoRepository";
-import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { ReenviarService } from "./ReenviarService";
 
 jest.mock("@/infrastructure/cache/cache.service");

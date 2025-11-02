@@ -48,24 +48,26 @@ Para erros de validação, deve ser retornado um erro 401. Com mensagem genéric
 
 A API deve validar cada parâmetro enviado com base em seus tipos e valores esperados.
 
-| Parâmetro  | Tipo     | Valores Esperados                     | Obrigatório | Validações Adicionais            |
-| ---------- | -------- | ------------------------------------- | ----------- | -------------------------------- |
-| start_date | string   | Data válida (ISO ou formato aceito)   | Sim         | Transformado para Date           |
-| end_date   | string   | Data válida (ISO ou formato aceito)   | Sim         | Transformado para Date           |
-| product    | ENUM     | boleto, pagamento, pix (lowercase)     | Não         | Transformado para UPPERCASE      |
+| Parâmetro  | Tipo     | Valores Esperados                     | Obrigatório | Validações Adicionais                    |
+| ---------- | -------- | ------------------------------------- | ----------- | ---------------------------------------- |
+| start_date | string   | Data válida (ISO ou formato aceito)   | Sim         | Transformado para Date                   |
+| end_date   | string   | Data válida (ISO ou formato aceito)   | Sim         | Transformado para Date                   |
+| product    | ENUM     | boleto, pagamento, pix (lowercase)    | Não         | Transformado para UPPERCASE              |
 | id         | string[] | IDs numéricos de serviços (não UUIDs) | Não         | Cada ID deve ser número inteiro positivo |
-| kind       | ENUM     | webhook                               | Não         |                                  |
-| type       | ENUM     | pago, cancelado, disponivel           | Não         |                                  |
-| page       | string   | Número inteiro positivo               | Não         | Padrão: 1                        |
-| limit      | string   | Número inteiro positivo (1-100)      | Não         | Padrão: 10                       |
+| kind       | ENUM     | webhook                               | Não         |                                          |
+| type       | ENUM     | pago, cancelado, disponivel           | Não         |                                          |
+| page       | string   | Número inteiro positivo               | Não         | Padrão: 1                                |
+| limit      | string   | Número inteiro positivo (1-100)       | Não         | Padrão: 10                               |
 
 **Validações de Datas:**
 
 Além da validação de formato, as datas devem atender:
+
 - `end_date >= start_date` (diferença >= 0 dias)
 - Diferença entre `end_date` e `start_date` <= 31 dias
 
 Se alguma validação falhar, retorna erro 400 com mensagens específicas:
+
 - "Data inicial inválida"
 - "Data final inválida"
 - "A diferença entre start_date e end_date tem quer ser >= 0 e <= 31 dias"
@@ -82,7 +84,7 @@ Se o parâmetro `product` for fornecido (aceita lowercase: `boleto`, `pagamento`
 
 ### Parâmetro `id`
 
-**IMPORTANTE:** O parâmetro `id` não são UUIDs de protocolos, são **IDs numéricos de serviços**. 
+**IMPORTANTE:** O parâmetro `id` não são UUIDs de protocolos, são **IDs numéricos de serviços**.
 
 A busca será feita na coluna `servico_id` (tipo JSONB) usando a operação `Op.contains` do PostgreSQL. Isso significa que serão retornados apenas os registros de `WebhookReprocessado` cujo array `servico_id` contenha algum dos IDs fornecidos.
 
@@ -111,7 +113,9 @@ O serviço retorna objetos completos de `WebhookReprocessado` (não apenas IDs) 
   "data": [
     {
       "id": "uuid-do-registro",
-      "data": { /* JSONB com dados das notificações */ },
+      "data": {
+        /* JSONB com dados das notificações */
+      },
       "data_criacao": "2024-01-01T00:00:00.000Z",
       "cedente_id": 1,
       "kind": "webhook",
@@ -134,29 +138,31 @@ O serviço retorna objetos completos de `WebhookReprocessado` (não apenas IDs) 
 
 Cada objeto no array `data` contém todos os campos do modelo `WebhookReprocessado`:
 
-| Campo        | Tipo      | Descrição                           |
-| ------------ | --------- | ----------------------------------- |
-| id           | UUID      | UUID do registro                    |
-| data         | JSONB     | Objeto JSON com dados das notificações |
-| data_criacao | Date      | Data de criação                     |
-| cedente_id   | number    | ID do Cedente                       |
-| kind         | string    | Tipo de reenvio (ex: "webhook")    |
-| type         | string    | Tipo da situação (ex: "pago")      |
-| servico_id   | string[]  | Array de IDs dos serviços           |
-| product      | ENUM      | Produto (BOLETO, PAGAMENTO, PIX)    |
-| protocolo    | string    | UUID do protocolo retornado pela Tecnospeed |
+| Campo        | Tipo     | Descrição                                   |
+| ------------ | -------- | ------------------------------------------- |
+| id           | UUID     | UUID do registro                            |
+| data         | JSONB    | Objeto JSON com dados das notificações      |
+| data_criacao | Date     | Data de criação                             |
+| cedente_id   | number   | ID do Cedente                               |
+| kind         | string   | Tipo de reenvio (ex: "webhook")             |
+| type         | string   | Tipo da situação (ex: "pago")               |
+| servico_id   | string[] | Array de IDs dos serviços                   |
+| product      | ENUM     | Produto (BOLETO, PAGAMENTO, PIX)            |
+| protocolo    | string   | UUID do protocolo retornado pela Tecnospeed |
 
 ## Cache de Requisições
 
 O endpoint possui sistema de cache para otimizar performance.
 
 **Características:**
+
 - TTL: 24 horas (1 dia)
 - Chave do cache: `protocolos:{cedenteId}:{product}:{ids_ordenados}:{type}:{kind}:{start_date_iso}:{end_date_iso}:{page}:{limit}`
 - Verificação: Cache é verificado **ANTES** de consultar o banco de dados
 - Armazenamento: Após busca bem-sucedida, o resultado é armazenado no cache
 
 **Fluxo do Cache:**
+
 1. Verificação: Ao receber a requisição, o cache é verificado primeiro
 2. Cache Hit: Se encontrar no cache, retorna imediatamente o valor armazenado
 3. Cache Miss: Se não encontrar, processa normalmente a requisição
@@ -167,15 +173,18 @@ O endpoint possui sistema de cache para otimizar performance.
 O endpoint suporta paginação através dos parâmetros `page` e `limit` na query string.
 
 **Parâmetros:**
+
 - `page`: Número inteiro positivo (padrão: 1)
 - `limit`: Número inteiro positivo entre 1 e 100 (padrão: 10)
 
 **Cálculo:**
+
 - `offset = (page - 1) * limit`
 - `total_pages = Math.ceil(total / limit)`
 
 **Resposta:**
 A resposta inclui informações de paginação no objeto `pagination`:
+
 - `page`: Página atual
 - `limit`: Itens por página
 - `total`: Total de registros encontrados

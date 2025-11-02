@@ -43,15 +43,19 @@ jest.mock("opossum", () => {
       successes: 0,
     },
     options: {} as any,
+    wrappedAction: null as any,
   };
 
-  const CircuitBreaker = jest.fn().mockImplementation((action, options) => {
-    mockBreaker.options = options;
-    mockBreaker.fire = jest.fn().mockImplementation((...args) => {
-      return Promise.resolve(action(...args));
+  const CircuitBreaker = jest
+    .fn()
+    .mockImplementation((wrappedAction, options) => {
+      mockBreaker.options = options;
+      mockBreaker.wrappedAction = wrappedAction;
+      mockBreaker.fire = jest.fn().mockImplementation((...args) => {
+        return Promise.resolve(wrappedAction(...args));
+      });
+      return mockBreaker;
     });
-    return mockBreaker;
-  });
 
   return {
     __esModule: true,
@@ -74,13 +78,31 @@ describe("[INFRA] circuit-breaker.service", () => {
 
       buildCircuitBreakerFor("test-breaker", mockAction);
 
-      expect(mockCircuitBreaker).toHaveBeenCalledWith(mockAction, {
+      const callArgs = mockCircuitBreaker.mock.calls[0];
+      const wrappedAction = callArgs[0];
+      const options = callArgs[1];
+
+      // Verifica que foi chamado com uma função wrapper
+      expect(typeof wrappedAction).toBe("function");
+
+      // Verifica opções
+      expect(options).toMatchObject({
         timeout: config.CB_TIMEOUT_MS,
         resetTimeout: config.CB_RESET_TIMEOUT_MS,
         errorThresholdPercentage: config.CB_ERROR_THRESHOLD_PERCENT,
         volumeThreshold: config.CB_VOLUME_THRESHOLD,
         errorFilter: expect.any(Function),
+        abortController: expect.any(AbortController),
       });
+
+      // Verifica que o wrapper chama a action com AbortSignal
+      const testArgs = ["arg1", "arg2"];
+      wrappedAction(...testArgs);
+
+      expect(mockAction).toHaveBeenCalledTimes(1);
+      const actionCall = mockAction.mock.calls[0];
+      expect(actionCall[0]).toBeInstanceOf(AbortSignal);
+      expect(actionCall.slice(1)).toEqual(testArgs);
     });
 
     it("deve registrar todos os event listeners", () => {

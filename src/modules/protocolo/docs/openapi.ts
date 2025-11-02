@@ -118,7 +118,7 @@ export function registerProtocoloDocs(registry: OpenAPIRegistry) {
     path: "/protocolos",
     tags: ["Protocolos"],
     request: {
-      params: ProtocolosDTOSchema,
+      query: ProtocolosDTOSchema,
     },
     responses: {
       200: {

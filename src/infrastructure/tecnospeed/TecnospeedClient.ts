@@ -11,15 +11,19 @@ export class TecnospeedClient {
   private baseUrl = config.TECNOSPEED_BASE_URL;
   private readonly breaker = buildCircuitBreakerFor(
     "TecnospeedClient.reenviarWebhook",
-    async (payload: {
-      notifications: (BoletoPresenter | PagamentoPresenter | PixPresenter)[];
-    }) => {
+    async (
+      abortSignal: AbortSignal,
+      payload: {
+        notifications: (BoletoPresenter | PagamentoPresenter | PixPresenter)[];
+      },
+    ) => {
       Logger.info(
         `Sending notifications to Tecnospeed: ${payload.notifications?.length || 0} notifications`,
       );
 
       const response = await axios.post(`${this.baseUrl}/`, payload, {
         timeout: config.HTTP_TIMEOUT_MS,
+        signal: abortSignal,
       });
       Logger.info(`Tecnospeed response received: status=${response.status}`);
       return response.data;

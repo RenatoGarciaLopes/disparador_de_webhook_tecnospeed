@@ -26,10 +26,9 @@ bugfix/\*: Branch de correções de bugs
 Colocar extensões
 
 **Testes: Jest**
-
 **Versões:**\
-Node: v23.0.0\
-npm: v10.9.3
+Node: ^v22.0.0\
+npm: ^v10.9.0
 
 ## Backend Stack
 

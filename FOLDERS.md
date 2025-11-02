@@ -1,63 +1,51 @@
 project-root/
-├── sequelize/
+├── sequelize/ # Configuração do ORM Sequelize
 │ ├── config.ts
-│ ├── models/
-│ │ ├── <model-name>.model.ts
+│ ├── models/ # Models do Sequelize
+│ │ ├── cedente.model.ts
+│ │ ├── conta.model.ts
+│ │ ├── convenio.model.ts
+│ │ ├── servico.model.ts
+│ │ ├── software-house.model.ts
+│ │ └── webhookreprocessado.model.ts
 │ ├── migrations/
 │ ├── seeders/
 │ └── index.ts
 │── src/
 │ ├── modules/
-│ │ ├── software-house/
-│ │ │ ├── domain/
-│ │ │ │ └── repositories/ # Contratos de repositório
-│ │ │ ├── application/
-│ │ │ │ └── use-cases/ # Regras de negócio (ex: validar SH)
-│ │ │ ├── infrastructure/
-│ │ │ │ └── database/ # Model Sequelize, migrations
-│ │ │ └── interfaces/
-│ │ │ └── http/ # Controller + rotas
-│ │ │
-│ │ ├── cedente/
+│ │ ├── auth/ # Módulo de autenticação
 │ │ │ ├── domain/
 │ │ │ ├── application/
 │ │ │ ├── infrastructure/
 │ │ │ └── interfaces/
 │ │ │
-│ │ ├── conta/
+│ │ ├── protocolo/ # Módulo de consulta de protocolos
 │ │ │ ├── domain/
 │ │ │ ├── application/
 │ │ │ ├── infrastructure/
 │ │ │ └── interfaces/
 │ │ │
-│ │ ├── convenio/
-│ │ │ ├── domain/
-│ │ │ ├── application/
-│ │ │ ├── infrastructure/
-│ │ │ └── interfaces/
-│ │ │
-│ │ ├── servico/
-│ │ │ ├── domain/
-│ │ │ ├── application/
-│ │ │ ├── infrastructure/
-│ │ │ └── interfaces/
-│ │ │
-│ │ ├── webhook/
-│ │ │ ├── domain/ # Entidade WebhookReprocessado
-│ │ │ ├── application/
-│ │ │ │ └── use-cases/ # ReenvioWebhook, ConsultaProtocolos
-│ │ │ ├── infrastructure/
-│ │ │ └── interfaces/
-│ │ │
-│ │ └── shared/ # Código comum a todos os módulos
+│ │ └── webhook/ # Módulo de reenvio de webhooks
+│ │   ├── domain/ # Entidade WebhookReprocessado
+│ │   ├── application/
+│ │   │ └── use-cases/ # ReenvioWebhook, ConsultaProtocolos
+│ │   ├── infrastructure/
+│ │   └── interfaces/
+│ │
+│ ├── shared/ # Código comum a todos os módulos
+│ │ ├── core/ # Implementações core (ex: RouterImplementation)
 │ │ ├── errors/ # Erros customizados
-│ │ ├── utils/ # Helpers
-│ │ └── types/ # Tipos globais
+│ │ ├── interfaces/ # Interfaces compartilhadas
+│ │ └── utils/ # Helpers
 │ │
 │ ├── infrastructure/ # Serviços técnicos globais
-│ │ ├── database/ # Config global do Sequelize
 │ │ ├── cache/ # Config Redis
-│ │ └── config/ # dotenv e variáveis de ambiente
+│ │ ├── config/ # dotenv e variáveis de ambiente
+│ │ ├── database/ # Config global do Sequelize
+│ │ ├── docs/ # Documentação OpenAPI
+│ │ ├── http/ # Serviços HTTP (ex: circuit-breaker)
+│ │ ├── logger/ # Logger (Pino)
+│ │ └── tecnospeed/ # Cliente HTTP para API Tecnospeed
 │ │
 │ └── app.ts # Entry point Express
 │ └── server.ts # Servidor Node.js

@@ -32,7 +32,7 @@ npm install
 
 ## 📊 Resultado Esperado
 
-```
+```text
 🧪 Executando testes de integração...
 
  PASS  __tests__/integration/database/connection.test.ts
@@ -55,12 +55,9 @@ Time:        8.532s
 # Apenas unitários
 npm run test:unit
 
-# Apenas integração (sem Docker)
+# Apenas integração
 npm run test:integration
 
-# Coverage
-npm run test:integration:coverage
-
-# Watch mode
-npm run test:integration:watch
+# Apenas E2E
+npm run test:e2e
 ```

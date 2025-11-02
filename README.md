@@ -7,8 +7,8 @@ Sistema disparador de webhooks para TecnSpeed desenvolvido em TypeScript com Nod
 ### Pré-requisitos
 
 - Docker e Docker Compose instalados
-- Node.js 22+ (para desenvolvimento local)
-- npm
+- Node.js v23.0.0+ (para desenvolvimento local)
+- npm v10.9.3+
 
 ### 1. Configuração das Variáveis de Ambiente
 

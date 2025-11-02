@@ -33,7 +33,7 @@ export async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  Logger.fatal(
+  Logger.error(
     `Fatal error during bootstrap: ${error instanceof Error ? error.message : String(error)}`,
   );
   process.exit(1);

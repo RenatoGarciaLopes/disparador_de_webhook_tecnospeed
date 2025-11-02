@@ -2,16 +2,16 @@
 
 Um cliente (SH) envia através de uma requisição HTTP para a API do Disparador de Webhook um payload contendo:
 
-- `product`: boleto, pagamento ou pix. (ENUM)
-- `id`: string[]
+- `product`: boleto, pagamento ou pix. (ENUM) - Será transformado para UPPERCASE (BOLETO, PAGAMENTO, PIX)
+- `id`: string[] - Array de strings que representam números inteiros positivos. Será transformado para number[] após validação.
 - `kind`: webhook
-- `type`: disponível, cancelado ou pago. (ENUM)
+- `type`: disponivel, cancelado ou pago. (ENUM) - Nota: "disponivel" é sem acento
 
 E também envia nas Headers da requisição:
 
 - `x-api-cnpj-sh`: string (CNPJ do SH sem formatação)
 - `x-api-token-sh`: string (Token do SH)
-- `x-api-cnpj-cedente`: number (CNPJ do Cedente sem formatação)
+- `x-api-cnpj-cedente`: string (CNPJ do Cedente sem formatação) - Nota: É string, não number
 - `x-api-token-cedente`: string (Token do Cedente)
 
 ## Validação das Headers (Middleware)
@@ -44,14 +44,21 @@ Para erros de validação, deve ser retornado um erro 401. Com mensagem genéric
 
 A API deve validar cada parâmetro enviado com base em seus tipos e valores esperados.
 
-| Parâmetro | Tipo     | Valores Esperados           | Obrigatório | Máximo de Valores |
-| --------- | -------- | --------------------------- | ----------- | ----------------- |
-| product   | ENUM     | boleto, pagamento, pix      | Sim         | 1                 |
-| id        | string[] | IDs dos serviços            | Sim         | 30                |
-| kind      | ENUM     | webhook                     | Sim         | 1                 |
-| type      | ENUM     | disponível, cancelado, pago | Sim         | 1                 |
+| Parâmetro | Tipo     | Valores Esperados           | Obrigatório | Máximo de Valores | Status Code de Erro |
+| --------- | -------- | --------------------------- | ----------- | ----------------- | ------------------- |
+| product   | ENUM     | boleto, pagamento, pix      | Sim         | 1                 | 400                 |
+| id        | string[] | IDs dos serviços            | Sim         | 30                | 400                 |
+| kind      | ENUM     | webhook                     | Sim         | 1                 | 400 ou 501          |
+| type      | ENUM     | disponivel, cancelado, pago | Sim         | 1                 | 400                 |
 
-Se algum parâmetro não corresponder aos valores esperados, deve ser retornado um erro 400. Com mensagem genérica "Parâmetro inválido". Junto com o campo que não correspondeu aos valores esperados.
+**Status Codes de Erro:**
+
+- `400`: Parâmetros inválidos na requisição (validação de formato/tipo)
+- `422`: Validação de regras de negócio (serviços não encontrados, sem configuração, etc.)
+- `501`: `kind` não suportado (retorna "NOT_IMPLEMENTED")
+- `500`: Erro interno do servidor
+
+Se algum parâmetro não corresponder aos valores esperados, deve ser retornado um erro 400 com mensagens específicas de validação. As mensagens de erro são detalhadas e incluem informações sobre qual campo está incorreto.
 
 ### Parâmetro `id`
 
@@ -75,21 +82,21 @@ Também temos uma coluna `situacao` que será a situação do serviço em quest�
 
 ### Validação do Parâmetro `id`
 
-Ao receber o array de IDs, devemos:
+Ao receber o array de IDs, todas as validações são realizadas em uma única consulta ao banco de dados:
 
-1. Verificar se todos os IDs existem na tabela `Servico`.
+1. Verificar se todos os IDs existem na tabela `Servico`
+2. Verificar se todos os `Servico`s encontrados estão `ativo`s (`status = 'ativo'`)
+3. Verificar se todos os IDs correspondem ao `produto` especificado no parâmetro `product` (transformado para UPPERCASE)
+4. Verificar se todos os `Servico`s encontrados estão com a `situacao` correspondente ao parâmetro `type` especificado
+5. Verificar se todos os `Servico`s estão associados ao `Cedente` validado no middleware
 
-2. Verificar se todos os `Servico`s encontrados estão `ativo`s.
+Se alguma das validações falhar, deve ser retornado um erro **422** (não 400) com a seguinte mensagem:
 
-3. Verificar se todos os IDs correspondem ao `produto` especificado no parâmetro `product`.
+```text
+"Alguns serviços não foram encontrados ou estão inativos para este cedente. Verifique se o serviço está ativo, se o produto é o mesmo do solicitado e se a situação é a mesma da solicitada."
+```
 
-Se alguma das validações falhar, deve ser retornado um erro 400. Com mensagem genérica "Parâmetro inválido". Junto com o campo que não correspondeu aos valores esperados.
-
-1. Verificar se todos os `Servico`s encontrados estão `disponível`, `cancelado` ou `pago` de acordo com o `situacao` especificado no parâmetro `type`.
-
-Caso a validação falhe em sua **quarta etapa** (a etapa acima), então deve ser agrupado os IDs que estão errados e um map com os IDs errados como chave e a mensagem de erro como valor: Não foi possível gerar a notificação. A situação do `product` diverge do tipo de notificação solicitado.
-
-Onde `product` é o `produto` especificado no parâmetro `product`.
+Cada ID inválido terá uma mensagem específica: `"O serviço {id} não foi encontrado ou está inativo para este cedente."`
 
 ## Regras de Negócio - Configuração da Notificação
 
@@ -99,19 +106,35 @@ Para isso, deve se primeiro identificar todas as contas e cedentes que estão as
 
 Caso a configuração na Conta não exista, então será utilizada a configuração do Cedente.
 
+**Validação de Configuração Ausente:**
+
+Se algum serviço não possuir configuração de notificação (nem na Conta nem no Cedente), será retornado um erro **422** com mensagem específica:
+
+```text
+"Serviço {id} não possui configuração de notificação."
+```
+
+**Headers Adicionais:**
+
+Além dos headers padrão (`header`, `header_campo`, `header_valor`), a configuração de notificação suporta também `headers_adicionais`, que é um array de objetos `Record<string, string>` que serão mesclados aos headers do payload.
+
 ### Regras de Negócio - Processamento da Notificação
 
 Após a validação dos parâmetros, é realizado o processamento da notificação.
 
-Para cada grupo de `Servico`s (por Conta ou, se não houver, por Cedente) deve ser gerado um UUID — chamado aqui de `webhook_reprocessado`. Com base no `product` enviado na requisição, o payload a ser enviado para a Tecnospeed será montado seguindo um dos modelos abaixo.
+**IMPORTANTE:** Um único UUID é gerado para toda a requisição (não há agrupamento por Conta/Cedente). Cada serviço que possuir configuração de notificação gerará um payload individual, mas todos compartilharão o mesmo UUID (`webhook_reprocessado`).
+
+Com base no `product` enviado na requisição (transformado para UPPERCASE), o payload a ser enviado para a Tecnospeed será montado seguindo um dos modelos abaixo.
 
 #### Tabela de Situações para mapeamento do type
 
 | type       | boleto     | pagamento        | pix        |
 | ---------- | ---------- | ---------------- | ---------- |
-| disponível | REGISTRADO | SCHEDULED ACTIVE | ACTIVE     |
+| disponivel | REGISTRADO | SCHEDULED ACTIVE | ACTIVE     |
 | cancelado  | BAIXADO    | CANCELLED        | REJECTED   |
 | pago       | LIQUIDADO  | PAID             | LIQUIDATED |
+
+**Nota:** O valor do parâmetro `type` usa "disponivel" sem acento.
 
 #### Mapeamento do payload para api da Tecnospeed
 
@@ -137,7 +160,7 @@ O mapeamento do serviço de boleto para o payload da api da Tecnospeed é:
   },
   "body": {
     "tipoWH": "",
-    "dataHoraEnvio": "dd/mm/aaaa hh:mm:ss",
+    "dataHoraEnvio": "01/01/2024 14:30:00",
     "CpfCnpjCedente": "<CNPJ do Cedente>",
     "titulo": {
       "situacao": "<SITUAÇÃO DO BOLETO>",
@@ -151,26 +174,26 @@ O mapeamento do serviço de boleto para o payload da api da Tecnospeed é:
 
 **Onde:**
 
-| Parâmetro | Tipo   | Descrição                                                 |
-| --------- | ------ | --------------------------------------------------------- |
-| kind      | ENUM   | webhook                                                   |
-| method    | ENUM   | POST                                                      |
-| url       | string | url encontrada dentro da configuração da notificação      |
-| headers   | object | headers encontrados dentro da configuração da notificação |
-| body      | object | body do payload da api da Tecnospeed                      |
+| Parâmetro | Tipo   | Descrição                                                                                                                                                                                    |
+| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| kind      | ENUM   | webhook                                                                                                                                                                                      |
+| method    | ENUM   | POST                                                                                                                                                                                         |
+| url       | string | url encontrada dentro da configuração da notificação                                                                                                                                         |
+| headers   | object | headers encontrados dentro da configuração da notificação. Inclui `Content-Type: application/json` por padrão, além de `header_campo: header_valor` e `headers_adicionais` (se configurados) |
+| body      | object | body do payload da api da Tecnospeed                                                                                                                                                         |
 
 **Objeto body:**
 
-| Parâmetro                | Tipo   | Descrição                                                                 |
-| ------------------------ | ------ | ------------------------------------------------------------------------- |
-| tipoWH                   | string | tipo de notificação (e.g: notifica_liquidou). Deixar em branco            |
-| dataHoraEnvio            | string | data e hora de envio                                                      |
-| CpfCnpjCedente           | string | CNPJ do Cedente                                                           |
-| titulo                   | object | objeto titulo                                                             |
-| titulo.situacao          | string | situação do boleto mapeada na tabela de situações para mapeamento do type |
-| titulo.idintegracao      | string | ID webhook reprocessado (UUID gerado para o `WebhookReprocessado`)        |
-| titulo.TituloNossoNumero | string | Nosso Número do título (Deixar em branco)                                 |
-| titulo.TituloMovimentos  | object | objeto movimentos do título (Objeto vazio)                                |
+| Parâmetro                | Tipo   | Descrição                                                                                                                                              |
+| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| tipoWH                   | string | tipo de notificação (e.g: notifica_liquidou). Deixar em branco                                                                                         |
+| dataHoraEnvio            | string | data e hora de envio no formato gerado por `toLocaleString("pt-BR")` com `dateStyle: "short"` e `timeStyle: "medium"` (exemplo: "01/01/2024 14:30:00") |
+| CpfCnpjCedente           | string | CNPJ do Cedente                                                                                                                                        |
+| titulo                   | object | objeto titulo                                                                                                                                          |
+| titulo.situacao          | string | situação do boleto mapeada na tabela de situações para mapeamento do type                                                                              |
+| titulo.idintegracao      | string | ID webhook reprocessado (UUID gerado para o `WebhookReprocessado`)                                                                                     |
+| titulo.TituloNossoNumero | string | Nosso Número do título (Deixar em branco)                                                                                                              |
+| titulo.TituloMovimentos  | object | objeto movimentos do título (Objeto vazio)                                                                                                             |
 
 ##### Pagamento
 
@@ -197,24 +220,24 @@ O mapeamento do serviço de pagamento para o payload da api da Tecnospeed é:
 
 **Onde:**
 
-| Parâmetro | Tipo   | Descrição                                                 |
-| --------- | ------ | --------------------------------------------------------- |
-| kind      | ENUM   | webhook                                                   |
-| method    | ENUM   | POST                                                      |
-| url       | string | url encontrada dentro da configuração da notificação      |
-| headers   | object | headers encontrados dentro da configuração da notificação |
-| body      | object | body do payload da api da Tecnospeed                      |
+| Parâmetro | Tipo   | Descrição                                                                                                                                                                                    |
+| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| kind      | ENUM   | webhook                                                                                                                                                                                      |
+| method    | ENUM   | POST                                                                                                                                                                                         |
+| url       | string | url encontrada dentro da configuração da notificação                                                                                                                                         |
+| headers   | object | headers encontrados dentro da configuração da notificação. Inclui `Content-Type: application/json` por padrão, além de `header_campo: header_valor` e `headers_adicionais` (se configurados) |
+| body      | object | body do payload da api da Tecnospeed                                                                                                                                                         |
 
 **Objeto body:**
 
-| Parâmetro   | Tipo   | Descrição                                                                    |
-| ----------- | ------ | ---------------------------------------------------------------------------- |
-| status      | string | situação do pagamento mapeada na tabela de situações para mapeamento do type |
-| uniqueid    | string | ID webhook reprocessado (UUID gerado para o `WebhookReprocessado`)           |
-| createdAt   | string | data e hora de criação do pagamento                                          |
-| ocurrences  | array  | array de objetos de ocorrências (Objeto vazio)                               |
-| accountHash | string | ID da Conta                                                                  |
-| occurrences | array  | array de objetos de ocorrências (Objeto vazio)                               |
+| Parâmetro   | Tipo   | Descrição                                                                                         |
+| ----------- | ------ | ------------------------------------------------------------------------------------------------- |
+| status      | string | situação do pagamento mapeada na tabela de situações para mapeamento do type                      |
+| uniqueid    | string | ID webhook reprocessado (UUID gerado para o `WebhookReprocessado`)                                |
+| createdAt   | string | data e hora de criação no formato ISO 8601 (`toISOString()`, exemplo: "2024-01-01T14:30:00.000Z") |
+| ocurrences  | array  | array de objetos de ocorrências (Objeto vazio)                                                    |
+| accountHash | string | ID da Conta                                                                                       |
+| occurrences | array  | array de objetos de ocorrências (Objeto vazio)                                                    |
 
 ##### Pix
 
@@ -243,13 +266,13 @@ O mapeamento do serviço de pix para o payload da api da Tecnospeed é:
 
 **Onde:**
 
-| Parâmetro | Tipo   | Descrição                                                 |
-| --------- | ------ | --------------------------------------------------------- |
-| kind      | ENUM   | webhook                                                   |
-| method    | ENUM   | POST                                                      |
-| url       | string | url encontrada dentro da configuração da notificação      |
-| headers   | object | headers encontrados dentro da configuração da notificação |
-| body      | object | body do payload da api da Tecnospeed                      |
+| Parâmetro | Tipo   | Descrição                                                                                                                                                                                    |
+| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| kind      | ENUM   | webhook                                                                                                                                                                                      |
+| method    | ENUM   | POST                                                                                                                                                                                         |
+| url       | string | url encontrada dentro da configuração da notificação                                                                                                                                         |
+| headers   | object | headers encontrados dentro da configuração da notificação. Inclui `Content-Type: application/json` por padrão, além de `header_campo: header_valor` e `headers_adicionais` (se configurados) |
+| body      | object | body do payload da api da Tecnospeed                                                                                                                                                         |
 
 **Objeto body:**
 
@@ -265,13 +288,60 @@ O mapeamento do serviço de pix para o payload da api da Tecnospeed é:
 
 #### Envio dos payloads para a API da Tecnospeed
 
-Os payloads acima devem ser enviados para a API da Tecnospeed para processamento. Como retorno, a API enviará um UUID de protocolo. Esse UUID deve ser salvo na tabela `WebhookReprocessado` na coluna `protocolo`. Caso existam múltiplos grupos (por Conta/Cedente), serão enviados múltiplos payloads e recebidos múltiplos protocolos.
+Todos os payloads acima devem ser enviados para a API da Tecnospeed **em uma única requisição** com a seguinte estrutura:
 
-Então deve ser salvo o objeto no banco de dados na tabela `WebhookReprocessado` como JSON através da coluna `data`. Junto ao dados da requisição e o protocolo.
+```json
+{
+  "notifications": [
+    {
+      /* payload 1 */
+    },
+    {
+      /* payload 2 */
+    },
+    {
+      /* ... */
+    }
+  ]
+}
+```
 
-Em caso de falha geral no processamento, retornar um erro 400 Bad Request com a mensagem: "Não foi possível gerar a notificação. Tente novamente mais tarde."
+Como retorno, a API enviará um **único UUID de protocolo** para todos os payloads:
 
-Após o processamento das notificações, deve ser retornado uma mensagem de sucesso dizendo que a notificação foi gerada com sucesso.
+```json
+{
+  "protocolo": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
+
+Esse UUID deve ser salvo na tabela `WebhookReprocessado` na coluna `protocolo`.
+
+**Estrutura da Tabela WebhookReprocessado:**
+
+| Campo        | Tipo      | Descrição                                                 |
+| ------------ | --------- | --------------------------------------------------------- |
+| id           | UUID      | UUID gerado automaticamente (chave primária)              |
+| cedente_id   | INTEGER   | ID do Cedente (foreign key)                               |
+| kind         | STRING    | Tipo de reenvio (ex: "webhook")                           |
+| type         | STRING    | Tipo da situação (ex: "pago", "cancelado", "disponivel")  |
+| servico_id   | JSONB     | Array de strings com os IDs dos serviços processados      |
+| product      | ENUM      | Produto (BOLETO, PAGAMENTO, PIX)                          |
+| protocolo    | STRING    | UUID do protocolo retornado pela Tecnospeed               |
+| data         | JSONB     | Objeto JSON contendo `notifications: [array de payloads]` |
+| data_criacao | TIMESTAMP | Data de criação (timestamp automático)                    |
+
+O objeto deve ser salvo no banco de dados na tabela `WebhookReprocessado` como JSON através da coluna `data`. Junto aos dados da requisição e o protocolo.
+
+Em caso de falha na comunicação com a Tecnospeed (erro 400 da API), será lançado um erro interno (500) com a mensagem: "Não foi possível gerar a notificação. Tente novamente mais tarde."
+
+Após o processamento das notificações, deve ser retornado a seguinte resposta de sucesso:
+
+```json
+{
+  "message": "Notificação reenviada com sucesso",
+  "protocolo": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
 
 ---
 
@@ -292,27 +362,39 @@ Se for feito uma requisição para o endpoint com os seguintes parâmetros:
 - product: boleto
 - id: [1, 2, 3, 4]
 - kind: webhook
-- type: disponível
+- type: disponivel
 
-Então deve ser montado apenas um `WebhookReprocessado` com um único UUID.
+Será gerado:
+
+- Um único UUID (`webhook_reprocessado`)
+- Quatro payloads individuais (um para cada serviço)
+- Todos os payloads serão enviados em uma única requisição para a Tecnospeed
+- Um único protocolo será retornado
+- Um único registro será salvo na tabela `WebhookReprocessado` contendo todos os payloads no campo `data.notifications`
 
 ---
-
-Os payloads acima devem ser enviados para a API da Technopeed para processamento. Como retorno, a API enviará um UUID de protocolo. Esse UUID deve ser salvo na tabela `WebhookReprocessado` na coluna `protocolo`.
-
-Então deve ser salvo o objeto no banco de dados na tabela `WebhookReprocessado` como JSON através da coluna `data`. Junto ao dados da requisição e o protocolo.
-
-Em caso de falha geral no processamento, retornar um erro 400 Bad Request com a mensagem: "Não foi possível gerar a notificação. Tente novamente mais tarde."
-
-Após o processamento das notificações, deve ser retornado uma mensagem de sucesso dizendo que a notificação foi gerada com sucesso.
 
 ## Regras de Negócio - Cache de Requisições
 
 Deve ser criado um cache de requisições para evitar requisições duplicadas. Para isso deve ser utilizado os parâmetros da requisição como chave e retorno final, caso já tenha sido processado e tenha sucesso, como valor.
 
-O cache deve ter uma validade de 1 hora.
+**IMPORTANTE:** A verificação do cache é feita **ANTES** de processar a requisição, não depois.
 
-`product:ids:kind:type` - retorno final, caso já tenha sido processado e tenha sucesso.
+O cache deve ter uma validade de **24 horas (1 dia)**.
+
+**Formato da Chave do Cache:**
+
+```text
+reenviar:{PRODUCT}:{ids_ordenados}:{type}
+```
+
+Onde:
+
+- `{PRODUCT}` é o valor do parâmetro `product` transformado para **UPPERCASE** (BOLETO, PAGAMENTO, PIX)
+- `{ids_ordenados}` são os IDs ordenados numericamente e separados por vírgula (ex: "1,2,3,4")
+- `{type}` é o valor do parâmetro `type` (pago, cancelado, disponivel)
+
+**Nota:** O parâmetro `kind` **não é incluído** na chave do cache.
 
 ---
 
@@ -321,28 +403,82 @@ O cache deve ter uma validade de 1 hora.
 Se a requisição for feita com os seguintes parâmetros:
 
 - product: boleto
-- id: [1, 2, 3, 4]
+- id: [4, 2, 1, 3]
 - kind: webhook
-- type: disponível
+- type: disponivel
 
 Então a chave gerada deve ser:
 
-`boleto:1,2,3,4:webhook:disponível`
+```text
+reenviar:BOLETO:1,2,3,4:disponivel
+```
 
-E o valor deve ser o retorno final de sucesso da requisição.
+E o valor armazenado no cache será:
+
+```json
+{
+  "message": "Notificação reenviada com sucesso",
+  "protocolo": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
 
 ---
 
-Somente caso a requisição já tenha sido processada e tenha sucesso, então deve ser criado o cache com a chave e o valor.
+**Fluxo do Cache:**
 
-No caso de achar o cache, então deve ser retornado o valor do cache pois esse já foi processado e tem sucesso.
+1. **Verificação:** Ao receber a requisição, o cache é verificado **ANTES** de processar qualquer validação de regra de negócio
+2. **Cache Hit:** Se encontrar no cache, retorna imediatamente o valor armazenado
+3. **Cache Miss:** Se não encontrar, processa normalmente a requisição
+4. **Armazenamento:** Somente após o processamento bem-sucedido (criação no banco e envio para Tecnospeed), o resultado é armazenado no cache com TTL de 24 horas
 
 ## Fluxo de Execução
 
-1. Recebimento da requisição em `/reenviar`;
-2. Validação das headers de SH e Cedente (Middleware);
-3. Validação dos parâmetros;
-4. Validação da regra de negócio;
-5. Processamento da notificação;
-6. Cache de requisições;
-7. Retorno da requisição;
+1. **Recebimento da requisição** em `/reenviar`
+2. **Validação das headers** de SH e Cedente (`AuthMiddleware`)
+   - Valida CNPJ e Token da Software House
+   - Valida CNPJ e Token do Cedente
+   - Verifica associação entre Cedente e Software House
+   - Verifica status ativo/inativo
+   - Em caso de erro: retorna 401 (Unauthorized)
+3. **Validação dos parâmetros** (`BodyMiddleware`)
+   - Valida formato e tipos usando `ReenviarDTOValidator`
+   - Transforma `product` para UPPERCASE
+   - Transforma `id` de string[] para number[]
+   - Em caso de erro: retorna 400 (Bad Request)
+4. **Validação do `kind`** (`ReenviarController`)
+   - Verifica se `kind` está em `KINDS_REENVIOS` (atualmente apenas "webhook")
+   - Em caso de erro: retorna 501 (NOT_IMPLEMENTED)
+5. **Verificação do cache** (`ReenviarService`)
+   - Gera chave: `reenviar:{PRODUCT}:{ids_ordenados}:{type}`
+   - Se encontrado no cache: retorna imediatamente o valor armazenado
+6. **Busca e validação dos serviços** (`ReenviarService` → `ServicoRepository`)
+   - Busca serviços que atendam: `id IN (ids)`, `produto = product`, `situacao = type`, `status = 'ativo'`, `cedente_id = cedenteId`
+   - Verifica se todos os IDs foram encontrados
+   - Em caso de erro: retorna 422 (Unprocessable Entity)
+7. **Geração do UUID** (`ReenviarService`)
+   - Gera um único UUID para toda a requisição (chamado de `processamentoId` ou `webhook_reprocessado`)
+8. **Busca de configurações de notificação** (`ConfiguracaoNotificacaoUseCase`)
+   - Para cada serviço, busca configuração na Conta (prioridade)
+   - Se não encontrar, busca no Cedente
+   - Em caso de serviço sem configuração: retorna 422 (Unprocessable Entity)
+9. **Montagem dos payloads** (`MontarNotificacaoUseCase`)
+   - Gera um payload individual para cada configuração de notificação encontrada
+   - Monta headers incluindo `headers_adicionais` se configurado
+   - Aplica mapeamento de situação conforme `product` e `type`
+10. **Envio para Tecnospeed** (`TecnospeedClient`)
+    - Envia todos os payloads em uma única requisição: `{ notifications: [...] }`
+    - Recebe um único protocolo como resposta
+    - Em caso de erro 400 da API: retorna 500 com mensagem genérica
+11. **Salvamento no banco** (`WebhookReprocessadoRepository`)
+    - Salva registro na tabela `WebhookReprocessado` com:
+      - `id`: UUID gerado
+      - `cedente_id`: ID do cedente
+      - `kind`, `type`, `product`: valores da requisição
+      - `servico_id`: array de strings com IDs dos serviços
+      - `protocolo`: protocolo retornado pela Tecnospeed
+      - `data`: JSON com array de notificações enviadas
+12. **Armazenamento no cache** (`ReenviarService`)
+    - Armazena resultado de sucesso no cache com TTL de 24 horas
+13. **Retorno da requisição**
+    - Retorna 200 com: `{ message: "Notificação reenviada com sucesso", protocolo: "..." }`
+    - Em caso de erro não tratado: retorna 500 (Internal Server Error)

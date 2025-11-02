@@ -28,7 +28,7 @@ Colocar extensões
 **Testes: Jest**
 
 **Versões:**\
-Node: v22.18.0\
+Node: v23.0.0\
 npm: v10.9.3
 
 ## Backend Stack

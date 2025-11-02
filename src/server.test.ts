@@ -96,7 +96,7 @@ describe("[CHORE] server.ts", () => {
         setImmediate(() => resolve());
       });
 
-      expect(Logger.fatal).toHaveBeenCalledWith(
+      expect(Logger.error).toHaveBeenCalledWith(
         expect.stringContaining("Fatal error during bootstrap"),
       );
       expect(process.exit).toHaveBeenCalledWith(1);

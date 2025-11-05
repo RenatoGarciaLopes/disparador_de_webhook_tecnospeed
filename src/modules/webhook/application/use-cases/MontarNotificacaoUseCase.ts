@@ -88,12 +88,8 @@ export class MontarNotificacaoUseCase {
       }
     }
 
-    const destinos = new Set(
-      payloads.map((p) => (p?.url ? String(p.url) : "")),
-    );
-
     Logger.info(
-      `Payloads de notificação montados: total=${payloads.length}, destinos=${destinos.size}, produto=${this.data.product}`,
+      `Payloads de notificação montados: total=${payloads.length}, produto=${this.data.product}`,
     );
 
     return payloads;

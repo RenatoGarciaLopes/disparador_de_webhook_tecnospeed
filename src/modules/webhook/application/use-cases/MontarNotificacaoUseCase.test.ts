@@ -3,6 +3,9 @@ import {
   MontarNotificacaoUseCase,
 } from "./MontarNotificacaoUseCase";
 
+import { Logger } from "@/infrastructure/logger/logger";
+import { BoletoPresenter } from "../presenters/boleto";
+
 jest.mock("@/infrastructure/logger/logger", () => ({
   Logger: {
     info: jest.fn(),
@@ -13,8 +16,6 @@ jest.mock("@/infrastructure/logger/logger", () => ({
     fatal: jest.fn(),
   },
 }));
-
-import { Logger } from "@/infrastructure/logger/logger";
 
 describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
   let useCase: MontarNotificacaoUseCase;
@@ -487,5 +488,56 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
       expect(result).toHaveLength(0);
     });
 
+    it("deve logar warn quando presenter lançar erro e continuar o loop", () => {
+      const data = {
+        product: "BOLETO" as const,
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+
+      const spy = jest
+        .spyOn(BoletoPresenter, "toPayload")
+        .mockImplementation(() => {
+          throw new Error("boom");
+        });
+
+      useCase = new MontarNotificacaoUseCase(
+        "uuid-err",
+        data,
+        mockConfiguracoes,
+      );
+
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining("error=boom"),
+      );
+      expect(result).toHaveLength(0);
+
+      spy.mockRestore();
+    });
+
+    it("não deve empilhar payload quando presenter retornar undefined", () => {
+      const data = {
+        product: "BOLETO" as const,
+        kind: "webhook" as const,
+        type: "pago" as const,
+      };
+
+      const spy = jest
+        .spyOn(BoletoPresenter, "toPayload")
+        .mockReturnValue(undefined as any);
+
+      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
+
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+
+      expect(result).toHaveLength(0);
+      expect(Logger.info).toHaveBeenCalledWith(
+        expect.stringContaining("total=0"),
+      );
+
+      spy.mockRestore();
+    });
   });
 });

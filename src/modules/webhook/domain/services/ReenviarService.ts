@@ -89,9 +89,6 @@ export class ReenviarService implements IReenviarService {
     Logger.debug(`Generating processamento ID: ${processamentoId}`);
 
     const configuracoes = ConfiguracaoNotificacaoUseCase.execute(servicos);
-    Logger.debug(
-      `Configuracoes processed: ${configuracoes?.length || 0} configuracoes`,
-    );
 
     const payloads = new MontarNotificacaoUseCase(
       processamentoId,
@@ -102,10 +99,6 @@ export class ReenviarService implements IReenviarService {
       },
       configuracoes,
     ).execute({ cnpjCedente: cedente.cnpj }) as any;
-
-    Logger.info(
-      `Payloads mounted, sending to Tecnospeed: ${payloads?.length || 0} payloads`,
-    );
 
     const sendResult = await this.TecnospeedClient.reenviarWebhook({
       notifications: payloads,

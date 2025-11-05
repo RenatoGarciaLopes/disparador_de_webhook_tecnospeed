@@ -1,8 +1,6 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
 import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
-import { ConfiguracaoNotificacaoUseCase } from "../../application/use-cases/ConfiguracaoNotificacaoUseCase";
-import { MontarNotificacaoUseCase } from "../../application/use-cases/MontarNotificacaoUseCase";
 import { ServicoRepository } from "../../infrastructure/repositories/ServicoRepository";
 import { WebhookReprocessadoRepository } from "../../infrastructure/repositories/WebhookReprocessadoRepository";
 import { ReenviarService } from "./ReenviarService";
@@ -130,7 +128,7 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         try {
           await service.webhook(data, cedente);
-        } catch (error) {
+        } catch {
           // Esperado que lance erro ao tentar usar data.id.sort()
         }
 

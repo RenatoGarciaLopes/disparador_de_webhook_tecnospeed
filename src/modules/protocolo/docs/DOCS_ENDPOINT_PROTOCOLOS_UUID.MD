@@ -61,8 +61,8 @@ Se o protocolo não for encontrado ou não pertencer ao cedente, o serviço reto
 
 ```json
 {
-  "code": "NOT_FOUND.",
-  "statusCode": 400,
+  "code": "NOT_FOUND",
+  "statusCode": 404,
   "errors": ["Protocolo não encontrado."]
 }
 ```

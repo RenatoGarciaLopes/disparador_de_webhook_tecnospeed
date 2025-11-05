@@ -99,7 +99,7 @@ export class ProtocolosService {
 
     if (!protocolo) {
       Logger.warn(`Protocolo not found: id=${data.id}, cedenteId=${cedenteId}`);
-      throw new ErrorResponse("NOT_FOUND.", 400, {
+      throw new ErrorResponse("NOT_FOUND", 404, {
         errors: ["Protocolo não encontrado."],
       });
     }

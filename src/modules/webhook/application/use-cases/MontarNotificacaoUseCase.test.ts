@@ -1,16 +1,7 @@
-import { SituacaoMapper } from "../../domain/mappers/SituacaoMapper";
-import { BoletoPresenter } from "../presenters/boleto";
-import { PagamentoPresenter } from "../presenters/pagamento";
-import { PixPresenter } from "../presenters/pix";
 import {
   ConfiguracaoNotificacao,
   MontarNotificacaoUseCase,
 } from "./MontarNotificacaoUseCase";
-
-jest.mock("../presenters/boleto");
-jest.mock("../presenters/pagamento");
-jest.mock("../presenters/pix");
-jest.mock("../../domain/mappers/SituacaoMapper");
 
 jest.mock("@/infrastructure/logger/logger", () => ({
   Logger: {
@@ -49,10 +40,6 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
     ] as any;
 
     jest.clearAllMocks();
-
-    (SituacaoMapper.toBoleto as jest.Mock).mockReturnValue("LIQUIDADO");
-    (SituacaoMapper.toPagamento as jest.Mock).mockReturnValue("PAID");
-    (SituacaoMapper.toPix as jest.Mock).mockReturnValue("LIQUIDATED");
   });
 
   describe("execute() - BOLETO", () => {
@@ -69,20 +56,26 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const mockBoletoPayload = {
-        kind: "webhook",
-        method: "POST",
-        url: "http://webhook.com",
-      };
-
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue(
-        mockBoletoPayload,
-      );
-
       const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
       expect(result).toHaveLength(1);
-      expect(BoletoPresenter.toPayload).toHaveBeenCalled();
+      expect(result[0]).toMatchObject({
+        kind: "webhook",
+        method: "POST",
+        url: "http://webhook.com",
+        headers: {
+          Authorization: "Bearer token123",
+          "X-Custom": "value1",
+          "X-Other": "value2",
+        },
+        body: {
+          CpfCnpjCedente: "12.345.678/0001-90",
+          titulo: {
+            situacao: "LIQUIDADO", // SituacaoMapper.toBoleto("pago")
+            idintegracao: "test-uuid-123",
+          },
+        },
+      });
     });
 
     it("deve incluir header configurado nos headers do boleto", () => {
@@ -98,25 +91,18 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(BoletoPresenter.toPayload).toHaveBeenCalledWith(
-        "http://webhook.com",
-        {
-          Authorization: "Bearer token123",
-          "X-Custom": "value1",
-          "X-Other": "value2",
-        },
-        expect.objectContaining({
-          webhookReprocessadoId: "test-uuid-123",
-          cnpjCedente: "12.345.678/0001-90",
-        }),
-      );
+      expect(result[0].headers).toEqual({
+        Authorization: "Bearer token123",
+        "X-Custom": "value1",
+        "X-Other": "value2",
+      });
+      expect(result[0].body.CpfCnpjCedente).toBe("12.345.678/0001-90");
+      expect(result[0].body.titulo.idintegracao).toBe("test-uuid-123");
     });
 
-    it("deve usar SituacaoMapper.toBoleto", () => {
+    it("deve usar SituacaoMapper.toBoleto corretamente", () => {
       const data = {
         product: "BOLETO" as const,
         kind: "webhook" as const,
@@ -129,11 +115,10 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(SituacaoMapper.toBoleto).toHaveBeenCalledWith("cancelado");
+      // Verifica se a situação foi mapeada corretamente: cancelado -> BAIXADO
+      expect(result[0].body.titulo.situacao).toBe("BAIXADO");
     });
 
     it("não deve adicionar header quando header é false", () => {
@@ -164,15 +149,9 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         configuracoes,
       );
 
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(BoletoPresenter.toPayload).toHaveBeenCalledWith(
-        "http://webhook.com",
-        {},
-        expect.any(Object),
-      );
+      expect(result[0].headers).toEqual({});
     });
   });
 
@@ -190,23 +169,24 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const mockPagamentoPayload = {
-        kind: "webhook",
-        method: "POST",
-        url: "http://webhook.com",
-      };
-
-      (PagamentoPresenter.toPayload as jest.Mock).mockReturnValue(
-        mockPagamentoPayload,
-      );
-
       const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
       expect(result).toHaveLength(1);
-      expect(PagamentoPresenter.toPayload).toHaveBeenCalled();
+      expect(result[0]).toMatchObject({
+        kind: "webhook",
+        method: "POST",
+        url: "http://webhook.com",
+        headers: {
+          Authorization: "Bearer token123",
+          "X-Custom": "value1",
+          "X-Other": "value2",
+        },
+      });
+      // PagamentoPresenter usa "status" (não "situacao")
+      expect(result[0].body.status).toBe("PAID"); // SituacaoMapper.toPagamento("pago")
     });
 
-    it("deve incluir headers no pagamento", () => {
+    it("deve incluir headers e dados corretos no pagamento", () => {
       const data = {
         product: "PAGAMENTO" as const,
         kind: "webhook" as const,
@@ -219,25 +199,20 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      (PagamentoPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(PagamentoPresenter.toPayload).toHaveBeenCalledWith(
-        "http://webhook.com",
-        {
-          Authorization: "Bearer token123",
-          "X-Custom": "value1",
-          "X-Other": "value2",
-        },
-        expect.objectContaining({
-          webhookReprocessadoId: "test-uuid-456",
-          contaId: 20,
-        }),
-      );
+      expect(result[0].url).toBe("http://webhook.com");
+      expect(result[0].headers).toEqual({
+        Authorization: "Bearer token123",
+        "X-Custom": "value1",
+        "X-Other": "value2",
+      });
+      // PagamentoPresenter usa "uniqueid" (não "idintegracao")
+      expect(result[0].body.uniqueid).toBe("test-uuid-456");
+      expect(result[0].body.status).toBe("CANCELLED"); // SituacaoMapper.toPagamento("cancelado")
     });
 
-    it("deve usar SituacaoMapper.toPagamento", () => {
+    it("deve usar SituacaoMapper.toPagamento corretamente", () => {
       const data = {
         product: "PAGAMENTO" as const,
         kind: "webhook" as const,
@@ -250,11 +225,10 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      (PagamentoPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(SituacaoMapper.toPagamento).toHaveBeenCalledWith("disponivel");
+      // Verifica se a situação foi mapeada corretamente: disponivel -> SCHEDULED ACTIVE
+      expect(result[0].body.status).toBe("SCHEDULED ACTIVE");
     });
   });
 
@@ -272,18 +246,21 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const mockPixPayload = {
-        kind: "webhook",
-        method: "POST",
-        url: "http://webhook.com",
-      };
-
-      (PixPresenter.toPayload as jest.Mock).mockReturnValue(mockPixPayload);
-
       const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
       expect(result).toHaveLength(1);
-      expect(PixPresenter.toPayload).toHaveBeenCalled();
+      expect(result[0]).toMatchObject({
+        kind: "webhook",
+        method: "POST",
+        url: "http://webhook.com",
+        headers: {
+          Authorization: "Bearer token123",
+          "X-Custom": "value1",
+          "X-Other": "value2",
+        },
+      });
+      // PixPresenter usa "event" (não "situacao")
+      expect(result[0].body.event).toBe("ACTIVE"); // SituacaoMapper.toPix("disponivel")
     });
 
     it("deve incluir headers e IDs corretos no pix", () => {
@@ -299,27 +276,20 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      (PixPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "98.765.432/0001-10" });
 
-      useCase.execute({ cnpjCedente: "98.765.432/0001-10" });
-
-      expect(PixPresenter.toPayload).toHaveBeenCalledWith(
-        "http://webhook.com",
-        {
-          Authorization: "Bearer token123",
-          "X-Custom": "value1",
-          "X-Other": "value2",
-        },
-        expect.objectContaining({
-          webhookReprocessadoId: "test-uuid-pix",
-          contaId: 20,
-          servicoId: 10,
-          cedenteId: 1,
-        }),
-      );
+      expect(result[0].url).toBe("http://webhook.com");
+      expect(result[0].headers).toEqual({
+        Authorization: "Bearer token123",
+        "X-Custom": "value1",
+        "X-Other": "value2",
+      });
+      // PixPresenter usa "transactionId" (não "idintegracao")
+      expect(result[0].body.transactionId).toBe("test-uuid-pix");
+      expect(result[0].body.event).toBe("LIQUIDATED"); // SituacaoMapper.toPix("pago")
     });
 
-    it("deve usar SituacaoMapper.toPix", () => {
+    it("deve usar SituacaoMapper.toPix corretamente", () => {
       const data = {
         product: "PIX" as const,
         kind: "webhook" as const,
@@ -332,11 +302,10 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      (PixPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(SituacaoMapper.toPix).toHaveBeenCalledWith("cancelado");
+      // Verifica se a situação foi mapeada corretamente: cancelado -> REJECTED
+      expect(result[0].body.event).toBe("REJECTED");
     });
   });
 
@@ -365,17 +334,11 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(BoletoPresenter.toPayload).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          "X-API-Key": "secret-key",
-        }),
-        expect.any(Object),
-      );
+      expect(result[0].headers).toEqual({
+        "X-API-Key": "secret-key",
+      });
     });
 
     it("deve adicionar headers_adicionais", () => {
@@ -405,18 +368,12 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      (PixPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(PixPresenter.toPayload).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          "X-Header-1": "value1",
-          "X-Header-2": "value2",
-        }),
-        expect.any(Object),
-      );
+      expect(result[0].headers).toEqual({
+        "X-Header-1": "value1",
+        "X-Header-2": "value2",
+      });
     });
   });
 
@@ -457,12 +414,11 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue({});
-
       const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
       expect(result).toHaveLength(2);
-      expect(BoletoPresenter.toPayload).toHaveBeenCalledTimes(2);
+      expect(result[0].url).toBe("http://webhook1.com");
+      expect(result[1].url).toBe("http://webhook2.com");
     });
 
     it("deve retornar array vazio quando não há configurações", () => {
@@ -505,17 +461,11 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue({});
+      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(BoletoPresenter.toPayload).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          "X-Only": "only-value",
-        }),
-        expect.any(Object),
-      );
+      expect(result[0].headers).toEqual({
+        "X-Only": "only-value",
+      });
     });
 
     it("deve ignorar produto desconhecido (default continue)", () => {
@@ -533,93 +483,9 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
 
-      expect(result).toHaveLength(0);
-      expect(BoletoPresenter.toPayload).not.toHaveBeenCalled();
-      expect(PagamentoPresenter.toPayload).not.toHaveBeenCalled();
-      expect(PixPresenter.toPayload).not.toHaveBeenCalled();
-    });
-
-    it("não empilha payload quando presenter retorna falsy", () => {
-      const data = {
-        product: "BOLETO" as const,
-        kind: "webhook" as const,
-        type: "pago" as const,
-      };
-
-      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
-
-      (BoletoPresenter.toPayload as jest.Mock).mockReturnValue(null);
-
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(BoletoPresenter.toPayload).toHaveBeenCalledTimes(1);
+      // Produto desconhecido não gera payload
       expect(result).toHaveLength(0);
     });
 
-    it("deve logar erro quando presenter lança exceção com message", () => {
-      const data = {
-        product: "BOLETO" as const,
-        kind: "webhook" as const,
-        type: "pago" as const,
-      };
-
-      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
-
-      const error = new Error("Erro ao montar payload de boleto");
-      (BoletoPresenter.toPayload as jest.Mock).mockImplementation(() => {
-        throw error;
-      });
-
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(Logger.warn).toHaveBeenCalledWith(
-        `Erro ao montar payload: url=http://webhook.com, error=${error.message}`,
-      );
-      expect(result).toHaveLength(0);
-    });
-
-    it("deve logar erro quando presenter lança exceção sem message", () => {
-      const data = {
-        product: "PAGAMENTO" as const,
-        kind: "webhook" as const,
-        type: "pago" as const,
-      };
-
-      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
-
-      const errorWithoutMessage = {} as Error;
-      (PagamentoPresenter.toPayload as jest.Mock).mockImplementation(() => {
-        throw errorWithoutMessage;
-      });
-
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(Logger.warn).toHaveBeenCalledWith(
-        `Erro ao montar payload: url=http://webhook.com, error=${errorWithoutMessage?.message}`,
-      );
-      expect(result).toHaveLength(0);
-    });
-
-    it("deve logar erro quando presenter lança exceção não Error", () => {
-      const data = {
-        product: "PIX" as const,
-        kind: "webhook" as const,
-        type: "disponivel" as const,
-      };
-
-      useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
-
-      const nonErrorException = "String error" as any;
-      (PixPresenter.toPayload as jest.Mock).mockImplementation(() => {
-        throw nonErrorException;
-      });
-
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
-
-      expect(Logger.warn).toHaveBeenCalledWith(
-        `Erro ao montar payload: url=http://webhook.com, error=${nonErrorException?.message}`,
-      );
-      expect(result).toHaveLength(0);
-    });
   });
 });

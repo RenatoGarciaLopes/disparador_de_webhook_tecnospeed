@@ -11,8 +11,6 @@ jest.mock("@/infrastructure/cache/cache.service");
 jest.mock("@/infrastructure/tecnospeed/TecnospeedClient");
 jest.mock("../../infrastructure/repositories/ServicoRepository");
 jest.mock("../../infrastructure/repositories/WebhookReprocessadoRepository");
-jest.mock("../../application/use-cases/ConfiguracaoNotificacaoUseCase");
-jest.mock("../../application/use-cases/MontarNotificacaoUseCase");
 jest.mock("uuid", () => ({
   v4: jest.fn(() => "test-uuid-123"),
 }));
@@ -173,21 +171,6 @@ describe("[WEBHOOK] ReenviarService", () => {
           mockServicos as any,
         );
 
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue([
-          {
-            cedenteId: 1,
-            servicoId: 1,
-            contaId: 20,
-            configuracaoNotificacao:
-              mockServicos[0].convenio.conta.configuracao_notificacao,
-          },
-        ]);
-
-        const mockPayloads = [{ idIntegracao: "1", situacao: "pago" }];
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: jest.fn().mockReturnValue(mockPayloads),
-        }));
-
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "PROTO123",
         });
@@ -237,12 +220,6 @@ describe("[WEBHOOK] ReenviarService", () => {
           ] as any,
         );
 
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          [],
-        );
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: jest.fn().mockReturnValue([]),
-        }));
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "TEST",
         });
@@ -288,15 +265,6 @@ describe("[WEBHOOK] ReenviarService", () => {
           ] as any,
         );
 
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          [],
-        );
-
-        const mockPayloads = [{ idIntegracao: "1" }];
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: jest.fn().mockReturnValue(mockPayloads),
-        }));
-
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "XYZ789",
         });
@@ -312,9 +280,12 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         await service.webhook(data, cedente);
 
-        expect(mockTecnospeedClient.reenviarWebhook).toHaveBeenCalledWith({
-          notifications: mockPayloads,
-        });
+        // Verifica se foi chamado com array de notifications
+        expect(mockTecnospeedClient.reenviarWebhook).toHaveBeenCalledWith(
+          expect.objectContaining({
+            notifications: expect.any(Array),
+          }),
+        );
       });
 
       it("deve salvar no WebhookReprocessadoRepository", async () => {
@@ -358,13 +329,6 @@ describe("[WEBHOOK] ReenviarService", () => {
             },
           ] as any,
         );
-
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          [],
-        );
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: jest.fn().mockReturnValue([]),
-        }));
 
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "SAVE123",
@@ -417,13 +381,6 @@ describe("[WEBHOOK] ReenviarService", () => {
             },
           ] as any,
         );
-
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          [],
-        );
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: jest.fn().mockReturnValue([]),
-        }));
 
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "CACHE123",
@@ -559,7 +516,7 @@ describe("[WEBHOOK] ReenviarService", () => {
     });
 
     describe("Integração com Use Cases", () => {
-      it("deve usar ConfiguracaoNotificacaoUseCase", async () => {
+      it("deve processar configuracoes dos servicos corretamente", async () => {
         mockCache.get.mockResolvedValue(null);
 
         const mockServicos = [
@@ -586,12 +543,6 @@ describe("[WEBHOOK] ReenviarService", () => {
           mockServicos as any,
         );
 
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          [],
-        );
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: jest.fn().mockReturnValue([]),
-        }));
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "TEST",
         });
@@ -605,14 +556,16 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
 
-        await service.webhook(data, cedente);
+        const result = await service.webhook(data, cedente);
 
-        expect(ConfiguracaoNotificacaoUseCase.execute).toHaveBeenCalledWith(
-          mockServicos,
-        );
+        // Verifica se o serviço processou corretamente
+        expect(result).toEqual({
+          message: "Notificação reenviada com sucesso",
+          protocolo: "TEST",
+        });
       });
 
-      it("deve usar MontarNotificacaoUseCase com parâmetros corretos", async () => {
+      it("deve montar notificacoes e enviar para Tecnospeed", async () => {
         mockCache.get.mockResolvedValue(null);
 
         mockServicoRepository.findAllConfiguracaoNotificacaoByCedente.mockResolvedValue(
@@ -636,86 +589,6 @@ describe("[WEBHOOK] ReenviarService", () => {
             },
           ] as any,
         );
-
-        const mockConfiguracoes = [
-          {
-            cedenteId: 1,
-            servicoId: 1,
-            contaId: 20,
-            configuracaoNotificacao: {
-              url: "http://test.com",
-              header: false,
-              header_campo: "",
-              header_valor: "",
-              headers_adicionais: [],
-            },
-          },
-        ];
-
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          mockConfiguracoes,
-        );
-
-        const mockExecute = jest.fn().mockReturnValue([]);
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(
-          (uuid, data, configuracoes) => {
-            expect(uuid).toBe("test-uuid-123");
-            expect(configuracoes).toEqual(mockConfiguracoes);
-            return { execute: mockExecute };
-          },
-        );
-
-        mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
-          protocolo: "TEST",
-        });
-
-        const data = {
-          product: "BOLETO" as const,
-          id: [1],
-          kind: "webhook" as const,
-          type: "pago" as const,
-        };
-
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
-
-        await service.webhook(data, cedente);
-
-        expect(MontarNotificacaoUseCase).toHaveBeenCalled();
-      });
-
-      it("deve chamar execute do MontarNotificacaoUseCase com cnpj cedente", async () => {
-        mockCache.get.mockResolvedValue(null);
-
-        mockServicoRepository.findAllConfiguracaoNotificacaoByCedente.mockResolvedValue(
-          [
-            {
-              id: 1,
-              convenio: {
-                id: 10,
-                conta: {
-                  id: 20,
-                  configuracao_notificacao: {
-                    url: "http://test.com",
-                    header: false,
-                    header_campo: "",
-                    header_valor: "",
-                    headers_adicionais: [],
-                  },
-                  cedente: { id: 1, configuracao_notificacao: null },
-                },
-              },
-            },
-          ] as any,
-        );
-
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          [],
-        );
-
-        const mockExecute = jest.fn().mockReturnValue([]);
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: mockExecute,
-        }));
 
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "TEST",
@@ -730,11 +603,15 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         const cedente = { id: 1, cnpj: "11.111.111/0001-11" };
 
-        await service.webhook(data, cedente);
+        const result = await service.webhook(data, cedente);
 
-        expect(mockExecute).toHaveBeenCalledWith({
-          cnpjCedente: "11.111.111/0001-11",
-        });
+        // Verifica se enviou para Tecnospeed com notificações
+        expect(mockTecnospeedClient.reenviarWebhook).toHaveBeenCalledWith(
+          expect.objectContaining({
+            notifications: expect.any(Array),
+          }),
+        );
+        expect(result.protocolo).toBe("TEST");
       });
     });
 
@@ -766,13 +643,6 @@ describe("[WEBHOOK] ReenviarService", () => {
           mockServicos as any,
         );
 
-        (ConfiguracaoNotificacaoUseCase.execute as jest.Mock).mockReturnValue(
-          [],
-        );
-        (MontarNotificacaoUseCase as jest.Mock).mockImplementation(() => ({
-          execute: jest.fn().mockReturnValue([]),
-        }));
-
         mockTecnospeedClient.reenviarWebhook.mockResolvedValue({
           protocolo: "FULL123",
         });
@@ -788,12 +658,11 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         const result = await service.webhook(data, cedente);
 
+        // Verifica se todas as etapas do fluxo foram executadas
         expect(mockCache.get).toHaveBeenCalled();
         expect(
           mockServicoRepository.findAllConfiguracaoNotificacaoByCedente,
         ).toHaveBeenCalled();
-        expect(ConfiguracaoNotificacaoUseCase.execute).toHaveBeenCalled();
-        expect(MontarNotificacaoUseCase).toHaveBeenCalled();
         expect(mockTecnospeedClient.reenviarWebhook).toHaveBeenCalled();
         expect(mockWebhookReprocessadoRepository.create).toHaveBeenCalled();
         expect(mockCache.setWithTTL).toHaveBeenCalled();

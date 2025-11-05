@@ -12,7 +12,7 @@ describe("ProtocolosDTO", () => {
       start_date: new Date("2025-01-01").toISOString(),
       end_date: new Date("2025-01-05").toISOString(),
       product: "pix",
-      id: ["123", "456"],
+      id: "123,456",
       kind: "webhook",
       type: "pago",
       page: "1",

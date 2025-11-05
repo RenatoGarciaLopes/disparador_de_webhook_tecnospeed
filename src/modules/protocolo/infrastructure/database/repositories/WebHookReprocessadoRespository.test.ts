@@ -1,5 +1,5 @@
 import { WebhookReprocessado } from "@/sequelize/models/webhookreprocessado.model";
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 import { WebhookReprocessadoRepository } from "./WebHookReprocessadoRespository";
 
 describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
@@ -94,7 +94,9 @@ describe("[Repository] /webhook - WebhookReprocessadoRepository", () => {
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          servico_id: { [Op.contains]: ids },
+          [Op.and]: literal(
+            `(servico_id::jsonb @> '${JSON.stringify(ids)}'::jsonb)`,
+          ),
         }),
       }),
     );

@@ -134,6 +134,7 @@ describe("[CORE] App", () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(
         "🔗 Access: http://localhost:1234/docs",
       );
+      expect(consoleLogSpy).toHaveBeenCalledWith("\n");
 
       consoleLogSpy.mockRestore();
     });

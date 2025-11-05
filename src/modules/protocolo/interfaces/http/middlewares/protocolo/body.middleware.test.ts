@@ -52,11 +52,11 @@ describe("[HTTP Middleware] /protocolo - BodyMiddleware.validate", () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it("deve retornar 400 se id não for um array", () => {
+    it("deve retornar 400 se id não for um array ou string", () => {
       const { req, res, next } = createMocks({
         start_date: "2021-01-01",
         end_date: "2021-01-10",
-        id: "1",
+        id: 1,
       });
       BodyMiddleware.validate(req, res, next);
       expect(res.status).toHaveBeenCalledWith(400);

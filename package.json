@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "sequelize:migrate": "sequelize-cli db:migrate",
-    "sequelize:seed": "sequelize-cli db:seed"
+    "sequelize:seed": "sequelize-cli db:seed:all"
   },
   "keywords": [
     "webhook",

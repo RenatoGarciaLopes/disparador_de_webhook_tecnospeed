@@ -43,6 +43,7 @@ export class App {
           console.log(`🌐 Environment: ${config.NODE_ENV}`);
           console.log(`🚀 Server is running on port: ${port}`);
           console.log(`🔗 Access: http://localhost:${port}/docs`);
+          console.log("\n");
         }, 5 * 1000); // 5 segundos await all logs to be written
       })
       .on("error", (error: Error) => {

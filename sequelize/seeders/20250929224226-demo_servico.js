@@ -49,13 +49,22 @@ module.exports = {
         status: "ativo",
         situacao: "disponivel",
       },
-      // Servico 6 → conta 4 (convenio 4) com status desativado
+      // Servico 6 → conta 4 (convenio 4)
       {
         id: 6,
         produto: "BOLETO",
         data_criacao: new Date(),
         convenio_id: 4,
-        status: "inativo",
+        status: "ativo",
+        situacao: "disponivel",
+      },
+      // Servico 7 → conta 2 (convenio 2)
+      {
+        id: 7,
+        produto: "BOLETO",
+        data_criacao: new Date(),
+        convenio_id: 2,
+        status: "ativo",
         situacao: "disponivel",
       },
     ]);

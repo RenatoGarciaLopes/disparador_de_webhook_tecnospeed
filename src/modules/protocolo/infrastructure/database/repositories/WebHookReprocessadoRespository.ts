@@ -1,5 +1,5 @@
 import { WebhookReprocessado } from "@/sequelize/models/webhookreprocessado.model";
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 
 export class WebhookReprocessadoRepository {
   async findAll(
@@ -22,7 +22,9 @@ export class WebhookReprocessadoRepository {
     if (kind) whereClause.kind = kind;
     if (type) whereClause.type = type;
     if (servico_ids && servico_ids.length > 0) {
-      whereClause.servico_id = { [Op.contains]: servico_ids };
+      whereClause[Op.and] = literal(
+        `(servico_id::jsonb @> '${JSON.stringify(servico_ids)}'::jsonb)`,
+      );
     }
 
     const findOptions: any = { where: whereClause };

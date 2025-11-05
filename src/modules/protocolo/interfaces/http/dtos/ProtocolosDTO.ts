@@ -23,7 +23,8 @@ export class ProtocolosDTO implements IProtocolosDTO {
   declare page: IProtocolosDTO["page"];
   declare limit: IProtocolosDTO["limit"];
 
-  constructor(body: unknown) {
+  constructor(body: any) {
+    if (typeof body.id === "string") body.id = body.id.split(",");
     const { success, data, error } = ProtocolosDTOValidator.safeParse(body);
     if (!success) throw InvalidFieldsError.fromZodError(error);
     Object.assign(this, data);

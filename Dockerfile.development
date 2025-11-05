@@ -7,5 +7,7 @@ RUN npm install
 
 COPY . .
 
+RUN chmod +x ./scripts/entrypoint.sh
+
 EXPOSE ${PORT}
-CMD ["sh", "-c", "npm run sequelize:migrate && npm run sequelize:seed && npm run dev"]
+CMD ["sh", "./scripts/entrypoint.sh"]

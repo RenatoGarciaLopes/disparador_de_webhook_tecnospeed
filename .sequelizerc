@@ -1,9 +1,13 @@
 const path = require("node:path");
-require("ts-node/register");
 require("dotenv").config();
 
+if (process.env.NODE_ENV === "development") require("ts-node/register");
+
 module.exports = {
-  config: path.resolve("sequelize", "config.ts"),
+  config: path.resolve(
+    "sequelize",
+    process.env.NODE_ENV === "development" ? "config.ts" : "config.js",
+  ),
   "models-path": path.resolve("sequelize", "models"),
   "seeders-path": path.resolve("sequelize", "seeders"),
   "migrations-path": path.resolve("sequelize", "migrations"),

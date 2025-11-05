@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "sequelize/**/*.ts",
+    "sequelize/**/*.js"
+  ],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**/*"]
+}

@@ -24,12 +24,11 @@ export default defineConfig([
     "**/dist",
     "**/node_modules",
     "coverage",
+    "sequelize/**/*.js",
   ]),
 
-  // Bring in "eslint:recommended" via FlatCompat
   ...compat.extends("eslint:recommended"),
 
-  // Apply our config to TS/JS files
   {
     files: ["**/*.{ts,tsx,js,jsx,cjs,mjs}"],
 
@@ -57,6 +56,8 @@ export default defineConfig([
     },
 
     rules: {
+      "no-unused-vars": "off",
+
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-floating-promises": "warn",
       "@typescript-eslint/no-unsafe-return": "off",
@@ -64,7 +65,7 @@ export default defineConfig([
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
-      quotes: ["error", "double"],
+      quotes: ["error", "double", { avoidEscape: true }],
 
       "prettier/prettier": [
         "error",
@@ -80,7 +81,6 @@ export default defineConfig([
           varsIgnorePattern: "^_",
           caughtErrorsIgnorePattern: "^_",
           ignoreRestSiblings: true,
-          types: "all",
         },
       ],
     },

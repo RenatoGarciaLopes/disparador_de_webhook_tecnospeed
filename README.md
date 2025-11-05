@@ -7,8 +7,8 @@ Sistema disparador de webhooks para TecnSpeed desenvolvido em TypeScript com Nod
 ### Pré-requisitos
 
 - Docker e Docker Compose instalados
-- Node.js 22+ (para desenvolvimento local)
-- npm ou yarn
+- Node.js v23.0.0+ (para desenvolvimento local)
+- npm v10.9.3+
 
 ### 1. Configuração das Variáveis de Ambiente
 
@@ -16,17 +16,19 @@ Crie um arquivo `.env` na raiz do projeto com base no arquivo `.env.example`.
 
 ### 2. Execução com Docker Compose
 
+Utilize o script `app` para gerenciar os serviços Docker. O script detecta automaticamente o ambiente e carrega as configurações do arquivo `.env`.
+
 #### Desenvolvimento
 
 ```bash
 # Construir e iniciar todos os serviços
-docker-compose up --build
+./app up
 
 # Executar em background
-docker-compose up -d --build
+./app up -d
 
 # Parar os serviços
-docker-compose down
+./app down
 ```
 
 #### Produção
@@ -39,8 +41,14 @@ export NODE_ENV=development
 # ou configurar no arquivo .env
 
 # Construir e iniciar
-docker-compose up --build
+./app up
 ```
+
+**Nota**: O script `app` automaticamente:
+
+- Carrega variáveis do arquivo `.env` se existir
+- Detecta e usa `docker compose` v2 ou v1 conforme disponível
+- Aplica os arquivos de configuração apropriados baseado no ambiente (`NODE_ENV`)
 
 ### 3. Desenvolvimento Local (sem Docker)
 

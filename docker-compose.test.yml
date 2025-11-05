@@ -1,0 +1,46 @@
+services:
+  db-test:
+    container_name: disparador-wh-db-test
+    image: postgres:17
+    restart: unless-stopped
+    env_file: .env.test
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    ports:
+      - ${DB_PORT}:5432
+    networks:
+      - disparador-wh-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis-test:
+    container_name: disparador-wh-redis-test
+    image: redis:7-alpine
+    restart: unless-stopped
+    env_file: .env.test
+    command:
+      [
+        "redis-server",
+        "--requirepass",
+        "${REDIS_PASSWORD}",
+        "--appendonly",
+        "no",
+      ]
+    ports:
+      - ${REDIS_PORT}:6379
+    networks:
+      - disparador-wh-test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  disparador-wh-test-network:
+    driver: bridge

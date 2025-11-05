@@ -1,0 +1,12 @@
+node_modules/
+dist/
+
+coverage/
+__tests__/
+*.test.*
+
+.env.*
+jest*
+*.md
+
+.vscode/

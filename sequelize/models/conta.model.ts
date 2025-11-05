@@ -2,14 +2,16 @@ import { IConfiguracaoNotificacao } from "@/modules/conta/interfaces/IConfigurac
 import { Optional } from "sequelize";
 import {
   AutoIncrement,
+  BelongsTo,
   Column,
   DataType,
+  ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
-  ForeignKey,
-  HasMany,
 } from "sequelize-typescript";
+import { Cedente } from "./cedente.model";
 import { Convenio } from "./convenio.model";
 
 interface ContaAttributes {
@@ -23,7 +25,10 @@ interface ContaAttributes {
 }
 
 interface ContaCreationAttributes
-  extends Optional<ContaAttributes, "id" | "configuracao_notificacao"> {}
+  extends Optional<
+    ContaAttributes,
+    "id" | "data_criacao" | "configuracao_notificacao"
+  > {}
 
 @Table({
   tableName: "Conta",
@@ -33,27 +38,30 @@ export class Conta extends Model<ContaAttributes, ContaCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column({ type: DataType.INTEGER })
-  declare id: number;
+  declare public id: number;
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
-  data_criacao!: Date;
+  declare public data_criacao: Date;
 
   @Column({ type: DataType.STRING })
-  produto!: string;
+  declare public produto: string;
 
   @Column({ type: DataType.STRING })
-  banco_codigo!: string;
+  declare public banco_codigo: string;
 
-  @ForeignKey(() => require("./cedente.model").default)
+  @ForeignKey(() => Cedente)
   @Column({ type: DataType.INTEGER })
-  cedente_id!: number;
+  declare public cedente_id: number;
 
   @Column({ type: DataType.STRING })
-  status!: string;
+  declare public status: string;
 
   @Column({ type: DataType.JSONB })
-  declare configuracao_notificacao: IConfiguracaoNotificacao | null;
+  declare public configuracao_notificacao: IConfiguracaoNotificacao | null;
 
   @HasMany(() => Convenio)
-  declare convenio: Convenio[];
+  declare public convenios: Convenio[];
+
+  @BelongsTo(() => Cedente)
+  declare public cedente: Cedente;
 }

@@ -37,7 +37,7 @@ module.exports = {
         allowNull: false,
       },
       servico_id: {
-        type: Sequelize.TEXT,
+        type: Sequelize.JSONB,
         allowNull: false,
       },
     });

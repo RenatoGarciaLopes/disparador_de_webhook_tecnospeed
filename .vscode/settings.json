@@ -44,7 +44,7 @@
     ".env.local": ".env*",
     ".env": ".env*",
     "jest.config*": "jest*",
-    "README.md": "*.md",
+    "README.md": "*.md"
   },
   "prismaERDPreviewer.preferredTheme": "dark",
   "material-icon-theme.folders.associations": {
@@ -62,4 +62,8 @@
     "logger": "log",
     "tecnospeed": "contract"
   },
+  "material-icon-theme.files.associations": {
+    "jest.integration.config.ts": "Jest",
+    "app": "Makefile"
+  }
 }

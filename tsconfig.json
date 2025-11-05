@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ES2023"
-    ],
+    "lib": ["ES2023"],
     "module": "NodeNext",
     "target": "ES2023",
     "outDir": "./dist",
@@ -14,16 +12,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
-      "@/*": [
-        "./src/*",
-        "./dist/src/*"
-      ],
-      "@/sequelize/*": [
-        "./sequelize/*"
-      ],
-      "@/sequelize": [
-        "./sequelize/index"
-      ]
+      "@/*": ["./src/*", "./dist/src/*"],
+      "@/sequelize/*": ["./sequelize/*"],
+      "@/sequelize": ["./sequelize/index"]
     }
   }
 }

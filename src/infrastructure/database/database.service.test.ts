@@ -149,7 +149,10 @@ describe("[INFRA] DatabaseService", () => {
       // Testa quando erro não é instância de Error
       jest.clearAllMocks();
       mockSequelize.authenticate.mockResolvedValue(undefined as never);
-      const nonErrorObject = { code: "SYNC_ERROR", message: "Sync failed" } as any;
+      const nonErrorObject = {
+        code: "SYNC_ERROR",
+        message: "Sync failed",
+      } as any;
       mockSequelize.sync.mockRejectedValue(nonErrorObject as never);
 
       await service.connect();

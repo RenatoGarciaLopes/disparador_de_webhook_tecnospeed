@@ -24,6 +24,7 @@ export default defineConfig([
     "**/dist",
     "**/node_modules",
     "coverage",
+    "sequelize/**/*.js",
   ]),
 
   ...compat.extends("eslint:recommended"),

@@ -26,11 +26,11 @@ project-root/
 │ │ │ └── interfaces/
 │ │ │
 │ │ └── webhook/ # Módulo de reenvio de webhooks
-│ │   ├── domain/ # Entidade WebhookReprocessado
-│ │   ├── application/
-│ │   │ └── use-cases/ # ReenvioWebhook, ConsultaProtocolos
-│ │   ├── infrastructure/
-│ │   └── interfaces/
+│ │ ├── domain/ # Entidade WebhookReprocessado
+│ │ ├── application/
+│ │ │ └── use-cases/ # ReenvioWebhook, ConsultaProtocolos
+│ │ ├── infrastructure/
+│ │ └── interfaces/
 │ │
 │ ├── shared/ # Código comum a todos os módulos
 │ │ ├── core/ # Implementações core (ex: RouterImplementation)

@@ -1,0 +1,1011 @@
+type: collection.insomnia.rest/5.0
+name: Disparador WH
+meta:
+  id: wrk_5032229b96b847f6a2bd3792d6d894fa
+  created: 1762248945540
+  modified: 1762248970584
+  description: ""
+collection:
+  - name: /reenviar
+    meta:
+      id: fld_b9ff4d13e2d3462fb97e60c9ffe82629
+      created: 1762249000749
+      modified: 1762333444789
+      sortKey: -1762249000749
+      description: ""
+    children:
+      - name: "422"
+        meta:
+          id: fld_eb5b239a6c334760b8be27640e1b4bbd
+          created: 1762253226159
+          modified: 1762253226159
+          sortKey: -1762253226159
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Serviço não encontrado
+            meta:
+              id: req_01f8128461b1497f9837bd17f185e7d3
+              created: 1762253194219
+              modified: 1762333585896
+              isPrivate: false
+              description: ""
+              sortKey: -1762253233372
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"999"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_326ca2f5c10f4148a6d15044c3b24855
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_8b5c92b3eb0048adae7f4ec1a80fc00b
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_be353e66d50e4cd1866758cd860f7fa6
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_735ebebbd35b4868bf12b750778c4487
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_1dfad4fb15484fd69738c54349f9d90d
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Serviço inativo
+            meta:
+              id: req_3a2c8f2a5eb1415484240b0aed4fb3e3
+              created: 1762253276588
+              modified: 1762333578719
+              isPrivate: false
+              description: ""
+              sortKey: -1762253233472
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"1"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_c87bfca16ae04e5ea277cf1db7353da0
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_75bd9145e80b458c90537b18f024fe71
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_768196bd40ba456cb60f71033c744130
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_4749d263e63040c7af6da14d976d1d78
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_75b902944cd24649acfadc0ccf803ee7
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Produto diferente do serviço
+            meta:
+              id: req_5f0698de8932403cbd190ab77b830e2e
+              created: 1762253313312
+              modified: 1762333574387
+              isPrivate: false
+              description: ""
+              sortKey: -1762253233572
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "pix",
+                	"id": [
+                		"4"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_f04c58c498784242a25e93ed598d5395
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_23acb50fd1b64a78be81ad662758debc
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_ad528ff8996e4c6b86679c5e110b93d3
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_bf4c856b4536432e96c8e070f4414a1d
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_009e330ad1084736849f91a7f72642e3
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Situação diferente do serviço
+            meta:
+              id: req_fe00581943574ea6bc5094bf29ee0800
+              created: 1762253344985
+              modified: 1762333567784
+              isPrivate: false
+              description: ""
+              sortKey: -1762253344985
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"4"
+                	],
+                	"kind": "webhook",
+                	"type": "pago"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_98e78b62593d4497a889f329e514cd1e
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_b898282cd8414056b1e32b39eaf2b5b4
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_f4f5f7c60c794834bac71a45e9d5a787
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_c52b496be6ad4ce79084a05c61c5614a
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_3b5937cc05314ae989523d5e0e7f7921
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "401"
+        meta:
+          id: fld_25a624af383643fd8b4a9d6a4b78dea1
+          created: 1762253390572
+          modified: 1762253390572
+          sortKey: -1762253390572
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: CNPJ SH inválido
+            meta:
+              id: req_5f288665082b4dddb3a097d037a34c7f
+              created: 1762253420135
+              modified: 1762333562455
+              isPrivate: false
+              description: ""
+              sortKey: -1762253420135
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"4"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_28e34d1367024f4f97387ad28a8dcb34
+              - name: x-api-cnpj-sh
+                value: 00.000.000/0000-00
+                id: pair_edbf7979a654408d9e2118e3b3da2c34
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_379a289a899c48e3b9a425f0b5c44556
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_d3e08f10f39c4a9db270765deb0566de
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_272ecb9fe0d641b2a5870c5f18b0d5d8
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Cedente inativo
+            meta:
+              id: req_47c7dacb87024b22a5383ab987677c06
+              created: 1762253446140
+              modified: 1762333557878
+              isPrivate: false
+              description: ""
+              sortKey: -1762253446140
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"4"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_5f552c9dad374da19b1f6da05d5cffce
+              - name: x-api-cnpj-sh
+                value: 33.517.684/0001-52
+                id: pair_cf9a4f49d1f7421db3114ba8cf4d1bac
+              - name: x-api-token-sh
+                value: q1W2e3R4t5Y6u7I8o9P0a1S2d3F4g5H6j7K8l9M0
+                id: pair_920697fed8364e0e808c1edcafdd34de
+              - name: x-api-cnpj-cedente
+                value: 33.198.567/0001-25
+                id: pair_caa98646795e422a8ff11c05359af0ef
+              - name: x-api-token-cedente
+                value: Q1w2E3r4T5y6U7i8O9p0A1s2D3f4G5h6J7k8L9m0
+                id: pair_91df72a3d88a4445b54bfb43fd0dfca6
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "200"
+        meta:
+          id: fld_b0eb103df49f4429b44f2641ed041c3d
+          created: 1762253470903
+          modified: 1762253494551
+          sortKey: -1762253470903
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Sucesso — Boleto disponível (único serviço)
+            meta:
+              id: req_59a8775387fd4a8ab4e5c300782c74e9
+              created: 1762253489060
+              modified: 1762333550975
+              isPrivate: false
+              description: ""
+              sortKey: -1762253489060
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"4"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_9a1a6bc781ee457cba3ab3a0c76017d0
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_2118259a88c24de0a1f5e13f039a6c8b
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_e8d47ae1e0d9402c803fc0955d183b5e
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_ac84281985574ad2b0dae05d318498f6
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_92d7db7056504da989173d15465c2f2c
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Sucesso — Boleto disponível (múltiplos serviços)
+            meta:
+              id: req_ae00e9eb37b843aa9574172e296e6c8f
+              created: 1762253513716
+              modified: 1762333544020
+              isPrivate: false
+              description: ""
+              sortKey: -1762253513716
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"4",
+                		"5",
+                		"6"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_1cd33f09a0fa43c5b9a59790183eccf2
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_c6578583d31b417fb5ff9fdc4c71104d
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_b14274cb8f414e7f9929d2ad40c8ba59
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_4cf4af8e45194048bb41ea3af324458b
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_38388e6c2f9945fc82a4416caace905e
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "400"
+        meta:
+          id: fld_f444929139d044c4bfa95d01991f2da2
+          created: 1762253593375
+          modified: 1762253593375
+          sortKey: -1762253593375
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: ID inválido (não é número)
+            meta:
+              id: req_4b8fc36132a545beb55a048addbbc3df
+              created: 1762253623396
+              modified: 1762333533200
+              isPrivate: false
+              description: ""
+              sortKey: -1762253623396
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"abc",
+                		"4"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_c1106e9b26ff442db87c6db9042e5132
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_7c42d5bdca424220b8d8e0eebff68339
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_118497de1c7a42b5a9cec836bda272ab
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_2d25cda321ee404ea833592adbf2df09
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_605dc8f00d704193b4d18c4bfe6fc505
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "501"
+        meta:
+          id: fld_2f77d4d1c99c463baab8c1721668120e
+          created: 1762253642813
+          modified: 1762253642813
+          sortKey: -1762253642813
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Kind não suportado
+            meta:
+              id: req_f7cc3a3a20864d6e815b11c36bd05851
+              created: 1762253663427
+              modified: 1762333526809
+              isPrivate: false
+              description: ""
+              sortKey: -1762253663427
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"4"
+                	],
+                	"kind": "invalid",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_51d1d9ce695a43ef990494ef6b7f8edd
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_4ff7c7687a1c4cf98b55c5f69b0d9231
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_94de498f979e4252838ddc892b7e51a2
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_d0ec936271ea47c4ac61dc84ce734375
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_0534755eaa76486db1aa2bf85ae7495c
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+  - name: /protocolos
+    meta:
+      id: fld_0d2e65181c60420e9757fe1f9f9677af
+      created: 1762333221044
+      modified: 1762333221044
+      sortKey: -1762333221044
+      description: ""
+    children:
+      - name: "400"
+        meta:
+          id: fld_3d4f2dbcf0374e91bac4a6d9e5d52805
+          created: 1762333462418
+          modified: 1762336851979
+          sortKey: -1762333462419
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: start_date inválida
+            meta:
+              id: req_e0854c376d434085ac19661f19e4df36
+              created: 1762333600695
+              modified: 1762333705633
+              isPrivate: false
+              description: ""
+              sortKey: -1762333600695
+            method: GET
+            parameters:
+              - name: start_date
+                value: INVALIDO
+              - name: end_date
+                value: 2025-01-31
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_3422309773014fa8827b98445b46e0f8
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_179a4c50997444b4a801bb16153f182e
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_1dc281516860447a95e8a89d9f5be06f
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_0a9d3a3c5c4143d0aad6b5d889a9af8c
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: end_date inválida
+            meta:
+              id: req_f4e8bac94e75413dac39d3edf10410ed
+              created: 1762333689213
+              modified: 1762333744181
+              isPrivate: false
+              description: ""
+              sortKey: -1762293632061
+            method: GET
+            parameters:
+              - name: start_date
+                value: 2025-01-31
+                id: pair_80d69f0d18a84f9fb7146bc57a937250
+              - name: end_date
+                value: INVALIDO
+                id: pair_ad17d0d637de416ab5647b866c150343
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_e153e6d12d214fcf9a6335236f5b7d56
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_5960973c2bce45cf901fc3819e7e51d9
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_e7016e719b344f14b2ad59bf58a3e8d9
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_152a845163ec4cd69cb10ac5a2b66806
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: Diferença de datas > 31 dias
+            meta:
+              id: req_7dbec0b5f3c54bc4afeeef64f02dd5f4
+              created: 1762333864494
+              modified: 1762333900938
+              isPrivate: false
+              description: ""
+              sortKey: -1762333864494
+            method: GET
+            parameters:
+              - name: start_date
+                value: 2025-01-01
+              - name: end_date
+                value: 2025-03-15
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: page inválido (não inteiro positivo)
+            meta:
+              id: req_c8e3dce95c6741a3a9be731d51020b22
+              created: 1762333932440
+              modified: 1762334033428
+              isPrivate: false
+              description: ""
+              sortKey: -1762333932440
+            method: GET
+            parameters:
+              - name: start_date
+                value: 2025-01-01
+              - name: end_date
+                value: 2025-01-31
+              - name: page
+                value: zero
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: limit > 100
+            meta:
+              id: req_de8dd6ac335e420c8a7be38c339d4b74
+              created: 1762336467907
+              modified: 1762336494617
+              isPrivate: false
+              description: ""
+              sortKey: -1762336467907
+            method: GET
+            parameters:
+              - name: start_date
+                value: 2025-01-01
+              - name: end_date
+                value: 2025-01-31
+              - name: limit
+                value: "150"
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_0e9c0613fc1349b086a9f21ba576e5df
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_5c62387f1dbd4631b6d9b9e43ee13ae8
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_fc09ec7d0a664d1482b683b1567f23f0
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_fffc6925db324f7da23cd6ce0f3a82ed
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "401"
+        meta:
+          id: fld_28211de66a5845248afd0bd1319a8e62
+          created: 1762333982630
+          modified: 1762333986808
+          sortKey: -1762333462519
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: Cedente inativo (usa SH2/Ced2 do seeder)
+            meta:
+              id: req_bb71650cc8924347816ca0cdb2e18b72
+              created: 1762334010303
+              modified: 1762336801682
+              isPrivate: false
+              description: ""
+              sortKey: -1762334010303
+            method: GET
+            parameters:
+              - name: start_date
+                value: 2025-01-01
+              - name: end_date
+                value: 2025-01-31
+            headers:
+              - name: x-api-cnpj-sh
+                value: 33.517.684/0001-52
+              - name: x-api-token-sh
+                value: q1W2e3R4t5Y6u7I8o9P0a1S2d3F4g5H6j7K8l9M0
+              - name: x-api-cnpj-cedente
+                value: 33.198.567/0001-25
+              - name: x-api-token-cedente
+                value: Q1w2E3r4T5y6U7i8O9p0A1s2D3f4G5h6J7k8L9m0
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "200"
+        meta:
+          id: fld_1e59d9ff46634a10be84b8a7b9d44b66
+          created: 1762334082625
+          modified: 1762334082625
+          sortKey: -1762334082625
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: Lista básica com paginação padrão
+            meta:
+              id: req_dc860ce46ad34f028e3286899726b9fe
+              created: 1762334126988
+              modified: 1762334197291
+              isPrivate: false
+              description: ""
+              sortKey: -1762334126988
+            method: GET
+            body:
+              mimeType: ""
+              text: ""
+            parameters:
+              - id: pair_05a024832be041a093a0556ed31c3a99
+                name: start_date
+                value: 2025-11-01
+                description: ""
+                disabled: false
+              - id: pair_06f5075fab3e416a8cc0f37890a9e6c5
+                name: end_date
+                value: 2025-11-31
+                description: ""
+                disabled: false
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/protocolos"
+            name: Lista filtrada (product, type e ids)
+            meta:
+              id: req_00d28f8b42994998b0de99d52ed67b7f
+              created: 1762334233874
+              modified: 1762335787669
+              isPrivate: false
+              description: ""
+              sortKey: -1762334233874
+            method: GET
+            parameters:
+              - name: start_date
+                value: 2025-11-01
+                id: pair_00a49839cd674948ac72f3f0c9998a61
+              - name: end_date
+                value: 2025-11-31
+                id: pair_527362f3a1064174b60cbb7e8a516fcc
+              - name: product
+                value: boleto
+                id: pair_9de82a55d1564d8e8e41775d6ab4e096
+              - name: type
+                value: disponivel
+                id: pair_c44c12cbfe524919a2e1591af0e94dc6
+              - name: id
+                value: 4,6
+                id: pair_0683d45faa704d9fafbd24b85ddbe358
+              - name: id
+                value: "6"
+                id: pair_c986b162519b46629aa353d608af19f1
+                disabled: true
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_2cf5232fdb844a6fa4cef555edab46a3
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_bde7e87a69d7469bae296ac6407f19f3
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_b3c965f73b184278a43218495c1abd51
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_8ee4f6f64ab1440e9ac06c28229421db
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+  - name: /protocolos/:id
+    meta:
+      id: fld_de4b0b2af9f947e182879d8d61284bf2
+      created: 1762336665886
+      modified: 1762336665886
+      sortKey: -1762293431928.5
+      description: ""
+    children:
+      - name: "400"
+        meta:
+          id: fld_559fda1a95c54afd8672758f501e9ccd
+          created: 1762336665886
+          modified: 1762336665886
+          sortKey: -1762333462419
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/protocolos/00000000-0000-0000-0000-000000000000"
+            name: Protocolo não encontrado (UUID bem formatado, mas inexistente)
+            meta:
+              id: req_dc1cfde4c1214adf8288646ac60edf53
+              created: 1762336868451
+              modified: 1762337035622
+              isPrivate: false
+              description: ""
+              sortKey: -1762336868451
+            method: GET
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_023eef1a69a34625bb9bfd2ba7dcf50f
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_4a766ec55cb04653907b7484b1ea0dac
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_f55b7908239a4083aa86b5dd1b400165
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_72fe5da76dec49f6960fa3e4648d8bf8
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/protocolos/abc"
+            name: ID com formato inválido (não-UUID)
+            meta:
+              id: req_640706ec85164d2ebf471ee9f53ed13e
+              created: 1762336908420
+              modified: 1762337000630
+              isPrivate: false
+              description: ""
+              sortKey: -1762336908420
+            method: GET
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_fb73fcda777d43f9833e7a88de401541
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_19afec42f46745f7aaac3f32d473daf2
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_619706f7234540f88dd2326ef391faeb
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_f7ca39e39fd742bab6bbfc0f14f440c2
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "401"
+        meta:
+          id: fld_165b8b43196a4f5d8d991c6647ffb58c
+          created: 1762336665890
+          modified: 1762336665890
+          sortKey: -1762333462519
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/protocolos/{{ _.PROTOCOLO_ID }}"
+            name: Cedente inativo (usa SH2/Ced2 do seeder)
+            meta:
+              id: req_06e52d0620b4493aa9237f26c448a93a
+              created: 1762336808861
+              modified: 1762336968249
+              isPrivate: false
+              description: ""
+              sortKey: -1762336811490
+            method: GET
+            headers:
+              - name: x-api-cnpj-sh
+                value: 33.517.684/0001-52
+              - name: x-api-token-sh
+                value: q1W2e3R4t5Y6u7I8o9P0a1S2d3F4g5H6j7K8l9M0
+              - name: x-api-cnpj-cedente
+                value: 33.198.567/0001-25
+              - name: x-api-token-cedente
+                value: Q1w2E3r4T5y6U7i8O9p0A1s2D3f4G5h6J7k8L9m0
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "200"
+        meta:
+          id: fld_6fec638ae1244631b55e60a7a1887837
+          created: 1762336665891
+          modified: 1762336665891
+          sortKey: -1762334082625
+          description: ""
+        children:
+          - url: "{{ _.BASE_URL }}/protocolos/{{ _.PROTOCOLO_ID }}"
+            name: Buscar protocolo por ID existente
+            meta:
+              id: req_0faf950f50574486bed3d493c05f8c36
+              created: 1762336717467
+              modified: 1762336760776
+              isPrivate: false
+              description: ""
+              sortKey: -1762336717467
+            method: GET
+            headers:
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_05fed170090143778d75427a3c43d37b
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_35576ddb68c747a98d1f2e5c777f4543
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_2137130cff674127980b97a95922df91
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_3a58754be69345a8bf5666f5ec0c03d9
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_dc2e99560ff2b19378c24d09f48abcedb2958b49
+    created: 1762248945543
+    modified: 1762248945543
+environments:
+  name: Base Environment
+  meta:
+    id: env_dc2e99560ff2b19378c24d09f48abcedb2958b49
+    created: 1762248945542
+    modified: 1762336653083
+    isPrivate: false
+  data:
+    BASE_URL: http://localhost:3000
+    PROTOCOLO_ID: 3fdb420e-ec3b-4cf9-aad9-917bf1906f6a

@@ -60,10 +60,12 @@
     "sequelize": "functions",
     "migrations": "database",
     "logger": "log",
-    "tecnospeed": "contract"
+    "tecnospeed": "contract",
+    "setup": "config"
   },
   "material-icon-theme.files.associations": {
     "jest.integration.config.ts": "Jest",
-    "app": "Makefile"
+    "app": "Makefile",
+    "insomnia.http.yaml": "http"
   }
 }

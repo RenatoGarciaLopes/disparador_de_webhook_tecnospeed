@@ -48,6 +48,13 @@ export class ReenviarController {
         return res.status(error.status).json(error.json());
       }
 
+      if (error instanceof ErrorResponse) {
+        Logger.warn(
+          `Domain error in reenviar request: code=${error.code}, status=${error.statusCode}`,
+        );
+        return res.status(error.statusCode).json(error.json());
+      }
+
       Logger.error(
         `Unexpected error in reenviar request: ${error instanceof Error ? error.message : String(error)}`,
       );

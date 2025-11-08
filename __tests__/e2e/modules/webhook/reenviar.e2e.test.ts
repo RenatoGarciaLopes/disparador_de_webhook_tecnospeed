@@ -50,7 +50,7 @@ describe("Webhook /reenviar - E2E", () => {
     });
   };
 
-  it("deve reenviar notificações com sucesso, persistir protocolo e utilizar cache", async () => {
+  it("deve retornar 200 e protocolo para primeira requisição", async () => {
     const scenario = await TestDataHelper.createTestScenario();
     await enableWebhookConfiguration(scenario.conta);
 
@@ -62,42 +62,91 @@ describe("Webhook /reenviar - E2E", () => {
       type: "disponivel",
     };
 
-    const firstResponse = await request(app)
+    const response = await request(app)
       .post("/reenviar")
       .set(headers)
       .send(payload);
 
-    expect(firstResponse.status).toBe(200);
-    expect(firstResponse.body).toMatchObject({
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
       message: "Notificação reenviada com sucesso",
       protocolo: expect.any(String),
     });
+  });
 
-    // Verificar que o protocolo foi salvo no banco
+  it("deve persistir protocolo no banco para primeira requisição", async () => {
+    const scenario = await TestDataHelper.createTestScenario();
+    await enableWebhookConfiguration(scenario.conta);
+
+    const headers = buildHeaders(scenario);
+    const payload = {
+      product: "boleto",
+      id: [scenario.servico.id.toString()],
+      kind: "webhook",
+      type: "disponivel",
+    };
+
+    const response = await request(app)
+      .post("/reenviar")
+      .set(headers)
+      .send(payload);
+
     const storedRecords = await WebhookReprocessado.findAll();
     expect(storedRecords).toHaveLength(1);
-
     const storedRecord = storedRecords[0];
-    expect(storedRecord.protocolo).toEqual(firstResponse.body.protocolo);
+    expect(storedRecord.protocolo).toEqual(response.body.protocolo);
     expect(storedRecord.product).toBe("BOLETO");
     expect(storedRecord.kind).toBe("webhook");
     expect(storedRecord.type).toBe("disponivel");
     expect(storedRecord.servico_id).toEqual([scenario.servico.id.toString()]);
+  });
+
+  it("deve gravar flag '1' no cache após primeira requisição", async () => {
+    const scenario = await TestDataHelper.createTestScenario();
+    await enableWebhookConfiguration(scenario.conta);
+
+    const headers = buildHeaders(scenario);
+    const payload = {
+      product: "boleto",
+      id: [scenario.servico.id.toString()],
+      kind: "webhook",
+      type: "disponivel",
+    };
+
+    await request(app).post("/reenviar").set(headers).send(payload);
 
     const cacheKey = `reenviar:BOLETO:${scenario.servico.id}:disponivel`;
     const cacheValue = await CacheService.getInstance().get(cacheKey);
     expect(cacheValue).not.toBeNull();
-    expect(JSON.parse(cacheValue as string)).toEqual(firstResponse.body);
+    expect(cacheValue).toBe("1");
+  });
 
-    const secondResponse = await request(app)
+  it("deve retornar 409 em requisição duplicada e não persistir novo registro", async () => {
+    const scenario = await TestDataHelper.createTestScenario();
+    await enableWebhookConfiguration(scenario.conta);
+
+    const headers = buildHeaders(scenario);
+    const payload = {
+      product: "boleto",
+      id: [scenario.servico.id.toString()],
+      kind: "webhook",
+      type: "disponivel",
+    };
+
+    const first = await request(app)
+      .post("/reenviar")
+      .set(headers)
+      .send(payload);
+    expect(first.status).toBe(200);
+
+    const second = await request(app)
       .post("/reenviar")
       .set(headers)
       .send(payload);
 
-    expect(secondResponse.status).toBe(200);
-    expect(secondResponse.body).toEqual(firstResponse.body);
+    expect(second.status).toBe(409);
+    expect(second.body.code).toBe("ALREADY_PROCESSED");
 
-    // Verificar que ainda há apenas 1 registro (cache evitou novo processamento)
     const recordsAfterCache = await WebhookReprocessado.findAll();
     expect(recordsAfterCache).toHaveLength(1);
   });

@@ -18,6 +18,13 @@ Crie um arquivo `.env` na raiz do projeto com base no arquivo `.env.example`.
 
 Utilize o script `app` para gerenciar os serviços Docker. O script detecta automaticamente o ambiente e carrega as configurações do arquivo `.env`.
 
+### Características da Maquina do servidor
+
+A VPS do servidor simula uma máquina com 4 vCPUs e 8GB de RAM.
+
+- CPUs: 4
+- Memória: 8GB
+
 #### Desenvolvimento
 
 ```bash

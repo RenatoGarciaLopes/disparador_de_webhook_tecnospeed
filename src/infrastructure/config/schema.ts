@@ -39,4 +39,6 @@ export const envSchema = z.object({
   CB_RESET_TIMEOUT_MS: z.coerce.number().default(30 * 1000), // 30s default
   CB_ERROR_THRESHOLD_PERCENT: z.coerce.number().min(1).max(100).default(50),
   CB_VOLUME_THRESHOLD: z.coerce.number().default(10),
+
+  CLUSTERS: z.coerce.number().default(2),
 });

@@ -80,6 +80,12 @@ export function registerWebhookDocs(registry: OpenAPIRegistry) {
           "application/json": { schema: ErrorResponseSchema },
         },
       },
+      429: {
+        description: "Limite de requisições excedido",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
       500: {
         description: "Erro interno",
         content: {

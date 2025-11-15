@@ -19,6 +19,37 @@ jest.mock(
 jest.mock("@/infrastructure/cache/cache.service");
 jest.mock("../middlewares/protocolo/body.middleware");
 jest.mock("@/modules/auth/interfaces/http/middlewares/auth.middleware");
+jest.mock("@/infrastructure/cache/cache.service", () => ({
+  CacheService: {
+    getInstance: jest.fn(() => ({
+      client: {
+        sendCommand: jest.fn(),
+      },
+    })),
+    get: jest.fn(),
+    set: jest.fn(),
+  },
+}));
+jest.mock("@/infrastructure/rate-limit/rate-limit.service", () => {
+  const mockMiddleware = (_req: any, _res: any, next: any) => next();
+  const RateLimitServiceMock = jest.fn().mockImplementation(() => ({
+    client: mockMiddleware,
+  }));
+  (RateLimitServiceMock as any).getInstance = jest.fn(() => ({
+    client: mockMiddleware,
+  }));
+  return { RateLimitService: RateLimitServiceMock };
+});
+jest.mock("@/infrastructure/throttle/throttle.service", () => {
+  const mockMiddleware = (_req: any, _res: any, next: any) => next();
+  const ThrottleServiceMock = jest.fn().mockImplementation(() => ({
+    client: mockMiddleware,
+  }));
+  (ThrottleServiceMock as any).getInstance = jest.fn(() => ({
+    client: mockMiddleware,
+  }));
+  return { ThrottleService: ThrottleServiceMock };
+});
 
 const getMock = jest.fn();
 jest.mock("express", () => {
@@ -54,11 +85,6 @@ describe("[PROTOCOL] ProtocolosRoutes", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    (CacheService.getInstance as jest.Mock).mockReturnValue({
-      get: jest.fn(),
-      set: jest.fn(),
-    });
 
     protocolosRoutes = new ProtocolosRoutes();
   });

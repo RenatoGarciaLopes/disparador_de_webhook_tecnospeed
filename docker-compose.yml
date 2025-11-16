@@ -14,6 +14,14 @@ services:
     env_file: .env
     networks:
       - disparador-wh-network
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+        reservations:
+          cpus: "2"
+          memory: 4G
 
   db:
     container_name: disparador-wh-db
@@ -38,6 +46,14 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 2G
 
   redis:
     container_name: disparador-wh-redis
@@ -62,6 +78,14 @@ services:
       - redisdata:/data
     networks:
       - disparador-wh-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 2G
 
 networks:
   disparador-wh-network:

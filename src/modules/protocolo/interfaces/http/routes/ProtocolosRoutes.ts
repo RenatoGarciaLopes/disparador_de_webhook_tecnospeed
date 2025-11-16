@@ -1,4 +1,6 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
+import { RateLimitService } from "@/infrastructure/rate-limit/rate-limit.service";
+import { ThrottleService } from "@/infrastructure/throttle/throttle.service";
 import { AuthMiddleware } from "@/modules/auth/interfaces/http/middlewares/auth.middleware";
 import { ProtocolosService } from "@/modules/protocolo/domain/services/ProtocolosService";
 import { WebhookReprocessadoRepository } from "@/modules/protocolo/infrastructure/database/repositories/WebHookReprocessadoRespository";
@@ -8,6 +10,9 @@ import { BodyMiddleware } from "../middlewares/protocolo/body.middleware";
 
 export class ProtocolosRoutes extends RouterImplementation {
   protected configure(): void {
+    this.router.use("/protocolos", new RateLimitService(100, 1 * 60 * 1000).client);
+    this.router.use("/protocolos", ThrottleService.getInstance().client);
+
     this.router.get(
       "/protocolos",
       (req, res, next) => AuthMiddleware.validate(req as any, res, next),

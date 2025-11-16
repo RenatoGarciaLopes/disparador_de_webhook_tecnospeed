@@ -4,7 +4,7 @@ import { config } from "../config";
 
 export class CacheService {
   private static instance: CacheService | null = null;
-  private client: RedisClientType;
+  public client: RedisClientType;
 
   private constructor() {
     this.client = createClient({

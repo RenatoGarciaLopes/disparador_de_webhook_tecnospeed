@@ -202,6 +202,53 @@ collection:
                 send: true
                 store: true
               rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Produtos mistos (boleto:6, pagamento:8, pix:10)
+            meta:
+              id: req_1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b
+              created: 1762338003000
+              modified: 1762338003000
+              isPrivate: false
+              description: ""
+              sortKey: -1762253233600
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "boleto",
+                	"id": [
+                		"6",
+                		"8",
+                		"10"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_mixed_422_ct
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_mixed_422_cnpjsh
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_mixed_422_tokensh
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_mixed_422_cnpjced
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_mixed_422_tokenced
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
       - name: "401"
         meta:
           id: fld_25a624af383643fd8b4a9d6a4b78dea1
@@ -392,6 +439,96 @@ collection:
               - name: x-api-token-cedente
                 value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
                 id: pair_38388e6c2f9945fc82a4416caace905e
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Sucesso — Pix disponível (id único)
+            meta:
+              id: req_22d2f0a1a6e04a8eb1d6bcae24a44f11
+              created: 1762338001000
+              modified: 1762338001000
+              isPrivate: false
+              description: ""
+              sortKey: -1762253513715
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "pix",
+                	"id": [
+                		"10"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_pix_200_content_type
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_pix_200_cnpj_sh
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_pix_200_token_sh
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_pix_200_cnpj_cedente
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_pix_200_token_cedente
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/reenviar"
+            name: Sucesso — Pagamento disponível (id único)
+            meta:
+              id: req_11b3c7d8e9f04d0a9c2b5a6e7f8a9b00
+              created: 1762338002000
+              modified: 1762338002000
+              isPrivate: false
+              description: ""
+              sortKey: -1762253513714
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"product": "pagamento",
+                	"id": [
+                		"8"
+                	],
+                	"kind": "webhook",
+                	"type": "disponivel"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+                id: pair_pag_200_content_type
+              - name: x-api-cnpj-sh
+                value: 61.199.921/0001-10
+                id: pair_pag_200_cnpj_sh
+              - name: x-api-token-sh
+                value: AbC123defGHI456jklMNOpqrSTU789vwXYZ0abc4
+                id: pair_pag_200_token_sh
+              - name: x-api-cnpj-cedente
+                value: 45.723.174/0001-10
+                id: pair_pag_200_cnpj_cedente
+              - name: x-api-token-cedente
+                value: A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0
+                id: pair_pag_200_token_cedente
             settings:
               renderRequestBody: true
               encodeUrl: true

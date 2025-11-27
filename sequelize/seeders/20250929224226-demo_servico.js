@@ -67,6 +67,40 @@ module.exports = {
         status: "ativo",
         situacao: "disponivel",
       },
+      // Servicos 8 e 9 → PAGAMENTO (convenio 4)
+      {
+        id: 8,
+        produto: "PAGAMENTO",
+        data_criacao: new Date(),
+        convenio_id: 4,
+        status: "ativo",
+        situacao: "disponivel",
+      },
+      {
+        id: 9,
+        produto: "PAGAMENTO",
+        data_criacao: new Date(),
+        convenio_id: 4,
+        status: "ativo",
+        situacao: "disponivel",
+      },
+      // Servicos 10 e 11 → PIX (convenio 4)
+      {
+        id: 10,
+        produto: "PIX",
+        data_criacao: new Date(),
+        convenio_id: 4,
+        status: "ativo",
+        situacao: "disponivel",
+      },
+      {
+        id: 11,
+        produto: "PIX",
+        data_criacao: new Date(),
+        convenio_id: 4,
+        status: "ativo",
+        situacao: "disponivel",
+      },
     ]);
   },
 

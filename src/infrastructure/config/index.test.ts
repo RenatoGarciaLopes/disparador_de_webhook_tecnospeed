@@ -39,6 +39,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(validEnv);
@@ -60,6 +61,7 @@ describe("[CHORE] config/index.ts", () => {
         CB_RESET_TIMEOUT_MS: 30000,
         CB_ERROR_THRESHOLD_PERCENT: 50,
         CB_VOLUME_THRESHOLD: 10,
+        CLUSTERS: 2,
       });
     });
 
@@ -125,6 +127,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -144,6 +147,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -162,6 +166,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -180,6 +185,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -198,6 +204,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -216,6 +223,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "re",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -234,6 +242,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "lo",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -255,6 +264,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "loc",
         TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -274,6 +284,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -291,6 +302,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -304,6 +316,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -319,6 +332,7 @@ describe("[CHORE] config/index.ts", () => {
         DB_DATABASE: "database",
         DB_HOST: "localhost",
         DB_PORT: "5432",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);
@@ -339,6 +353,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
       const result = envSchema.safeParse(env);
       expect(result.success).toBe(false);
@@ -356,6 +371,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
       const result = envSchema.safeParse(env);
       expect(result.success).toBe(false);
@@ -373,6 +389,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "def",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
       const result = envSchema.safeParse(env);
       expect(result.success).toBe(false);
@@ -392,6 +409,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_HOST: "localhost",
         TECNOSPEED_BASE_URL: "https://api.tecnospeed.com",
         CB_ERROR_THRESHOLD_PERCENT: "75",
+        CLUSTERS: "2",
       };
       const resultValid = envSchema.safeParse(envValid);
       expect(resultValid.success).toBe(true);
@@ -426,6 +444,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
       const result = envSchema.safeParse(env);
 
@@ -446,6 +465,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
       const result = envSchema.safeParse(env);
 
@@ -465,6 +485,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
       const result = envSchema.safeParse(env);
 
@@ -488,6 +509,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
 
       const configModule = require("../config");
@@ -521,6 +543,7 @@ describe("[CHORE] config/index.ts", () => {
         CB_RESET_TIMEOUT_MS: "60000",
         CB_ERROR_THRESHOLD_PERCENT: "75",
         CB_VOLUME_THRESHOLD: "20",
+        CLUSTERS: "2",
       };
 
       const configModuleWithValues = require("../config");
@@ -547,6 +570,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
 
       jest.isolateModules(() => {
@@ -576,6 +600,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
 
       jest.isolateModules(() => {
@@ -606,6 +631,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
 
       jest.isolateModules(() => {
@@ -633,6 +659,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PASSWORD: "redis_password",
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
+        CLUSTERS: "2",
       };
 
       jest.isolateModules(() => {
@@ -661,6 +688,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
 
       jest.isolateModules(() => {
@@ -688,6 +716,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
       const result = envSchema.safeParse(env);
 
@@ -709,6 +738,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
       const env2 = {
         NODE_ENV: "test",
@@ -722,6 +752,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
 
       const result1 = envSchema.safeParse(env1);
@@ -763,6 +794,7 @@ describe("[CHORE] config/index.ts", () => {
         REDIS_PORT: "6379",
         REDIS_HOST: "localhost",
         TECHNOSPEED_BASE_URL: "https://api.tecnospeed.com.br",
+        CLUSTERS: "2",
       };
 
       const result = envSchema.safeParse(env);

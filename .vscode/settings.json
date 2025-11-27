@@ -62,7 +62,9 @@
     "migrations": "database",
     "logger": "log",
     "tecnospeed": "contract",
-    "setup": "config"
+    "setup": "config",
+    "throttle": "backup",
+    "rate-limit": "backup"
   },
   "material-icon-theme.files.associations": {
     "jest.integration.config.ts": "Jest",

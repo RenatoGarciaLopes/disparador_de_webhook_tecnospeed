@@ -1,5 +1,6 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
 import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
+import { AlreadyProcessedError } from "@/shared/errors/AlreadyProcessed";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { ServicoRepository } from "../../infrastructure/repositories/ServicoRepository";
 import { WebhookReprocessadoRepository } from "../../infrastructure/repositories/WebhookReprocessadoRepository";
@@ -63,13 +64,8 @@ describe("[WEBHOOK] ReenviarService", () => {
 
   describe("webhook()", () => {
     describe("Cache hit", () => {
-      it("deve retornar dados do cache quando existir", async () => {
-        const cachedData = {
-          message: "Notificação reenviada com sucesso",
-          protocolo: "CACHED123",
-        };
-
-        mockCache.get.mockResolvedValue(JSON.stringify(cachedData));
+      it("deve lançar AlreadyProcessedError (409) quando já processado no cache", async () => {
+        mockCache.get.mockResolvedValue("1");
 
         const data = {
           product: "BOLETO" as const,
@@ -80,12 +76,13 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
 
-        const result = await service.webhook(data, cedente);
+        await expect(service.webhook(data, cedente)).rejects.toBeInstanceOf(
+          AlreadyProcessedError,
+        );
 
         expect(Logger.info).toHaveBeenCalledWith(
           "Webhook reenvio started: product=BOLETO, type=pago, kind=webhook, idsCount=2, cedenteId=1",
         );
-        expect(result).toEqual(cachedData);
         expect(
           mockServicoRepository.findAllConfiguracaoNotificacaoByCedente,
         ).not.toHaveBeenCalled();
@@ -93,7 +90,7 @@ describe("[WEBHOOK] ReenviarService", () => {
       });
 
       it("deve verificar cache com a chave correta", async () => {
-        mockCache.get.mockResolvedValue(JSON.stringify({ protocolo: "TEST" }));
+        mockCache.get.mockResolvedValue("1");
 
         const data = {
           product: "BOLETO" as const,
@@ -104,7 +101,9 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
 
-        await service.webhook(data, cedente);
+        await expect(service.webhook(data, cedente)).rejects.toBeInstanceOf(
+          AlreadyProcessedError,
+        );
 
         expect(Logger.info).toHaveBeenCalledWith(
           "Webhook reenvio started: product=BOLETO, type=pago, kind=webhook, idsCount=3, cedenteId=1",
@@ -355,7 +354,7 @@ describe("[WEBHOOK] ReenviarService", () => {
         );
       });
 
-      it("deve salvar resposta no cache com TTL de 1 dia", async () => {
+      it("deve salvar apenas flag '1' no cache com TTL de 1 dia", async () => {
         mockCache.get.mockResolvedValue(null);
 
         mockServicoRepository.findAllConfiguracaoNotificacaoByCedente.mockResolvedValue(
@@ -397,10 +396,7 @@ describe("[WEBHOOK] ReenviarService", () => {
 
         expect(mockCache.setWithTTL).toHaveBeenCalledWith(
           "reenviar:BOLETO:1:pago",
-          JSON.stringify({
-            message: "Notificação reenviada com sucesso",
-            protocolo: "CACHE123",
-          }),
+          "1",
           86400,
         );
       });

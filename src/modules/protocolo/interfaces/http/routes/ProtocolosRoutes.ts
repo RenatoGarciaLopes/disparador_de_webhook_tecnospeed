@@ -8,9 +8,13 @@ import { RouterImplementation } from "@/shared/core/RouterImplementation";
 import { ProtocolosController } from "../controllers/ProtocolosController";
 import { BodyMiddleware } from "../middlewares/protocolo/body.middleware";
 
+// Rate limit configuration
+const RATE_LIMIT_MAX_REQUESTS = 100;
+const RATE_LIMIT_WINDOW_MS = 1 * 60 * 1000;
+
 export class ProtocolosRoutes extends RouterImplementation {
   protected configure(): void {
-    this.router.use("/protocolos", new RateLimitService(100, 1 * 60 * 1000).client);
+    this.router.use("/protocolos", new RateLimitService(RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS).client);
     this.router.use("/protocolos", ThrottleService.getInstance().client);
 
     this.router.get(

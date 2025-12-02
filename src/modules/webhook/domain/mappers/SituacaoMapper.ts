@@ -13,7 +13,7 @@ export class SituacaoMapper {
 
   static toPagamento(situacao: ReenviarDTO["type"]) {
     const map: Record<ReenviarDTO["type"], string> = {
-      disponivel: "SCHEDULED ACTIVE",
+      disponivel: "SCHEDULED",
       cancelado: "CANCELLED",
       pago: "PAID",
     };

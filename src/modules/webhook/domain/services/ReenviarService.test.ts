@@ -74,7 +74,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         await expect(service.webhook(data, cedente)).rejects.toBeInstanceOf(
           AlreadyProcessedError,
@@ -99,7 +99,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         await expect(service.webhook(data, cedente)).rejects.toBeInstanceOf(
           AlreadyProcessedError,
@@ -123,7 +123,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "disponivel" as const,
         };
 
-        const cedente = { id: 10, cnpj: "98.765.432/0001-10" };
+        const cedente = { id: 10, cnpj: "98765432000110" };
 
         try {
           await service.webhook(data, cedente);
@@ -179,7 +179,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         const result = await service.webhook(data, cedente);
 
@@ -228,7 +228,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 5, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 5, cnpj: "12345678000190" };
 
         await service.webhook(data, cedente);
 
@@ -273,7 +273,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         await service.webhook(data, cedente);
 
@@ -338,7 +338,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "disponivel" as const,
         };
 
-        const cedente = { id: 2, cnpj: "98.765.432/0001-10" };
+        const cedente = { id: 2, cnpj: "98765432000110" };
 
         await service.webhook(data, cedente);
 
@@ -390,7 +390,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         await service.webhook(data, cedente);
 
@@ -435,7 +435,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         try {
           await service.webhook(data, cedente);
@@ -459,7 +459,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         try {
           await service.webhook(data, cedente);
@@ -496,7 +496,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         try {
           await service.webhook(data, cedente);
@@ -548,7 +548,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         const result = await service.webhook(data, cedente);
 
@@ -595,7 +595,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "11.111.111/0001-11" };
+        const cedente = { id: 1, cnpj: "11111111000111" };
 
         const result = await service.webhook(data, cedente);
 
@@ -648,7 +648,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         const result = await service.webhook(data, cedente);
 

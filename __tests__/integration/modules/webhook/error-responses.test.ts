@@ -26,9 +26,9 @@ describe("Error Handling - Integration Tests", () => {
     it("deve retornar 401 com mensagem genérica para credenciais inválidas", async () => {
       const response = await request(app)
         .post("/reenviar")
-        .set("x-api-cnpj-sh", "00.000.000/0000-00")
+        .set("x-api-cnpj-sh", "00000000000000")
         .set("x-api-token-sh", "invalid-token")
-        .set("x-api-cnpj-cedente", "00.000.000/0000-00")
+        .set("x-api-cnpj-cedente", "00000000000000")
         .set("x-api-token-cedente", "invalid-token")
         .send({
           product: "boleto",
@@ -44,13 +44,13 @@ describe("Error Handling - Integration Tests", () => {
 
     it("deve retornar 401 quando Software House está inativa", async () => {
       const softwareHouse = await TestDataHelper.createSoftwareHouse({
-        cnpj: "22.345.678/0001-90",
+        cnpj: "22345678000190",
         token: testData.softwareHouse.token,
         status: "inativo",
       });
 
       const cedente = await TestDataHelper.createCedente(softwareHouse.id, {
-        cnpj: "33.445.678/0001-90",
+        cnpj: "33445678000190",
         token: "test-cedente-token",
       });
 
@@ -75,7 +75,7 @@ describe("Error Handling - Integration Tests", () => {
       const cedente = await TestDataHelper.createCedente(
         testData.softwareHouse.id,
         {
-          cnpj: "33.445.678/0001-90",
+          cnpj: "33445678000190",
           token: "test-cedente-token",
           status: "inativo",
         },
@@ -230,7 +230,7 @@ describe("Error Handling - Integration Tests", () => {
       const anotherCedente = await TestDataHelper.createCedente(
         testData.softwareHouse.id,
         {
-          cnpj: "11.111.111/0001-11",
+          cnpj: "11111111000111",
           token: "another-cedente-token",
         },
       );

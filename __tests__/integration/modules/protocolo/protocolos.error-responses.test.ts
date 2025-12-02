@@ -60,12 +60,12 @@ describe("[PROTOCOL] /protocolos - Error Responses", () => {
 
     it("retorna 401 quando Software House está inativa", async () => {
       const softwareHouse = await TestDataHelper.createSoftwareHouse({
-        cnpj: "22.345.678/0001-90",
+        cnpj: "22345678000190",
         token: testData.softwareHouse.token,
         status: "inativo",
       });
       const cedente = await TestDataHelper.createCedente(softwareHouse.id, {
-        cnpj: "33.445.678/0001-90",
+        cnpj: "33445678000190",
         token: "test-cedente-token",
       });
 
@@ -83,7 +83,7 @@ describe("[PROTOCOL] /protocolos - Error Responses", () => {
       const cedente = await TestDataHelper.createCedente(
         testData.softwareHouse.id,
         {
-          cnpj: "33.445.678/0001-90",
+          cnpj: "33445678000190",
           token: "test-cedente-token",
           status: "inativo",
         },
@@ -389,11 +389,11 @@ describe("[PROTOCOL] /protocolos - Error Responses", () => {
   describe("Regras de associação", () => {
     it("retorna 401 quando cedente não pertence à Software House", async () => {
       const sh2 = await TestDataHelper.createSoftwareHouse({
-        cnpj: "55.555.555/0001-55",
+        cnpj: "55555555000155",
         token: "token-sh-2",
       });
       const cedenteOutro = await TestDataHelper.createCedente(sh2.id, {
-        cnpj: "66.666.666/0001-66",
+        cnpj: "66666666000166",
         token: "token-cedente-2",
       });
 

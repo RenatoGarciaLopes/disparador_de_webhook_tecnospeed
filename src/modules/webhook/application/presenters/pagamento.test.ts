@@ -127,7 +127,7 @@ describe("[WEBHOOK] PagamentoPresenter", () => {
     });
 
     it("deve aceitar diferentes situações", () => {
-      const situacoes = ["PAID", "CANCELLED", "SCHEDULED ACTIVE"];
+      const situacoes = ["PAID", "CANCELLED", "SCHEDULED"];
 
       situacoes.forEach((situacao) => {
         const result = PagamentoPresenter.toPayload(

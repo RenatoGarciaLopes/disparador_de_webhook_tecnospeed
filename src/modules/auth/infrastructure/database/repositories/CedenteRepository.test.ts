@@ -16,7 +16,7 @@ describe("[AUTH] CedenteRepository", () => {
       it("deve retornar cedente quando encontrado", async () => {
         const mockCedente = {
           id: 1,
-          cnpj: "98.765.432/0001-10",
+          cnpj: "98765432000110",
           token: "token-cedente",
           softwarehouse_id: 5,
           status: "ativo",
@@ -26,7 +26,7 @@ describe("[AUTH] CedenteRepository", () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(mockCedente);
 
         const result = await repository.find(
-          "98.765.432/0001-10",
+          "98765432000110",
           "token-cedente",
           5,
         );
@@ -45,11 +45,11 @@ describe("[AUTH] CedenteRepository", () => {
 
         (Cedente.findOne as jest.Mock).mockResolvedValue(mockCedente);
 
-        await repository.find("98.765.432/0001-10", "my-token", 10);
+        await repository.find("98765432000110", "my-token", 10);
 
         expect(Cedente.findOne).toHaveBeenCalledWith({
           where: {
-            cnpj: "98.765.432/0001-10",
+            cnpj: "98765432000110",
             token: "my-token",
             softwarehouse_id: 10,
           },
@@ -64,7 +64,7 @@ describe("[AUTH] CedenteRepository", () => {
 
         (Cedente.findOne as jest.Mock).mockResolvedValue(mockCedente);
 
-        const result = await repository.find("98.765.432/0001-10", "token", 5);
+        const result = await repository.find("98765432000110", "token", 5);
 
         expect(result).not.toBeNull();
         expect(result?.status).toBe("ativo");
@@ -78,7 +78,7 @@ describe("[AUTH] CedenteRepository", () => {
 
         (Cedente.findOne as jest.Mock).mockResolvedValue(mockCedente);
 
-        const result = await repository.find("98.765.432/0001-10", "token", 5);
+        const result = await repository.find("98765432000110", "token", 5);
 
         expect(result).not.toBeNull();
         expect(result?.status).toBe("inativo");
@@ -87,7 +87,7 @@ describe("[AUTH] CedenteRepository", () => {
       it("deve retornar apenas id e status", async () => {
         const mockCedente = {
           id: 10,
-          cnpj: "98.765.432/0001-10",
+          cnpj: "98765432000110",
           token: "token",
           softwarehouse_id: 5,
           status: "ativo",
@@ -98,7 +98,7 @@ describe("[AUTH] CedenteRepository", () => {
 
         (Cedente.findOne as jest.Mock).mockResolvedValue(mockCedente);
 
-        const result = await repository.find("98.765.432/0001-10", "token", 5);
+        const result = await repository.find("98765432000110", "token", 5);
 
         expect(result).toEqual({
           id: 10,
@@ -119,11 +119,11 @@ describe("[AUTH] CedenteRepository", () => {
 
         (Cedente.findOne as jest.Mock).mockResolvedValue(mockCedente);
 
-        await repository.find("98.765.432/0001-10", "token", 100);
+        await repository.find("98765432000110", "token", 100);
 
         expect(Cedente.findOne).toHaveBeenCalledWith({
           where: {
-            cnpj: "98.765.432/0001-10",
+            cnpj: "98765432000110",
             token: "token",
             softwarehouse_id: 100,
           },
@@ -136,7 +136,7 @@ describe("[AUTH] CedenteRepository", () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(null);
 
         const result = await repository.find(
-          "99.999.999/0001-99",
+          "99999999000199",
           "token-inexistente",
           1,
         );
@@ -147,7 +147,7 @@ describe("[AUTH] CedenteRepository", () => {
       it("deve retornar null quando CNPJ não existe", async () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(null);
 
-        const result = await repository.find("00.000.000/0000-00", "token", 1);
+        const result = await repository.find("00000000000000", "token", 1);
 
         expect(result).toBeNull();
       });
@@ -156,7 +156,7 @@ describe("[AUTH] CedenteRepository", () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(null);
 
         const result = await repository.find(
-          "98.765.432/0001-10",
+          "98765432000110",
           "token-errado",
           1,
         );
@@ -167,11 +167,7 @@ describe("[AUTH] CedenteRepository", () => {
       it("deve retornar null quando softwareHouseId não corresponde", async () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(null);
 
-        const result = await repository.find(
-          "98.765.432/0001-10",
-          "token",
-          999,
-        );
+        const result = await repository.find("98765432000110", "token", 999);
 
         expect(result).toBeNull();
       });
@@ -179,11 +175,11 @@ describe("[AUTH] CedenteRepository", () => {
       it("deve retornar null quando cedente pertence a outro software house", async () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(null);
 
-        await repository.find("98.765.432/0001-10", "token", 1);
+        await repository.find("98765432000110", "token", 1);
 
         expect(Cedente.findOne).toHaveBeenCalledWith({
           where: {
-            cnpj: "98.765.432/0001-10",
+            cnpj: "98765432000110",
             token: "token",
             softwarehouse_id: 1,
           },
@@ -195,11 +191,11 @@ describe("[AUTH] CedenteRepository", () => {
       it("deve buscar com CNPJ, token e softwareHouseId fornecidos", async () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(null);
 
-        await repository.find("11.111.111/0001-11", "token-123", 5);
+        await repository.find("11111111000111", "token-123", 5);
 
         expect(Cedente.findOne).toHaveBeenCalledWith({
           where: {
-            cnpj: "11.111.111/0001-11",
+            cnpj: "11111111000111",
             token: "token-123",
             softwarehouse_id: 5,
           },
@@ -213,7 +209,7 @@ describe("[AUTH] CedenteRepository", () => {
         (Cedente.findOne as jest.Mock).mockRejectedValue(dbError);
 
         await expect(
-          repository.find("98.765.432/0001-10", "token", 1),
+          repository.find("98765432000110", "token", 1),
         ).rejects.toThrow("Database connection error");
       });
     });
@@ -228,7 +224,7 @@ describe("[AUTH] CedenteRepository", () => {
 
         (Cedente.findOne as jest.Mock).mockResolvedValue(mockCedente);
 
-        await repository.find("98.765.432/0001-10", "token", 5);
+        await repository.find("98765432000110", "token", 5);
 
         expect(Cedente.findOne).toHaveBeenCalledWith({
           where: expect.objectContaining({
@@ -240,11 +236,7 @@ describe("[AUTH] CedenteRepository", () => {
       it("não deve retornar cedente de outro software house", async () => {
         (Cedente.findOne as jest.Mock).mockResolvedValue(null);
 
-        const result = await repository.find(
-          "98.765.432/0001-10",
-          "token",
-          999,
-        );
+        const result = await repository.find("98765432000110", "token", 999);
 
         expect(result).toBeNull();
       });

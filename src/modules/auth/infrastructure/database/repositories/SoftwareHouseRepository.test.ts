@@ -16,7 +16,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
       it("deve retornar software house quando encontrado", async () => {
         const mockSoftwareHouse = {
           id: 1,
-          cnpj: "12.345.678/0001-90",
+          cnpj: "12345678000190",
           token: "token-super-secreto",
           status: "ativo",
           data_criacao: new Date(),
@@ -27,7 +27,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
         );
 
         const result = await repository.find(
-          "12.345.678/0001-90",
+          "12345678000190",
           "token-super-secreto",
         );
 
@@ -47,10 +47,10 @@ describe("[AUTH] SoftwareHouseRepository", () => {
           mockSoftwareHouse,
         );
 
-        await repository.find("12.345.678/0001-90", "my-token");
+        await repository.find("12345678000190", "my-token");
 
         expect(SoftwareHouse.findOne).toHaveBeenCalledWith({
-          where: { cnpj: "12.345.678/0001-90", token: "my-token" },
+          where: { cnpj: "12345678000190", token: "my-token" },
         });
       });
 
@@ -64,7 +64,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
           mockSoftwareHouse,
         );
 
-        const result = await repository.find("12.345.678/0001-90", "token");
+        const result = await repository.find("12345678000190", "token");
 
         expect(result).not.toBeNull();
         expect(result?.status).toBe("ativo");
@@ -80,7 +80,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
           mockSoftwareHouse,
         );
 
-        const result = await repository.find("12.345.678/0001-90", "token");
+        const result = await repository.find("12345678000190", "token");
 
         expect(result).not.toBeNull();
         expect(result?.status).toBe("inativo");
@@ -89,7 +89,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
       it("deve retornar apenas id e status", async () => {
         const mockSoftwareHouse = {
           id: 10,
-          cnpj: "12.345.678/0001-90",
+          cnpj: "12345678000190",
           token: "token",
           status: "ativo",
           data_criacao: new Date(),
@@ -100,7 +100,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
           mockSoftwareHouse,
         );
 
-        const result = await repository.find("12.345.678/0001-90", "token");
+        const result = await repository.find("12345678000190", "token");
 
         expect(result).toEqual({
           id: 10,
@@ -117,7 +117,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
         (SoftwareHouse.findOne as jest.Mock).mockResolvedValue(null);
 
         const result = await repository.find(
-          "99.999.999/0001-99",
+          "99999999000199",
           "token-inexistente",
         );
 
@@ -127,7 +127,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
       it("deve retornar null quando CNPJ não existe", async () => {
         (SoftwareHouse.findOne as jest.Mock).mockResolvedValue(null);
 
-        const result = await repository.find("00.000.000/0000-00", "token");
+        const result = await repository.find("00000000000000", "token");
 
         expect(result).toBeNull();
       });
@@ -135,10 +135,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
       it("deve retornar null quando token está incorreto", async () => {
         (SoftwareHouse.findOne as jest.Mock).mockResolvedValue(null);
 
-        const result = await repository.find(
-          "12.345.678/0001-90",
-          "token-errado",
-        );
+        const result = await repository.find("12345678000190", "token-errado");
 
         expect(result).toBeNull();
       });
@@ -148,10 +145,10 @@ describe("[AUTH] SoftwareHouseRepository", () => {
       it("deve buscar com CNPJ e token fornecidos", async () => {
         (SoftwareHouse.findOne as jest.Mock).mockResolvedValue(null);
 
-        await repository.find("11.111.111/0001-11", "token-123");
+        await repository.find("11111111000111", "token-123");
 
         expect(SoftwareHouse.findOne).toHaveBeenCalledWith({
-          where: { cnpj: "11.111.111/0001-11", token: "token-123" },
+          where: { cnpj: "11111111000111", token: "token-123" },
         });
       });
     });
@@ -162,7 +159,7 @@ describe("[AUTH] SoftwareHouseRepository", () => {
         (SoftwareHouse.findOne as jest.Mock).mockRejectedValue(dbError);
 
         await expect(
-          repository.find("12.345.678/0001-90", "token"),
+          repository.find("12345678000190", "token"),
         ).rejects.toThrow("Database connection error");
       });
     });

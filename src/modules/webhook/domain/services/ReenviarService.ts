@@ -1,6 +1,7 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
 import { Logger } from "@/infrastructure/logger/logger";
 import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
+import { AlreadyProcessedError } from "@/shared/errors/AlreadyProcessed";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { IKindReenvio } from "@/shared/utils/kind-reenvios";
 import { v4 as uuidv4 } from "uuid";
@@ -43,7 +44,7 @@ export class ReenviarService implements IReenviarService {
     const cached = await this.cache.get(cacheKey);
     if (cached) {
       Logger.info("Cache hit");
-      return JSON.parse(cached);
+      throw new AlreadyProcessedError();
     }
 
     Logger.debug("Cache miss");
@@ -130,11 +131,7 @@ export class ReenviarService implements IReenviarService {
       protocolo: sendResult.protocolo,
     };
 
-    await this.cache.setWithTTL(
-      cacheKey,
-      JSON.stringify(successMessage),
-      this.CACHE_TTL,
-    );
+    await this.cache.setWithTTL(cacheKey, "1", this.CACHE_TTL);
 
     Logger.debug("Result cached");
 

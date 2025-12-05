@@ -1,5 +1,6 @@
 import { CacheService } from "@/infrastructure/cache/cache.service";
 import { TecnospeedClient } from "@/infrastructure/tecnospeed/TecnospeedClient";
+import { AlreadyProcessedError } from "@/shared/errors/AlreadyProcessed";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { ServicoRepository } from "../../infrastructure/repositories/ServicoRepository";
 import { WebhookReprocessadoRepository } from "../../infrastructure/repositories/WebhookReprocessadoRepository";
@@ -63,13 +64,8 @@ describe("[WEBHOOK] ReenviarService", () => {
 
   describe("webhook()", () => {
     describe("Cache hit", () => {
-      it("deve retornar dados do cache quando existir", async () => {
-        const cachedData = {
-          message: "Notificação reenviada com sucesso",
-          protocolo: "CACHED123",
-        };
-
-        mockCache.get.mockResolvedValue(JSON.stringify(cachedData));
+      it("deve lançar AlreadyProcessedError (409) quando já processado no cache", async () => {
+        mockCache.get.mockResolvedValue("1");
 
         const data = {
           product: "BOLETO" as const,
@@ -78,14 +74,15 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
-        const result = await service.webhook(data, cedente);
+        await expect(service.webhook(data, cedente)).rejects.toBeInstanceOf(
+          AlreadyProcessedError,
+        );
 
         expect(Logger.info).toHaveBeenCalledWith(
           "Webhook reenvio started: product=BOLETO, type=pago, kind=webhook, idsCount=2, cedenteId=1",
         );
-        expect(result).toEqual(cachedData);
         expect(
           mockServicoRepository.findAllConfiguracaoNotificacaoByCedente,
         ).not.toHaveBeenCalled();
@@ -93,7 +90,7 @@ describe("[WEBHOOK] ReenviarService", () => {
       });
 
       it("deve verificar cache com a chave correta", async () => {
-        mockCache.get.mockResolvedValue(JSON.stringify({ protocolo: "TEST" }));
+        mockCache.get.mockResolvedValue("1");
 
         const data = {
           product: "BOLETO" as const,
@@ -102,9 +99,11 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
-        await service.webhook(data, cedente);
+        await expect(service.webhook(data, cedente)).rejects.toBeInstanceOf(
+          AlreadyProcessedError,
+        );
 
         expect(Logger.info).toHaveBeenCalledWith(
           "Webhook reenvio started: product=BOLETO, type=pago, kind=webhook, idsCount=3, cedenteId=1",
@@ -124,7 +123,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "disponivel" as const,
         };
 
-        const cedente = { id: 10, cnpj: "98.765.432/0001-10" };
+        const cedente = { id: 10, cnpj: "98765432000110" };
 
         try {
           await service.webhook(data, cedente);
@@ -180,7 +179,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         const result = await service.webhook(data, cedente);
 
@@ -229,7 +228,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 5, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 5, cnpj: "12345678000190" };
 
         await service.webhook(data, cedente);
 
@@ -274,7 +273,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         await service.webhook(data, cedente);
 
@@ -339,7 +338,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "disponivel" as const,
         };
 
-        const cedente = { id: 2, cnpj: "98.765.432/0001-10" };
+        const cedente = { id: 2, cnpj: "98765432000110" };
 
         await service.webhook(data, cedente);
 
@@ -355,7 +354,7 @@ describe("[WEBHOOK] ReenviarService", () => {
         );
       });
 
-      it("deve salvar resposta no cache com TTL de 1 dia", async () => {
+      it("deve salvar apenas flag '1' no cache com TTL de 1 dia", async () => {
         mockCache.get.mockResolvedValue(null);
 
         mockServicoRepository.findAllConfiguracaoNotificacaoByCedente.mockResolvedValue(
@@ -391,16 +390,13 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         await service.webhook(data, cedente);
 
         expect(mockCache.setWithTTL).toHaveBeenCalledWith(
           "reenviar:BOLETO:1:pago",
-          JSON.stringify({
-            message: "Notificação reenviada com sucesso",
-            protocolo: "CACHE123",
-          }),
+          "1",
           86400,
         );
       });
@@ -439,7 +435,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         try {
           await service.webhook(data, cedente);
@@ -463,7 +459,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         try {
           await service.webhook(data, cedente);
@@ -500,7 +496,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         try {
           await service.webhook(data, cedente);
@@ -552,7 +548,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         const result = await service.webhook(data, cedente);
 
@@ -599,7 +595,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "11.111.111/0001-11" };
+        const cedente = { id: 1, cnpj: "11111111000111" };
 
         const result = await service.webhook(data, cedente);
 
@@ -652,7 +648,7 @@ describe("[WEBHOOK] ReenviarService", () => {
           type: "pago" as const,
         };
 
-        const cedente = { id: 1, cnpj: "12.345.678/0001-90" };
+        const cedente = { id: 1, cnpj: "12345678000190" };
 
         const result = await service.webhook(data, cedente);
 

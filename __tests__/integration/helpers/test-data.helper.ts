@@ -53,7 +53,7 @@ export class TestDataHelper {
 
   static async createSoftwareHouse(data: Partial<any> = {}) {
     const defaultData = {
-      cnpj: "12.345.678/0001-95",
+      cnpj: "12345678000195",
       token: "test-sh-token",
       status: "ativo",
       ...data,
@@ -67,7 +67,7 @@ export class TestDataHelper {
 
   static async createCedente(softwareHouseId: number, data: Partial<any> = {}) {
     const defaultData = {
-      cnpj: "98.765.432/0001-23",
+      cnpj: "98765432000123",
       token: "test-cedente-token",
       softwarehouse_id: softwareHouseId,
       status: "ativo",

@@ -9,7 +9,7 @@ describe("[WEBHOOK] BoletoPresenter", () => {
         {
           webhookReprocessadoId: "uuid-123",
           situacao: "LIQUIDADO",
-          cnpjCedente: "12.345.678/0001-90",
+          cnpjCedente: "12345678000190",
         },
       );
 
@@ -27,7 +27,7 @@ describe("[WEBHOOK] BoletoPresenter", () => {
         {
           webhookReprocessadoId: "uuid-123",
           situacao: "LIQUIDADO",
-          cnpjCedente: "12.345.678/0001-90",
+          cnpjCedente: "12345678000190",
         },
       );
 
@@ -43,7 +43,7 @@ describe("[WEBHOOK] BoletoPresenter", () => {
       const result = BoletoPresenter.toPayload("http://webhook.com", headers, {
         webhookReprocessadoId: "uuid-123",
         situacao: "LIQUIDADO",
-        cnpjCedente: "12.345.678/0001-90",
+        cnpjCedente: "12345678000190",
       });
 
       expect(result.headers).toEqual(headers);
@@ -56,11 +56,11 @@ describe("[WEBHOOK] BoletoPresenter", () => {
         {
           webhookReprocessadoId: "uuid-123",
           situacao: "LIQUIDADO",
-          cnpjCedente: "98.765.432/0001-10",
+          cnpjCedente: "98765432000110",
         },
       );
 
-      expect(result.body.CpfCnpjCedente).toBe("98.765.432/0001-10");
+      expect(result.body.CpfCnpjCedente).toBe("98765432000110");
     });
 
     it("deve incluir situacao no titulo", () => {
@@ -70,7 +70,7 @@ describe("[WEBHOOK] BoletoPresenter", () => {
         {
           webhookReprocessadoId: "uuid-123",
           situacao: "REGISTRADO",
-          cnpjCedente: "12.345.678/0001-90",
+          cnpjCedente: "12345678000190",
         },
       );
 
@@ -84,7 +84,7 @@ describe("[WEBHOOK] BoletoPresenter", () => {
         {
           webhookReprocessadoId: "uuid-456",
           situacao: "BAIXADO",
-          cnpjCedente: "12.345.678/0001-90",
+          cnpjCedente: "12345678000190",
         },
       );
 
@@ -98,7 +98,7 @@ describe("[WEBHOOK] BoletoPresenter", () => {
         {
           webhookReprocessadoId: "uuid-123",
           situacao: "LIQUIDADO",
-          cnpjCedente: "12.345.678/0001-90",
+          cnpjCedente: "12345678000190",
         },
       );
 
@@ -117,7 +117,7 @@ describe("[WEBHOOK] BoletoPresenter", () => {
           {
             webhookReprocessadoId: "uuid-123",
             situacao,
-            cnpjCedente: "12.345.678/0001-90",
+            cnpjCedente: "12345678000190",
           },
         );
 

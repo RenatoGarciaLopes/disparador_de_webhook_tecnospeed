@@ -19,9 +19,9 @@ describe("[WEBHOOK] SituacaoMapper", () => {
   });
 
   describe("toPagamento()", () => {
-    it("deve mapear 'disponivel' para 'SCHEDULED ACTIVE'", () => {
+    it("deve mapear 'disponivel' para 'SCHEDULED'", () => {
       const result = SituacaoMapper.toPagamento("disponivel");
-      expect(result).toBe("SCHEDULED ACTIVE");
+      expect(result).toBe("SCHEDULED");
     });
 
     it("deve mapear 'cancelado' para 'CANCELLED'", () => {

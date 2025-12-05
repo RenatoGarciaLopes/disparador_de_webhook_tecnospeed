@@ -18,7 +18,7 @@ REDIS_HOST=localhost
 REDIS_PORT=6380
 REDIS_PASSWORD=test_disparador_wh
 
-TECNOSPEED_BASE_URL=https://plug-retry.free.beeceptor.com
+TECNOSPEED_BASE_URL=https://tecno.free.beeceptor.com
 ENVEOF
 
 # 2. Instalar dependências (se ainda não fez)

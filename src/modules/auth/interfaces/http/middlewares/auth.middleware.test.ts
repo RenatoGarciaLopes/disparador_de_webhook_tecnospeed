@@ -36,9 +36,9 @@ describe("[AUTH] AuthMiddleware", () => {
 
     mockRequest = {
       headers: {
-        "x-api-cnpj-sh": "12.345.678/0001-90",
+        "x-api-cnpj-sh": "12345678000190",
         "x-api-token-sh": "token-sh",
-        "x-api-cnpj-cedente": "98.765.432/0001-10",
+        "x-api-cnpj-cedente": "98765432000110",
         "x-api-token-cedente": "token-cedente",
       },
     };
@@ -57,14 +57,14 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve validar credenciais válidas e chamar next()", async () => {
       const mockSoftwareHouse = {
         id: 1,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         token: "token-sh",
         status: "ativo",
       };
 
       const mockCedente = {
         id: 2,
-        cnpj: "98.765.432/0001-10",
+        cnpj: "98765432000110",
         token: "token-cedente",
         status: "ativo",
       };
@@ -99,14 +99,14 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve definir softwareHouseId e cedenteId no request", async () => {
       const mockSoftwareHouse = {
         id: 10,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         token: "token-sh",
         status: "ativo",
       };
 
       const mockCedente = {
         id: 20,
-        cnpj: "98.765.432/0001-10",
+        cnpj: "98765432000110",
         token: "token-cedente",
         status: "ativo",
       };
@@ -139,13 +139,13 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve validar software house antes do cedente", async () => {
       const mockSoftwareHouse = {
         id: 1,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         status: "ativo",
       };
 
       const mockCedente = {
         id: 2,
-        cnpj: "98.765.432/0001-10",
+        cnpj: "98765432000110",
         status: "ativo",
       };
 
@@ -171,11 +171,11 @@ describe("[AUTH] AuthMiddleware", () => {
       );
 
       expect(findSoftwareHouseSpy).toHaveBeenCalledWith(
-        "12.345.678/0001-90",
+        "12345678000190",
         "token-sh",
       );
       expect(findCedenteSpy).toHaveBeenCalledWith(
-        "98.765.432/0001-10",
+        "98765432000110",
         "token-cedente",
         1,
       );
@@ -187,7 +187,7 @@ describe("[AUTH] AuthMiddleware", () => {
       mockRequest.headers = {
         "x-api-cnpj-sh": "123",
         "x-api-token-sh": "token",
-        "x-api-cnpj-cedente": "98.765.432/0001-10",
+        "x-api-cnpj-cedente": "98765432000110",
         "x-api-token-cedente": "token",
       };
 
@@ -259,7 +259,7 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve retornar 401 quando software house está inativo", async () => {
       const mockSoftwareHouse = {
         id: 1,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         status: "inativo",
       };
 
@@ -285,7 +285,7 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve retornar 401 quando cedente não existe", async () => {
       const mockSoftwareHouse = {
         id: 1,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         status: "ativo",
       };
 
@@ -318,13 +318,13 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve retornar 401 quando cedente está inativo", async () => {
       const mockSoftwareHouse = {
         id: 1,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         status: "ativo",
       };
 
       const mockCedente = {
         id: 2,
-        cnpj: "98.765.432/0001-10",
+        cnpj: "98765432000110",
         status: "inativo",
       };
 
@@ -493,13 +493,13 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve criar AuthDTO a partir dos headers do request", async () => {
       const mockSoftwareHouse = {
         id: 1,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         status: "ativo",
       };
 
       const mockCedente = {
         id: 2,
-        cnpj: "98.765.432/0001-10",
+        cnpj: "98765432000110",
         status: "ativo",
       };
 
@@ -529,7 +529,7 @@ describe("[AUTH] AuthMiddleware", () => {
       );
 
       expect(findSoftwareHouseSpy).toHaveBeenCalledWith(
-        "12.345.678/0001-90",
+        "12345678000190",
         "token-sh",
       );
     });
@@ -539,14 +539,14 @@ describe("[AUTH] AuthMiddleware", () => {
     it("deve executar todo o fluxo de autenticação com sucesso", async () => {
       const mockSoftwareHouse = {
         id: 1,
-        cnpj: "12.345.678/0001-90",
+        cnpj: "12345678000190",
         token: "token-sh",
         status: "ativo",
       };
 
       const mockCedente = {
         id: 2,
-        cnpj: "98.765.432/0001-10",
+        cnpj: "98765432000110",
         token: "token-cedente",
         status: "ativo",
       };

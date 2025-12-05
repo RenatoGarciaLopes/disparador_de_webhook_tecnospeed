@@ -57,7 +57,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -70,7 +70,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
           "X-Other": "value2",
         },
         body: {
-          CpfCnpjCedente: "12.345.678/0001-90",
+          CpfCnpjCedente: "12345678000190",
           titulo: {
             situacao: "LIQUIDADO", // SituacaoMapper.toBoleto("pago")
             idintegracao: "test-uuid-123",
@@ -92,14 +92,14 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result[0].headers).toEqual({
         Authorization: "Bearer token123",
         "X-Custom": "value1",
         "X-Other": "value2",
       });
-      expect(result[0].body.CpfCnpjCedente).toBe("12.345.678/0001-90");
+      expect(result[0].body.CpfCnpjCedente).toBe("12345678000190");
       expect(result[0].body.titulo.idintegracao).toBe("test-uuid-123");
     });
 
@@ -116,7 +116,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       // Verifica se a situação foi mapeada corretamente: cancelado -> BAIXADO
       expect(result[0].body.titulo.situacao).toBe("BAIXADO");
@@ -150,7 +150,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         configuracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result[0].headers).toEqual({});
     });
@@ -170,7 +170,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -200,7 +200,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result[0].url).toBe("http://webhook.com");
       expect(result[0].headers).toEqual({
@@ -226,10 +226,10 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
-      // Verifica se a situação foi mapeada corretamente: disponivel -> SCHEDULED ACTIVE
-      expect(result[0].body.status).toBe("SCHEDULED ACTIVE");
+      // Verifica se a situação foi mapeada corretamente: disponivel -> SCHEDULED
+      expect(result[0].body.status).toBe("SCHEDULED");
     });
   });
 
@@ -247,7 +247,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -277,7 +277,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "98.765.432/0001-10" });
+      const result = useCase.execute({ cnpjCedente: "98765432000110" });
 
       expect(result[0].url).toBe("http://webhook.com");
       expect(result[0].headers).toEqual({
@@ -303,7 +303,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       // Verifica se a situação foi mapeada corretamente: cancelado -> REJECTED
       expect(result[0].body.event).toBe("REJECTED");
@@ -335,7 +335,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result[0].headers).toEqual({
         "X-API-Key": "secret-key",
@@ -369,7 +369,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result[0].headers).toEqual({
         "X-Header-1": "value1",
@@ -415,7 +415,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result).toHaveLength(2);
       expect(result[0].url).toBe("http://webhook1.com");
@@ -431,7 +431,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, []);
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result).toEqual([]);
     });
@@ -462,7 +462,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, configuracoes);
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result[0].headers).toEqual({
         "X-Only": "only-value",
@@ -482,7 +482,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       // Produto desconhecido não gera payload
       expect(result).toHaveLength(0);
@@ -507,7 +507,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
         mockConfiguracoes,
       );
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(Logger.warn).toHaveBeenCalledWith(
         expect.stringContaining("error=boom"),
@@ -530,7 +530,7 @@ describe("[WEBHOOK] MontarNotificacaoUseCase", () => {
 
       useCase = new MontarNotificacaoUseCase("uuid", data, mockConfiguracoes);
 
-      const result = useCase.execute({ cnpjCedente: "12.345.678/0001-90" });
+      const result = useCase.execute({ cnpjCedente: "12345678000190" });
 
       expect(result).toHaveLength(0);
       expect(Logger.info).toHaveBeenCalledWith(

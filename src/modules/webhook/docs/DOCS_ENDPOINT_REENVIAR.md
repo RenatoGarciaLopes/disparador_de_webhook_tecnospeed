@@ -9,9 +9,9 @@ Um cliente (SH) envia através de uma requisição HTTP para a API do Disparador
 
 E também envia nas Headers da requisição:
 
-- `x-api-cnpj-sh`: string (CNPJ do SH com formatação)
+- `x-api-cnpj-sh`: string (CNPJ do SH sem formatação)
 - `x-api-token-sh`: string (Token do SH)
-- `x-api-cnpj-cedente`: string (CNPJ do Cedente com formatação) - Nota: É string, não number
+- `x-api-cnpj-cedente`: string (CNPJ do Cedente sem formatação) - Nota: É string, não number
 - `x-api-token-cedente`: string (Token do Cedente)
 
 ## Validação das Headers (Middleware)
@@ -54,6 +54,7 @@ A API deve validar cada parâmetro enviado com base em seus tipos e valores espe
 **Status Codes de Erro:**
 
 - `400`: Parâmetros inválidos na requisição (validação de formato/tipo)
+- `409`: Requisição duplicada já processada anteriormente (cache)
 - `422`: Validação de regras de negócio (serviços não encontrados, sem configuração, etc.)
 - `501`: `kind` não suportado (retorna "NOT_IMPLEMENTED")
 - `500`: Erro interno do servidor
@@ -130,7 +131,7 @@ Com base no `product` enviado na requisição (transformado para UPPERCASE), o p
 
 | type       | boleto     | pagamento        | pix        |
 | ---------- | ---------- | ---------------- | ---------- |
-| disponivel | REGISTRADO | SCHEDULED ACTIVE | ACTIVE     |
+| disponivel | REGISTRADO | SCHEDULED        | ACTIVE     |
 | cancelado  | BAIXADO    | CANCELLED        | REJECTED   |
 | pago       | LIQUIDADO  | PAID             | LIQUIDATED |
 
@@ -415,11 +416,8 @@ reenviar:BOLETO:1,2,3,4:disponivel
 
 E o valor armazenado no cache será:
 
-```json
-{
-  "message": "Notificação reenviada com sucesso",
-  "protocolo": "123e4567-e89b-12d3-a456-426614174000"
-}
+```text
+"1"
 ```
 
 ---
@@ -427,9 +425,9 @@ E o valor armazenado no cache será:
 **Fluxo do Cache:**
 
 1. **Verificação:** Ao receber a requisição, o cache é verificado **ANTES** de processar qualquer validação de regra de negócio
-2. **Cache Hit:** Se encontrar no cache, retorna imediatamente o valor armazenado
+2. **Cache Hit:** Se encontrar no cache, retorna 409 (ALREADY_PROCESSED) com mensagem: "Você já processou esses serviços."
 3. **Cache Miss:** Se não encontrar, processa normalmente a requisição
-4. **Armazenamento:** Somente após o processamento bem-sucedido (criação no banco e envio para Tecnospeed), o resultado é armazenado no cache com TTL de 24 horas
+4. **Armazenamento:** Somente após o processamento bem-sucedido (criação no banco e envio para Tecnospeed), armazena a flag "1" no cache com TTL de 24 horas
 
 ## Fluxo de Execução
 
@@ -450,7 +448,7 @@ E o valor armazenado no cache será:
    - Em caso de erro: retorna 501 (NOT_IMPLEMENTED)
 5. **Verificação do cache** (`ReenviarService`)
    - Gera chave: `reenviar:{PRODUCT}:{ids_ordenados}:{type}`
-   - Se encontrado no cache: retorna imediatamente o valor armazenado
+   - Se encontrado no cache: retorna 409 (ALREADY_PROCESSED) com mensagem: "Você já processou esses serviços."
 6. **Busca e validação dos serviços** (`ReenviarService` → `ServicoRepository`)
    - Busca serviços que atendam: `id IN (ids)`, `produto = product`, `situacao = type`, `status = 'ativo'`, `cedente_id = cedenteId`
    - Verifica se todos os IDs foram encontrados
@@ -478,7 +476,8 @@ E o valor armazenado no cache será:
       - `protocolo`: protocolo retornado pela Tecnospeed
       - `data`: JSON com array de notificações enviadas
 12. **Armazenamento no cache** (`ReenviarService`)
-    - Armazena resultado de sucesso no cache com TTL de 24 horas
+    - Armazena a flag "1" no cache com TTL de 24 horas
 13. **Retorno da requisição**
     - Retorna 200 com: `{ message: "Notificação reenviada com sucesso", protocolo: "..." }`
+    - Se cache identificar requisição duplicada: retorna 409 (ALREADY_PROCESSED)
     - Em caso de erro não tratado: retorna 500 (Internal Server Error)

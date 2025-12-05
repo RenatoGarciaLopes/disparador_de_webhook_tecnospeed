@@ -9,6 +9,7 @@ jest.mock("@/infrastructure/config", () => ({
     REDIS_PASSWORD: "test",
     REDIS_PORT: 6379,
     REDIS_HOST: "localhost",
+    CLUSTERS: 2,
   },
 }));
 
@@ -26,6 +27,37 @@ jest.mock(
   "@/modules/webhook/infrastructure/repositories/WebhookReprocessadoRepository",
 );
 jest.mock("@/infrastructure/tecnospeed/TecnospeedClient");
+jest.mock("@/infrastructure/cache/cache.service", () => ({
+  CacheService: {
+    getInstance: jest.fn(() => ({
+      client: {
+        sendCommand: jest.fn(),
+      },
+    })),
+    get: jest.fn(),
+    set: jest.fn(),
+  },
+}));
+jest.mock("@/infrastructure/rate-limit/rate-limit.service", () => {
+  const mockMiddleware = (_req: any, _res: any, next: any) => next();
+  const RateLimitServiceMock = jest.fn().mockImplementation(() => ({
+    client: mockMiddleware,
+  }));
+  (RateLimitServiceMock as any).getInstance = jest.fn(() => ({
+    client: mockMiddleware,
+  }));
+  return { RateLimitService: RateLimitServiceMock };
+});
+jest.mock("@/infrastructure/throttle/throttle.service", () => {
+  const mockMiddleware = (_req: any, _res: any, next: any) => next();
+  const ThrottleServiceMock = jest.fn().mockImplementation(() => ({
+    client: mockMiddleware,
+  }));
+  (ThrottleServiceMock as any).getInstance = jest.fn(() => ({
+    client: mockMiddleware,
+  }));
+  return { ThrottleService: ThrottleServiceMock };
+});
 
 import { CacheService } from "@/infrastructure/cache/cache.service";
 import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
@@ -38,11 +70,6 @@ describe("[WEBHOOK] ReenviarRouter", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    (CacheService.getInstance as jest.Mock).mockReturnValue({
-      get: jest.fn(),
-      set: jest.fn(),
-    });
 
     reenviarRouter = new ReenviarRouter();
   });
@@ -96,7 +123,9 @@ describe("[WEBHOOK] ReenviarRouter", () => {
         reenviar: mockReenviar,
       }));
 
-      const route = reenviarRouter.router.stack[0]?.route;
+      const route = (
+        reenviarRouter.router.stack.find((l: any) => l.route) as any
+      )?.route;
       if (!route) throw new Error("Route not found");
       const handler = route.stack[route.stack.length - 1].handle;
 
@@ -117,7 +146,9 @@ describe("[WEBHOOK] ReenviarRouter", () => {
         reenviar: mockReenviar,
       }));
 
-      const route = reenviarRouter.router.stack[0]?.route;
+      const route = (
+        reenviarRouter.router.stack.find((l: any) => l.route) as any
+      )?.route;
       if (!route) throw new Error("Route not found");
       const handler = route.stack[route.stack.length - 1].handle;
 
@@ -139,7 +170,9 @@ describe("[WEBHOOK] ReenviarRouter", () => {
         reenviar: mockReenviar,
       }));
 
-      const route = reenviarRouter.router.stack[0]?.route;
+      const route = (
+        reenviarRouter.router.stack.find((l: any) => l.route) as any
+      )?.route;
       if (!route) throw new Error("Route not found");
       const handler = route.stack[route.stack.length - 1].handle;
 
@@ -155,7 +188,9 @@ describe("[WEBHOOK] ReenviarRouter", () => {
     });
 
     it("deve ter AuthMiddleware como primeiro middleware da rota", () => {
-      const route = reenviarRouter.router.stack[0]?.route;
+      const route = (
+        reenviarRouter.router.stack.find((l: any) => l.route) as any
+      )?.route;
       if (!route) throw new Error("Route not found");
       const firstMiddleware = route.stack[0].handle;
 
@@ -164,7 +199,9 @@ describe("[WEBHOOK] ReenviarRouter", () => {
     });
 
     it("deve ter BodyMiddleware.validate como segundo middleware", () => {
-      const route = reenviarRouter.router.stack[0]?.route;
+      const route = (
+        reenviarRouter.router.stack.find((l: any) => l.route) as any
+      )?.route;
       if (!route) throw new Error("Route not found");
       const secondMiddleware = route.stack[1].handle;
 
@@ -172,7 +209,9 @@ describe("[WEBHOOK] ReenviarRouter", () => {
     });
 
     it("deve executar o middleware de autenticação", () => {
-      const route = reenviarRouter.router.stack[0]?.route;
+      const route = (
+        reenviarRouter.router.stack.find((l: any) => l.route) as any
+      )?.route;
       if (!route) throw new Error("Route not found");
       const authMiddleware = route.stack[0].handle;
 

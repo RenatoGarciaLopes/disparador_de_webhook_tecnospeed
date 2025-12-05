@@ -9,7 +9,7 @@ module.exports = {
         {
           id: 1,
           data_criacao: new Date(),
-          cnpj: "45.723.174/0001-10",
+          cnpj: "45723174000110",
           token: "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0",
           softwarehouse_id: 1,
           status: "ativo",
@@ -34,7 +34,7 @@ module.exports = {
         {
           id: 2,
           data_criacao: new Date(),
-          cnpj: "33.198.567/0001-25",
+          cnpj: "33198567000125",
           token: "Q1w2E3r4T5y6U7i8O9p0A1s2D3f4G5h6J7k8L9m0",
           softwarehouse_id: 2,
           status: "inativo",
@@ -43,7 +43,7 @@ module.exports = {
         {
           id: 3,
           data_criacao: new Date(),
-          cnpj: "74.910.332/0001-04",
+          cnpj: "74910332000104",
           token: "N1m2B3v4C5x6Z7a8S9d0F1g2H3j4K5l6P7o8I9u0",
           softwarehouse_id: 3,
           status: "inativo",

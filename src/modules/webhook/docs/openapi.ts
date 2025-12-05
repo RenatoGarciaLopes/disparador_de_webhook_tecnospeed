@@ -67,8 +67,21 @@ export function registerWebhookDocs(registry: OpenAPIRegistry) {
           "application/json": { schema: ErrorResponseSchema },
         },
       },
+      409: {
+        description:
+          "Requisição duplicada e já processada, os serviços já foram processados anteriormente",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
       422: {
         description: "Campos inválidos",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      429: {
+        description: "Limite de requisições excedido",
         content: {
           "application/json": { schema: ErrorResponseSchema },
         },

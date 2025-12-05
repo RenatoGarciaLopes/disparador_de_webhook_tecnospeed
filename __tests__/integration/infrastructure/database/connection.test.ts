@@ -42,24 +42,24 @@ describe("Database Connection - Basic Operations", () => {
 
   it("deve conseguir criar um registro simples", async () => {
     const sh = await SoftwareHouse.create({
-      cnpj: "12.345.678/0001-00",
+      cnpj: "12345678000100",
       token: "test-token",
       status: "ativo",
     });
 
     expect(sh.id).toBeDefined();
-    expect(sh.cnpj).toBe("12.345.678/0001-00");
+    expect(sh.cnpj).toBe("12345678000100");
   });
 
   it("deve conseguir buscar registro criado", async () => {
     await SoftwareHouse.create({
-      cnpj: "12.345.678/0001-00",
+      cnpj: "12345678000100",
       token: "test-token",
       status: "ativo",
     });
 
     const found = await SoftwareHouse.findOne({
-      where: { cnpj: "12.345.678/0001-00" },
+      where: { cnpj: "12345678000100" },
     });
 
     expect(found).toBeDefined();

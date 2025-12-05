@@ -8,9 +8,9 @@ Um cliente (SH) envia através de uma requisição HTTP para a API do Disparador
 
 **Headers da requisição:**
 
-- `x-api-cnpj-sh`: string (CNPJ do SH com formatação)
+- `x-api-cnpj-sh`: string (CNPJ do SH sem formatação)
 - `x-api-token-sh`: string (Token do SH)
-- `x-api-cnpj-cedente`: string (CNPJ do Cedente com formatação) - Nota: É string, não number
+- `x-api-cnpj-cedente`: string (CNPJ do Cedente sem formatação) - Nota: É string, não number
 - `x-api-token-cedente`: string (Token do Cedente)
 
 ## Validação das Headers (Middleware)

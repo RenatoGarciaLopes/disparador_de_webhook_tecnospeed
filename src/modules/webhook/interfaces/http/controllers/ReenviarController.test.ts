@@ -1,4 +1,5 @@
 import { ReenviarService } from "@/modules/webhook/domain/services/ReenviarService";
+import { AlreadyProcessedError } from "@/shared/errors/AlreadyProcessed";
 import { ErrorResponse } from "@/shared/errors/ErrorResponse";
 import { InvalidFieldsError } from "@/shared/errors/InvalidFields";
 import { Request, Response } from "express";
@@ -49,7 +50,7 @@ describe("[WEBHOOK] ReenviarController", () => {
       softwareHouseId: 1,
       cedenteId: 2,
       headers: {
-        "x-api-cnpj-cedente": "98.765.432/0001-10",
+        "x-api-cnpj-cedente": "98765432000110",
       },
     };
 
@@ -65,7 +66,7 @@ describe("[WEBHOOK] ReenviarController", () => {
   describe("Casos de sucesso", () => {
     it("deve processar requisição válida e retornar 200", async () => {
       const mockResponseData = { success: true, message: "Processado" };
-      mockService.webhook.mockResolvedValue(mockResponseData);
+      mockService.webhook.mockResolvedValue(mockResponseData as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -81,7 +82,7 @@ describe("[WEBHOOK] ReenviarController", () => {
 
     it("deve chamar o serviço com os parâmetros corretos", async () => {
       const mockResponseData = { success: true };
-      mockService.webhook.mockResolvedValue(mockResponseData);
+      mockService.webhook.mockResolvedValue(mockResponseData as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -100,14 +101,14 @@ describe("[WEBHOOK] ReenviarController", () => {
         },
         {
           id: 2,
-          cnpj: "98.765.432/0001-10",
+          cnpj: "98765432000110",
         },
       );
     });
 
     it("deve logar corretamente quando id é undefined", async () => {
       const mockResponseData = { success: true };
-      mockService.webhook.mockResolvedValue(mockResponseData);
+      mockService.webhook.mockResolvedValue(mockResponseData as any);
       mockRequest.body = {
         product: "BOLETO",
         kind: "webhook",
@@ -128,7 +129,7 @@ describe("[WEBHOOK] ReenviarController", () => {
     it("deve usar cedenteId do request", async () => {
       mockRequest.cedenteId = 99;
       const mockResponseData = { success: true };
-      mockService.webhook.mockResolvedValue(mockResponseData);
+      mockService.webhook.mockResolvedValue(mockResponseData as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -143,10 +144,10 @@ describe("[WEBHOOK] ReenviarController", () => {
 
     it("deve usar CNPJ do header x-api-cnpj-cedente", async () => {
       mockRequest.headers = {
-        "x-api-cnpj-cedente": "11.111.111/0001-11",
+        "x-api-cnpj-cedente": "11111111000111",
       };
       const mockResponseData = { success: true };
-      mockService.webhook.mockResolvedValue(mockResponseData);
+      mockService.webhook.mockResolvedValue(mockResponseData as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -155,7 +156,7 @@ describe("[WEBHOOK] ReenviarController", () => {
 
       expect(mockService.webhook).toHaveBeenCalledWith(
         expect.any(Object),
-        expect.objectContaining({ cnpj: "11.111.111/0001-11" }),
+        expect.objectContaining({ cnpj: "11111111000111" }),
       );
     });
 
@@ -170,7 +171,7 @@ describe("[WEBHOOK] ReenviarController", () => {
           kind: "webhook",
           type: "pago",
         };
-        mockService.webhook.mockResolvedValue({ success: true });
+        mockService.webhook.mockResolvedValue({ success: true } as any);
 
         await controller.reenviar(
           mockRequest as Request & {
@@ -195,7 +196,7 @@ describe("[WEBHOOK] ReenviarController", () => {
           kind: "webhook",
           type: type as any,
         };
-        mockService.webhook.mockResolvedValue({ success: true });
+        mockService.webhook.mockResolvedValue({ success: true } as any);
 
         await controller.reenviar(
           mockRequest as Request & {
@@ -256,7 +257,7 @@ describe("[WEBHOOK] ReenviarController", () => {
         kind: "webhook",
         type: "pago",
       };
-      mockService.webhook.mockResolvedValue({ success: true });
+      mockService.webhook.mockResolvedValue({ success: true } as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -304,6 +305,24 @@ describe("[WEBHOOK] ReenviarController", () => {
       expect(errorResponse).toHaveProperty("code");
       expect(errorResponse).toHaveProperty("statusCode");
       expect(errorResponse).toHaveProperty("error");
+    });
+  });
+
+  describe("Tratamento de AlreadyProcessedError", () => {
+    it("deve retornar 409 quando serviço já foi processado (cache)", async () => {
+      const alreadyProcessed = new AlreadyProcessedError();
+      mockService.webhook.mockRejectedValue(alreadyProcessed);
+
+      await controller.reenviar(
+        mockRequest as Request & { softwareHouseId: number; cedenteId: number },
+        mockResponse as Response,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(409);
+      expect(jsonMock).toHaveBeenCalled();
+      const body = jsonMock.mock.calls[0][0];
+      expect(body.code).toBe("ALREADY_PROCESSED");
+      expect(body.statusCode).toBe(409);
     });
   });
 
@@ -384,7 +403,7 @@ describe("[WEBHOOK] ReenviarController", () => {
         kind: "webhook",
         type: "disponivel",
       };
-      mockService.webhook.mockResolvedValue({ success: true });
+      mockService.webhook.mockResolvedValue({ success: true } as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -402,7 +421,7 @@ describe("[WEBHOOK] ReenviarController", () => {
         type: "pago" as const,
       };
       mockRequest.body = bodyData;
-      mockService.webhook.mockResolvedValue({ success: true });
+      mockService.webhook.mockResolvedValue({ success: true } as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -418,9 +437,9 @@ describe("[WEBHOOK] ReenviarController", () => {
     it("deve passar os dados do cedente para o service", async () => {
       mockRequest.cedenteId = 123;
       mockRequest.headers = {
-        "x-api-cnpj-cedente": "99.999.999/0001-99",
+        "x-api-cnpj-cedente": "99999999000199",
       };
-      mockService.webhook.mockResolvedValue({ success: true });
+      mockService.webhook.mockResolvedValue({ success: true } as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
@@ -429,7 +448,7 @@ describe("[WEBHOOK] ReenviarController", () => {
 
       expect(mockService.webhook).toHaveBeenCalledWith(expect.any(Object), {
         id: 123,
-        cnpj: "99.999.999/0001-99",
+        cnpj: "99999999000199",
       });
     });
   });
@@ -440,7 +459,7 @@ describe("[WEBHOOK] ReenviarController", () => {
         message: "Webhooks reenviados com sucesso",
         total: 3,
       };
-      mockService.webhook.mockResolvedValue(mockResponseData);
+      mockService.webhook.mockResolvedValue(mockResponseData as any);
 
       await controller.reenviar(
         mockRequest as Request & { softwareHouseId: number; cedenteId: number },
